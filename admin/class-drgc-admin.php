@@ -161,7 +161,7 @@ class DRGC_Admin {
 
 		add_settings_section(
 			$this->option_name . '_general',
-			'General',
+			__('General', 'digital-river-global-commerce' ),
 			array( $this, $this->option_name . '_general_cb' ),
 			$this->plugin_name
 		);
@@ -231,7 +231,7 @@ class DRGC_Admin {
 
 		add_settings_section(
 			$this->option_name . '_payment',
-			'Payments',
+			__( 'Payment Buttons', 'digital-river-global-commerce' ),
 			array( $this, $this->option_name . '_payment_cb' ),
 			$this->plugin_name
 		);
@@ -243,7 +243,25 @@ class DRGC_Admin {
 			$this->plugin_name,
 			$this->option_name . '_payment',
 			array( 'label_for' => $this->option_name . '_applepay_handler' )
-		);
+    );
+    
+    add_settings_field(
+      $this->option_name . '_applepay_button_type',
+      __( 'Button Type', 'digital-river-global-commerce' ),
+      array( $this, $this->option_name . '_applepay_button_type_cb' ),
+      $this->plugin_name,
+      $this->option_name . '_payment',
+      array( 'label_for' => $this->option_name . '_applepay_button_type' )
+    );
+    
+    add_settings_field(
+      $this->option_name . '_applepay_button_color',
+      __( 'Button Color', 'digital-river-global-commerce' ),
+      array( $this, $this->option_name . '_applepay_button_color_cb' ),
+      $this->plugin_name,
+      $this->option_name . '_payment',
+      array( 'label_for' => $this->option_name . '_applepay_button_color' )
+    );
 
 		add_settings_field(
 			$this->option_name . '_googlepay_handler',
@@ -252,7 +270,25 @@ class DRGC_Admin {
 			$this->plugin_name,
 			$this->option_name . '_payment',
 			array( 'label_for' => $this->option_name . '_googlepay_handler' )
-		);
+    );
+    
+    add_settings_field(
+      $this->option_name . '_googlepay_button_type',
+      __( 'Button Type', 'digital-river-global-commerce' ),
+      array( $this, $this->option_name . '_googlepay_button_type_cb' ),
+      $this->plugin_name,
+      $this->option_name . '_payment',
+      array( 'label_for' => $this->option_name . '_googlepay_button_type' )
+    );
+    
+    add_settings_field(
+      $this->option_name . '_googlepay_button_color',
+      __( 'Button Color', 'digital-river-global-commerce' ),
+      array( $this, $this->option_name . '_googlepay_button_color_cb' ),
+      $this->plugin_name,
+      $this->option_name . '_payment',
+      array( 'label_for' => $this->option_name . '_googlepay_button_color' )
+    );
 
 		add_settings_section(
 			$this->option_name . '_extra',
@@ -270,6 +306,10 @@ class DRGC_Admin {
 		register_setting( $this->plugin_name, $this->option_name . '_testOrder_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
 		register_setting( $this->plugin_name, $this->option_name . '_applepay_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
     register_setting( $this->plugin_name, $this->option_name . '_googlepay_handler', array( 'sanitize_callback' => array( $this, 'dr_sanitize_checkbox' ), 'default' => '' ) );
+    register_setting( $this->plugin_name, $this->option_name . '_applepay_button_type', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ) );
+    register_setting( $this->plugin_name, $this->option_name . '_applepay_button_color', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ) );
+    register_setting( $this->plugin_name, $this->option_name . '_googlepay_button_type', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ) );
+    register_setting( $this->plugin_name, $this->option_name . '_googlepay_button_color', array( 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	/**
@@ -430,6 +470,26 @@ class DRGC_Admin {
 	}
 
 	/**
+	 * Render input text field for Apple Pay button type.
+	 *
+	 * @since    1.3.0
+	 */
+	public function drgc_applepay_button_type_cb() {
+		$button_type = get_option( $this->option_name . '_applepay_button_type' );
+		echo '<div data-tooltip="Required to the type of Apple Pay button" data-tooltip-location="right"><input type="text" class="regular-text" name="' . $this->option_name . '_applepay_button_type' . '" id="' . $this->option_name . '_applepay_button_type' . '" value="' . $button_type . '"></div>';
+  }
+  
+  	/**
+	 * Render input text field for Apple Pay button color.
+	 *
+	 * @since    1.3.0
+	 */
+	public function drgc_applepay_button_color_cb() {
+		$button_color = get_option( $this->option_name . '_applepay_button_color' );
+		echo '<div data-tooltip="Required to the color of Apple Pay button" data-tooltip-location="right"><input type="text" class="regular-text" name="' . $this->option_name . '_applepay_button_color' . '" id="' . $this->option_name . '_applepay_button_color' . '" value="' . $button_color . '"></div>';
+	}
+
+	/**
 	 * Render checkbox field for enabling Google Pay
 	 *
 	 * @since    1.0.2
@@ -443,8 +503,28 @@ class DRGC_Admin {
 		}
 
 		echo '<label class="switch"><input type="checkbox" class="regular-text" name="' . $this->option_name . '_googlepay_handler[checkbox]" id="' . $this->option_name . '_googlepay_handler" value="1" ' . $checked . ' /><span class="slider round"></span></label>';
-  }
+	}
+	
+	/**
+	 * Render input text field for Google Pay button type.
+	 *
+	 * @since    1.3.0
+	 */
+	public function drgc_googlepay_button_type_cb() {
+		$button_type = get_option( $this->option_name . '_googlepay_button_type' );
+		echo '<div data-tooltip="Required to the type of Google Pay button" data-tooltip-location="right"><input type="text" class="regular-text" name="' . $this->option_name . '_googlepay_button_type' . '" id="' . $this->option_name . '_googlepay_button_type' . '" value="' . $button_type . '"></div>';
+	}
 
+  /**
+	 * Render input text field for Google Pay button color.
+	 *
+	 * @since    1.3.0
+	 */
+	public function drgc_googlepay_button_color_cb() {
+		$button_color = get_option( $this->option_name . '_googlepay_button_color' );
+		echo '<div data-tooltip="Required to the color of Google Pay button" data-tooltip-location="right"><input type="text" class="regular-text" name="' . $this->option_name . '_googlepay_button_color' . '" id="' . $this->option_name . '_googlepay_button_color' . '" value="' . $button_color . '"></div>';
+  }
+  
   /**
 	 * Render input text field for X-Stream username.
 	 *

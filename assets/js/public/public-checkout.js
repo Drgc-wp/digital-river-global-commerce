@@ -5,6 +5,7 @@ import DRGooglePay from './payment-googlepay';
 import DRApplePay from './payment-applepay';
 
 const CheckoutModule = (($) => {
+    const localizedText = drgc_params.translations;
     const initPreTAndC = () => {
         $('#dr-preTAndC').change((e) => {
             if ($(e.target).is(':checked')) {
@@ -17,7 +18,7 @@ const CheckoutModule = (($) => {
 
         $('.dr-cloudpay-btn-wrapper').click(() => {
             if (!$('#dr-preTAndC').is(':checked')) {
-                $('#dr-preTAndC-err-msg').text(drgc_params.translations.required_tandc_msg).show();
+                $('#dr-preTAndC-err-msg').text(localizedText.required_tandc_msg).show();
             }
         });
 
@@ -32,16 +33,16 @@ const CheckoutModule = (($) => {
     const updateSummaryLabels = () => {
         if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
             $('.dr-summary__tax .item-label').text(shouldDisplayVat() ?
-                drgc_params.translations.vat_label :
-                drgc_params.translations.tax_label
+                localizedText.vat_label :
+                localizedText.tax_label
             );
-            $('.dr-summary__shipping .item-label').text(drgc_params.translations.shipping_label);
+            $('.dr-summary__shipping .item-label').text(localizedText.shipping_label);
         } else {
             $('.dr-summary__tax .item-label').text(shouldDisplayVat() ?
-                drgc_params.translations.estimated_vat_label :
-                drgc_params.translations.estimated_tax_label
+                localizedText.estimated_vat_label :
+                localizedText.estimated_tax_label
             );
-            $('.dr-summary__shipping .item-label').text(drgc_params.translations.estimated_shipping_label);
+            $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label);
         }
     };
 
@@ -143,7 +144,7 @@ const CheckoutModule = (($) => {
         payload[addressType].emailAddress = email;
         
         if (payload[addressType].country !== 'US') {
-            payload[addressType].countrySubdivision = '';
+            payload[addressType].countrySubdivision = 'NA';
         }
 
         return payload[addressType];
@@ -174,17 +175,17 @@ const CheckoutModule = (($) => {
                 const errorCode = jqXHR.responseJSON.errors.error[0].code;
 
                 if (errorCode === 'restricted-bill-to-country') {
-                    $target.text(drgc_params.translations.address_error_msg).show();
+                    $target.text(localizedText.address_error_msg).show();
                 } else if (errorCode === 'restricted-ship-to-country') {
-                    $target.text(drgc_params.translations.address_error_msg).show();
+                    $target.text(localizedText.address_error_msg).show();
                 } else {
-                    $target.text(drgc_params.translations.undefined_error_msg).show();
+                    $target.text(localizedText.undefined_error_msg).show();
                 }
             } else {
                 $target.text(jqXHR.responseJSON.errors.error[0].description).show();
             }
         } else {
-            $target.text(drgc_params.translations.shipping_options_error_msg).show();
+            $target.text(localizedText.shipping_options_error_msg).show();
         }
     };
 
@@ -275,6 +276,7 @@ const CheckoutModule = (($) => {
 jQuery(document).ready(($) => {
     if ($('#checkout-payment-form').length) {
         // Globals
+        const localizedText = drgc_params.translations;
         const domain = drgc_params.domain;
         const isLogin = drgc_params.isLogin;
         const drLocale = drgc_params.drLocale || 'en_US';
@@ -282,7 +284,9 @@ jQuery(document).ready(($) => {
         const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
         const isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
         const isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
-        const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
+        const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
+            'locale': drLocale.split('_').join('-')
+        });
         const addressPayload = {shipping: {}, billing: {}};
         let paymentSourceId = null;
         // Section progress
@@ -306,8 +310,8 @@ jQuery(document).ready(($) => {
             };
 
             var cardNumber = digitalriverjs.createElement('cardnumber', options);
-            var cardExpiration = digitalriverjs.createElement('cardexpiration', Object.assign({}, options, { placeholderText: 'MM/YY' }));
-            var cardCVV = digitalriverjs.createElement('cardcvv', Object.assign({}, options, { placeholderText: 'CVV' }));
+            var cardExpiration = digitalriverjs.createElement('cardexpiration', Object.assign({}, options, { placeholderText: localizedText.card_expiration_placeholder }));
+            var cardCVV = digitalriverjs.createElement('cardcvv', Object.assign({}, options, { placeholderText: localizedText.card_cvv_placeholder }));
 
             cardNumber.mount('card-number');
             cardExpiration.mount('card-expiration');
@@ -358,8 +362,6 @@ jQuery(document).ready(($) => {
                 }
             }
         }
-
-        $('#checkout-email-form button[type=submit]').prop('disabled', false);
 
         $('#checkout-email-form').on('submit', function(e) {
             e.preventDefault();
@@ -503,7 +505,7 @@ jQuery(document).ready(($) => {
                 .then((data) => {
                     const $section = $('.dr-checkout__delivery');
                     const freeShipping = data.cart.pricing.shippingAndHandling.value === 0;
-                    const resultText = `${$input.data('desc')} ${freeShipping ? drgc_params.translations.free_label : $input.data('cost')}`;
+                    const resultText = `${$input.data('desc')} ${freeShipping ? localizedText.free_label : $input.data('cost')}`;
 
                     $button.removeClass('sending').blur();
                     $section.find('.dr-panel-result__text').text(resultText);
@@ -584,7 +586,7 @@ jQuery(document).ready(($) => {
                     $button.removeClass('sending').blur();
                     if (result.error) {
                         if (result.error.state === 'failed') {
-                            $('#dr-payment-failed-msg').text(drgc_params.translations.credit_card_error_msg).show();
+                            $('#dr-payment-failed-msg').text(localizedText.credit_card_error_msg).show();
                         }
                         if (result.error.errors) {
                             $('#dr-payment-failed-msg').text(result.error.errors[0].message).show();
@@ -593,7 +595,7 @@ jQuery(document).ready(($) => {
                         if (result.source.state === 'chargeable') {
                             paymentSourceId = result.source.id;
                             $section.find('.dr-panel-result__text').text(
-                                `${drgc_params.translations.credit_card_ending_label} ${result.source.creditCard.lastFourDigits}`
+                                `${localizedText.credit_card_ending_label} ${result.source.creditCard.lastFourDigits}`
                             );
 
                             if ($('.dr-checkout__el').index($section) > finishedSectionIdx) {
@@ -610,7 +612,7 @@ jQuery(document).ready(($) => {
         $('#checkout-confirmation-form button[type="submit"]').on('click', (e) => {
             e.preventDefault();
             if (!$('#dr-tAndC').prop('checked')) {
-                $('#dr-checkout-err-field').text(drgc_params.translations.required_tandc_msg).show();
+                $('#dr-checkout-err-field').text(localizedText.required_tandc_msg).show();
             } else {
                 $('#dr-checkout-err-field').text('').hide();
                 $(e.target).toggleClass('sending').blur();
@@ -656,14 +658,14 @@ jQuery(document).ready(($) => {
                 case 'credit-card':
                     $('#dr-paypal-button').hide();
                     $('.credit-card-info').show();
-                    $('#dr-submit-payment').text(drgc_params.translations.pay_with_card_label.toUpperCase()).show();
+                    $('#dr-submit-payment').text(localizedText.pay_with_card_label.toUpperCase()).show();
 
                     break;
                 case 'paypal':
                     $('#dr-submit-payment').hide();
                     $('.credit-card-info').hide();
                     $('#dr-paypal-button').show();
-                    $('#dr-submit-payment').text(drgc_params.translations.pay_with_paypal_label.toUpperCase());
+                    $('#dr-submit-payment').text(localizedText.pay_with_paypal_label.toUpperCase());
 
                     break;
             }
@@ -687,6 +689,8 @@ jQuery(document).ready(($) => {
 
         //floating labels
         FloatLabel.init();
+
+        $('#checkout-email-form button[type=submit]').prop('disabled', false);
 
         if ($('input[name=email]').val() && $('#checkout-email-form').length && $('#dr-panel-email-result').is(':empty')) {
             $('#checkout-email-form').submit();
@@ -768,6 +772,8 @@ jQuery(document).ready(($) => {
                     };
 
                     if (requestShipping) {
+                        const shippingState = cart.shippingAddress.countrySubdivision;
+
                         payPalPayload['shipping'] = {
                             'recipient':  `${cart.shippingAddress.firstName} ${cart.shippingAddress.lastName} `,
                             'phoneNumber':  cart.shippingAddress.phoneNumber,
@@ -775,7 +781,7 @@ jQuery(document).ready(($) => {
                                 'line1': cart.shippingAddress.line1,
                                 'line2': cart.shippingAddress.line2,
                                 'city': cart.shippingAddress.city,
-                                'state': cart.shippingAddress.countrySubdivision,
+                                'state': shippingState ? shippingState : 'NA',
                                 'country':  cart.shippingAddress.country,
                                 'postalCode': cart.shippingAddress.postalCode
                             }
@@ -801,26 +807,34 @@ jQuery(document).ready(($) => {
             }, '#dr-paypal-button');
         }
 
-        const buttonStyle = {
-            buttonType: 'long',
-            buttonColor: 'dark',
-            buttonLanguage: drLocale.split('_')[0]
-        };
-        const baseRequest = CheckoutUtils.getBaseRequestData(cartData, requestShipping, buttonStyle);
-        const paymentDataRequest = digitalriverjs.paymentRequest(baseRequest);
-
         if ($('#dr-googlepay-button').length && isGooglePayEnabled) {
+            const googlePaybuttonStyle = {
+                buttonType: drgc_params.googlePayButtonType,
+                buttonColor: drgc_params.googlePayButtonColor,
+                buttonLanguage: drLocale.split('_')[0]
+            };
+            const googlePayBaseRequest = CheckoutUtils.getBaseRequestData(cartData, requestShipping, googlePaybuttonStyle);
+            const googlePayPaymentDataRequest = digitalriverjs.paymentRequest(googlePayBaseRequest);
+
             DRGooglePay.init({
                 digitalriverJs: digitalriverjs,
-                paymentDataRequest: paymentDataRequest,
+                paymentDataRequest: googlePayPaymentDataRequest,
                 requestShipping: requestShipping
             });
         }
 
         if ($('#dr-applepay-button').length && isApplePayEnabled) {
+            const applePaybuttonStyle = {
+                buttonType: drgc_params.applePayButtonType,
+                buttonColor: drgc_params.applePayButtonColor,
+                buttonLanguage: drLocale.split('_')[0]
+            };
+            const applePayBaseRequest = CheckoutUtils.getBaseRequestData(cartData, requestShipping, applePaybuttonStyle);
+            const applePayPaymentDataRequest = digitalriverjs.paymentRequest(applePayBaseRequest);
+
             DRApplePay.init({
                 digitalriverJs: digitalriverjs,
-                paymentDataRequest: paymentDataRequest,
+                paymentDataRequest: applePayPaymentDataRequest,
                 requestShipping: requestShipping
             });
         }

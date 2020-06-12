@@ -155,7 +155,14 @@ class DRGC_Public {
 			'out_of_stock'                   => __('Out of Stock', 'digital-river-global-commerce'),
 			'cancel_subs_confirm'            => __('Are you sure you want to immediately unsubscribe this subscription?', 'digital-river-global-commerce'),
 			'change_renewal_qty_prompt'      => __('Please enter the required quantity:', 'digital-river-global-commerce'),
-			'shipping_options_error_msg'	   => __('There are no delivery options available for your cart or destination.', 'digital-river-global-commerce'),
+      'shipping_options_error_msg'	   => __('There are no delivery options available for your cart or destination.', 'digital-river-global-commerce'),
+      'card_expiration_placeholder'    => __('MM/YY', 'digital-river-global-commerce'),
+      'card_cvv_placeholder'           => __('CVV', 'digital-river-global-commerce'),
+      'shipping_country_error_msg'     => __('Shipping country is not supported.', 'digital-river-global-commerce'),
+      'billing_country_error_msg'      => __('Billing country is not supported.', 'digital-river-global-commerce'),
+      'invalid_postal_code_msg'        => __('Your postal code is invalid.', 'digital-river-global-commerce'),
+      'invalid_city_msg'               => __('Your city is invalid.', 'digital-river-global-commerce'),
+			'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce')
 		);
 
 		// transfer drgc options from PHP to JS
@@ -186,7 +193,11 @@ class DRGC_Public {
 			'translations'       => $translation_array,
 			'isApplePayEnabled'  => $applepay_enabled,
 			'isGooglePayEnabled' => $googlepay_enabled,
-			'client_ip'          => $_SERVER['REMOTE_ADDR']
+			'client_ip'          => $_SERVER['REMOTE_ADDR'],
+      'applePayButtonType'   => get_option( 'drgc_applepay_button_type' ),
+      'applePayButtonColor'  => get_option( 'drgc_applepay_button_color' ),
+      'googlePayButtonType'  => get_option( 'drgc_googlepay_button_type' ),
+      'googlePayButtonColor' => get_option( 'drgc_googlepay_button_color' )
 		);
 
 		wp_localize_script( $this->drgc, 'drgc_params', $options );
