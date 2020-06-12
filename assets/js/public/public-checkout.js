@@ -772,8 +772,6 @@ jQuery(document).ready(($) => {
                     };
 
                     if (requestShipping) {
-                        const shippingState = cart.shippingAddress.countrySubdivision;
-
                         payPalPayload['shipping'] = {
                             'recipient':  `${cart.shippingAddress.firstName} ${cart.shippingAddress.lastName} `,
                             'phoneNumber':  cart.shippingAddress.phoneNumber,
@@ -781,7 +779,7 @@ jQuery(document).ready(($) => {
                                 'line1': cart.shippingAddress.line1,
                                 'line2': cart.shippingAddress.line2,
                                 'city': cart.shippingAddress.city,
-                                'state': shippingState ? shippingState : 'NA',
+                                'state': cart.shippingAddress.countrySubdivision || 'NA',
                                 'country':  cart.shippingAddress.country,
                                 'postalCode': cart.shippingAddress.postalCode
                             }

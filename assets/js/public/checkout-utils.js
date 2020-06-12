@@ -218,43 +218,41 @@ const CheckoutUtils = (($, params) => {
 
   const createCartRequest = (event, requestShipping) => {
     const cartRequest = {cart: {}};
-    const billingState = event.billingAddress.address.state;
-      const billingAddressObj = {
-        id: 'billingAddress',
-        firstName: event.billingAddress.firstName,
-        lastName: event.billingAddress.lastName,
-        line1: event.billingAddress.address.line1,
-        line2: event.billingAddress.address.line2,
-        city: event.billingAddress.address.city,
-        countrySubdivision: billingState ? billingState : 'NA',
-        postalCode: event.billingAddress.address.postalCode,
-        country: event.billingAddress.address.country,
-        phoneNumber: event.billingAddress.phone,
-        emailAddress: event.billingAddress.email
+    const billingAddressObj = {
+      id: 'billingAddress',
+      firstName: event.billingAddress.firstName,
+      lastName: event.billingAddress.lastName,
+      line1: event.billingAddress.address.line1,
+      line2: event.billingAddress.address.line2,
+      city: event.billingAddress.address.city,
+      countrySubdivision: event.billingAddress.address.state || 'NA',
+      postalCode: event.billingAddress.address.postalCode,
+      country: event.billingAddress.address.country,
+      phoneNumber: event.billingAddress.phone,
+      emailAddress: event.billingAddress.email
+    };
+
+    cartRequest.cart.billingAddress = billingAddressObj;
+
+    if (requestShipping) {
+      const shippingAddressObj = {
+        id: 'shippingAddress',
+        firstName: event.shippingAddress.firstName,
+        lastName: event.shippingAddress.lastName,
+        line1: event.shippingAddress.address.line1,
+        line2: event.shippingAddress.address.line2,
+        city: event.shippingAddress.address.city,
+        countrySubdivision: event.shippingAddress.address.state || 'NA',
+        postalCode: event.shippingAddress.address.postalCode,
+        country: event.shippingAddress.address.country,
+        phoneNumber: event.shippingAddress.phone,
+        emailAddress: event.shippingAddress.email
       };
 
-      cartRequest.cart.billingAddress = billingAddressObj;
+      cartRequest.cart.shippingAddress = shippingAddressObj;
+    }
 
-      if (requestShipping) {
-        const shippingState = event.shippingAddress.address.state;
-        const shippingAddressObj = {
-          id: 'shippingAddress',
-          firstName: event.shippingAddress.firstName,
-          lastName: event.shippingAddress.lastName,
-          line1: event.shippingAddress.address.line1,
-          line2: event.shippingAddress.address.line2,
-          city: event.shippingAddress.address.city,
-          countrySubdivision: shippingState ? shippingState : 'NA',
-          postalCode: event.shippingAddress.address.postalCode,
-          country: event.shippingAddress.address.country,
-          phoneNumber: event.shippingAddress.phone,
-          emailAddress: event.shippingAddress.email
-        };
-
-        cartRequest.cart.shippingAddress = shippingAddressObj;
-      }
-
-      return cartRequest;
+    return cartRequest;
   };
 
   return {

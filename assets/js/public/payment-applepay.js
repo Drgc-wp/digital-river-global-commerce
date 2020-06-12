@@ -52,13 +52,12 @@ const DRApplePay = (($, translations) => {
         });
       } else {
         if (requestShipping) {
-          const shippingState = shippingAddress.address.state;
           const cartRequest = {
             cart: {
               shippingAddress: {
                 id: 'shippingAddress',
                 city: shippingAddress.address.city,
-                countrySubdivision: shippingState ? shippingState : 'NA',
+                countrySubdivision: shippingAddress.address.state || 'NA',
                 postalCode: shippingAddress.address.postalCode,
                 country: shippingAddress.address.country
               }

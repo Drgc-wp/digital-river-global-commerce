@@ -36,12 +36,11 @@ const DRGooglePay = (($, translations) => {
       const supportedCountries = CheckoutUtils.getSupportedCountries('shipping');
 
       if (supportedCountries.indexOf(shippingAddress.address.country) > -1) {
-        const shippingState = shippingAddress.address.state;
         const cartRequest = {
           shippingAddress: {
             id: 'shippingAddress',
             city: shippingAddress.address.city,
-            countrySubdivision: shippingState ? shippingState : 'NA',
+            countrySubdivision: shippingAddress.address.state || 'NA',
             postalCode: shippingAddress.address.postalCode,
             country: shippingAddress.address.country
           }

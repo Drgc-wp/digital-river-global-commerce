@@ -1365,7 +1365,6 @@ var CheckoutUtils = function ($, params) {
     var cartRequest = {
       cart: {}
     };
-    var billingState = event.billingAddress.address.state;
     var billingAddressObj = {
       id: 'billingAddress',
       firstName: event.billingAddress.firstName,
@@ -1373,7 +1372,7 @@ var CheckoutUtils = function ($, params) {
       line1: event.billingAddress.address.line1,
       line2: event.billingAddress.address.line2,
       city: event.billingAddress.address.city,
-      countrySubdivision: billingState ? billingState : 'NA',
+      countrySubdivision: event.billingAddress.address.state || 'NA',
       postalCode: event.billingAddress.address.postalCode,
       country: event.billingAddress.address.country,
       phoneNumber: event.billingAddress.phone,
@@ -1382,7 +1381,6 @@ var CheckoutUtils = function ($, params) {
     cartRequest.cart.billingAddress = billingAddressObj;
 
     if (requestShipping) {
-      var shippingState = event.shippingAddress.address.state;
       var shippingAddressObj = {
         id: 'shippingAddress',
         firstName: event.shippingAddress.firstName,
@@ -1390,7 +1388,7 @@ var CheckoutUtils = function ($, params) {
         line1: event.shippingAddress.address.line1,
         line2: event.shippingAddress.address.line2,
         city: event.shippingAddress.address.city,
-        countrySubdivision: shippingState ? shippingState : 'NA',
+        countrySubdivision: event.shippingAddress.address.state || 'NA',
         postalCode: event.shippingAddress.address.postalCode,
         country: event.shippingAddress.address.country,
         phoneNumber: event.shippingAddress.phone,
@@ -2357,12 +2355,11 @@ var DRGooglePay = function ($, translations) {
       var supportedCountries = checkout_utils.getSupportedCountries('shipping');
 
       if (supportedCountries.indexOf(shippingAddress.address.country) > -1) {
-        var shippingState = shippingAddress.address.state;
         var cartRequest = {
           shippingAddress: {
             id: 'shippingAddress',
             city: shippingAddress.address.city,
-            countrySubdivision: shippingState ? shippingState : 'NA',
+            countrySubdivision: shippingAddress.address.state || 'NA',
             postalCode: shippingAddress.address.postalCode,
             country: shippingAddress.address.country
           }
@@ -2560,13 +2557,12 @@ var DRApplePay = function ($, translations) {
         });
       } else {
         if (requestShipping) {
-          var shippingState = shippingAddress.address.state;
           var cartRequest = {
             cart: {
               shippingAddress: {
                 id: 'shippingAddress',
                 city: shippingAddress.address.city,
-                countrySubdivision: shippingState ? shippingState : 'NA',
+                countrySubdivision: shippingAddress.address.state || 'NA',
                 postalCode: shippingAddress.address.postalCode,
                 country: shippingAddress.address.country
               }
@@ -3497,7 +3493,6 @@ jQuery(document).ready(function ($) {
           };
 
           if (requestShipping) {
-            var shippingState = cart.shippingAddress.countrySubdivision;
             payPalPayload['shipping'] = {
               'recipient': "".concat(cart.shippingAddress.firstName, " ").concat(cart.shippingAddress.lastName, " "),
               'phoneNumber': cart.shippingAddress.phoneNumber,
@@ -3505,7 +3500,7 @@ jQuery(document).ready(function ($) {
                 'line1': cart.shippingAddress.line1,
                 'line2': cart.shippingAddress.line2,
                 'city': cart.shippingAddress.city,
-                'state': shippingState ? shippingState : 'NA',
+                'state': cart.shippingAddress.countrySubdivision || 'NA',
                 'country': cart.shippingAddress.country,
                 'postalCode': cart.shippingAddress.postalCode
               }
