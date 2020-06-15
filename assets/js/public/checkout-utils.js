@@ -1,4 +1,5 @@
 const CheckoutUtils = (($, params) => {
+  const localizedText = drgc_params.translations;
   const createDisplayItems = (cartData) => {
     const displayItems = [{
       label: params.translations.subtotal_label,
@@ -152,10 +153,7 @@ const CheckoutUtils = (($, params) => {
   };
 
   const apiErrorHandler = (jqXHR) => {
-    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) {
-      const currentError = jqXHR.responseJSON.errors.error[0];
-      drToast.displayMessage(currentError.description, 'error');
-    }
+    drToast.displayMessage(getAjaxErrorMessage(jqXHR), 'error');
   };
 
   const resetBodyOpacity = () => {
@@ -186,7 +184,26 @@ const CheckoutUtils = (($, params) => {
   };
 
   const getAjaxErrorMessage = (jqXHR) => {
-    return (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) ? jqXHR.responseJSON.errors.error[0].description : '';
+    let errMsg = localizedText.undefined_error_msg;
+
+    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) {
+      const err = jqXHR.responseJSON.errors.error[0];
+      switch (err.code) {
+        case 'restricted-bill-to-country':
+        case 'restricted-ship-to-country':
+          errMsg = localizedText.address_error_msg;
+          break;
+
+        case 'cart-fraud-failure':
+        case 'order-fraud-failure':
+          errMsg = localizedText.unable_place_order_msg;
+          break;
+
+        default:
+          errMsg = err.description;
+      }
+    }
+    return errMsg;
   };
 
   const setShippingOption = (option, freeShipping) => {
