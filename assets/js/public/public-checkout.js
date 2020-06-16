@@ -282,7 +282,9 @@ jQuery(document).ready(($) => {
         const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
         const isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
         const isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
-        const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
+        const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
+            'locale': drLocale.split('_').join('-')
+        });
         const addressPayload = {shipping: {}, billing: {}};
         let paymentSourceId = null;
         // Section progress
