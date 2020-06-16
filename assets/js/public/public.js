@@ -1,5 +1,7 @@
 // 3rd-party plugins
 import BSModal from './modal';
+import jQueryCookie from './jquery-cookie';
+
 
 // maintained by DR
 import drToast from './dr-toast';
