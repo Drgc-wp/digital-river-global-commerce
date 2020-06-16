@@ -442,8 +442,16 @@ jQuery(document).ready(($) => {
             const $button = $form.find('button[type="submit"]');
             const billingSameAsShipping = $('[name="checkbox-billing"]').is(':visible:checked');
             const isFormValid = CheckoutModule.validateAddress($form);
+            let companyMeta = {};
 
             if (!isFormValid) return;
+
+            if('on' == $('#checkbox-business').val()) {
+              companyMeta = {attribute:[{
+                  name: 'companyVat',
+                  value: $('#billing-field-company-vat').val()
+              }]}
+            }
 
             addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form); 
             const cartRequest = {
@@ -462,6 +470,7 @@ jQuery(document).ready(($) => {
                 }
             }
 
+            DRCommerceApi.updateCart({}, { customAttributes: companyMeta });
             DRCommerceApi.updateCartBillingAddress({expand: 'all'}, cartRequest)
                 .then(() => DRCommerceApi.getCart({expand: 'all'}))
                 // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
@@ -488,6 +497,10 @@ jQuery(document).ready(($) => {
                     $button.removeClass('sending').blur();
                     CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
                 });
+        });
+
+        $("#checkbox-business").on("change", function(){
+          $(".form-group-business").toggle("hide");
         });
 
         // Submit delivery form

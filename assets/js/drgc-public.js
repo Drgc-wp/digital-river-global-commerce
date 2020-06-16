@@ -13389,7 +13389,18 @@ jQuery(document).ready(function ($) {
       var $button = $form.find('button[type="submit"]');
       var billingSameAsShipping = $('[name="checkbox-billing"]').is(':visible:checked');
       var isFormValid = CheckoutModule.validateAddress($form);
+      var companyMeta = {};
       if (!isFormValid) return;
+
+      if ('on' == $('#checkbox-business').val()) {
+        companyMeta = {
+          attribute: [{
+            name: 'companyVat',
+            value: $('#billing-field-company-vat').val()
+          }]
+        };
+      }
+
       addressPayload.billing = billingSameAsShipping ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form);
       var cartRequest = {
         address: addressPayload.billing
@@ -13405,6 +13416,9 @@ jQuery(document).ready(function ($) {
         }
       }
 
+      commerce_api.updateCart({}, {
+        customAttributes: companyMeta
+      });
       commerce_api.updateCartBillingAddress({
         expand: 'all'
       }, cartRequest).then(function () {
@@ -13431,6 +13445,9 @@ jQuery(document).ready(function ($) {
         $button.removeClass('sending').blur();
         CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
       });
+    });
+    $("#checkbox-business").on("change", function () {
+      $(".form-group-business").toggle("hide");
     }); // Submit delivery form
 
     $('form#checkout-delivery-form').on('submit', function (e) {
