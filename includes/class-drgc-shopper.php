@@ -254,6 +254,60 @@ class DRGC_Shopper extends AbstractHttpService {
 		}
 	}
 
+	public function retrieve_shopper_orders( $params = array() ) {
+		$default = array(
+			'expand'            => 'all'
+		);
+
+		$params = array_merge(
+			$default,
+			array_intersect_key( $params, $default )
+		);
+
+		$url = "/v1/shoppers/me/orders?".http_build_query( $params );
+		try {
+			$res = $this->get($url);
+
+			return $res;
+			
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+	public function retrieve_shopper_subscriptions( $params = array() ) {
+		$default = array(
+			'expand'            => 'all'
+		);
+
+		$params = array_merge(
+			$default,
+			array_intersect_key( $params, $default )
+		);
+
+		$url = "/v1/shoppers/me/subscriptions?".http_build_query( $params );
+		try {
+			$res = $this->get($url);
+
+
+			if ($res['subscriptions']['subscription']) {
+
+				foreach ($res['subscriptions']['subscription'] as $key => $sub) {
+					if ($res['subscriptions']['subscription'][$key]['products']['product']['uri']) {
+						$res['subscriptions']['subscription'][$key]['products']['product']['full'] = $this->get($res['subscriptions']['subscription'][$key]['products']['product']['uri']);
+					}
+				}
+				
+			}
+
+			return $res;
+			
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+
 	/**
 	 * Create a new shopper.
 	 * The base shopper account information includes the shopper's name and email address.
