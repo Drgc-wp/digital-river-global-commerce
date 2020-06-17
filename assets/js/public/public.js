@@ -1,6 +1,7 @@
 // 3rd-party plugins
 import Modal from './modal'
 import Tab from './tab'
+import jQueryCookie from './jquery-cookie';
 
 // maintained by DR
 import drToast from './dr-toast';
