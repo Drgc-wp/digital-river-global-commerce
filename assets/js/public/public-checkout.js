@@ -50,7 +50,7 @@ const CheckoutModule = (($) => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'GET',
-                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage`,
+                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage?ESICaching=off`,
                 success: (response) => {
                     const addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
@@ -143,7 +143,7 @@ const CheckoutModule = (($) => {
         payload[addressType].emailAddress = email;
 
         if (payload[addressType].country !== 'US') {
-            payload[addressType].countrySubdivision = '';
+            payload[addressType].countrySubdivision = 'NA';
         }
 
         return payload[addressType];
@@ -240,19 +240,21 @@ const CheckoutModule = (($) => {
         }
     };
 
-    const applyPaymentAndSubmitCart = (sourceId) => {
+    const applyPaymentAndSubmitCart = (sourceId, isPaymentButton = false) => {
         const $form = $('#checkout-confirmation-form');
-        const $errorMsgElem = $('#dr-checkout-err-field');
 
+        $('body').addClass('dr-loading');
         DRCommerceApi.applyPaymentMethod(sourceId)
         .then(() => DRCommerceApi.submitCart({ ipAddress: drgc_params.client_ip }))
         .then((data) => {
             $('#checkout-confirmation-form > input[name="order_id"]').val(data.submitCart.order.id);
             $form.submit();
         }).catch((jqXHR) => {
+            const $errorMsgElem = isPaymentButton ? $('#dr-payment-failed-msg') : $('#dr-checkout-err-field');
+
             CheckoutUtils.resetFormSubmitButton($form);
-            CheckoutUtils.resetBodyOpacity();
             $errorMsgElem.text(CheckoutUtils.getAjaxErrorMessage(jqXHR)).show();
+            $('body').removeClass('dr-loading');
         });
     };
 
@@ -771,15 +773,15 @@ jQuery(document).ready(($) => {
 
                     if (requestShipping) {
                         payPalPayload['shipping'] = {
-                            'recipient':  `${cart.shippingAddress.firstName} ${cart.shippingAddress.lastName} `,
-                            'phoneNumber':  cart.shippingAddress.phoneNumber,
+                            'recipient':  `${addressPayload.shipping.firstName} ${addressPayload.shipping.lastName}`,
+                            'phoneNumber':  addressPayload.shipping.phoneNumber,
                             'address': {
-                                'line1': cart.shippingAddress.line1,
-                                'line2': cart.shippingAddress.line2,
-                                'city': cart.shippingAddress.city,
-                                'state': cart.shippingAddress.countrySubdivision,
-                                'country':  cart.shippingAddress.country,
-                                'postalCode': cart.shippingAddress.postalCode
+                                'line1': addressPayload.shipping.line1,
+                                'line2': addressPayload.shipping.line2,
+                                'city': addressPayload.shipping.city,
+                                'state': addressPayload.shipping.countrySubdivision,
+                                'country':  addressPayload.shipping.country,
+                                'postalCode': addressPayload.shipping.postalCode
                             }
                         }
                     }
@@ -794,11 +796,18 @@ jQuery(document).ready(($) => {
                         }
                     });
                 },
+                onShippingChange: function(data, actions) {
+                    const supportedCountries = CheckoutUtils.getSupportedCountries('shipping');
+
+                    if (supportedCountries.indexOf(data.shipping_address.country_code) === -1) {
+                        return actions.reject();
+                    }
+            
+                    return actions.resolve();
+                },
                 onAuthorize: function() {
                     const sourceId = sessionStorage.getItem('paymentSourceId');
-
-                    $('body').css({'pointer-events': 'none', 'opacity': 0.5});
-                    CheckoutModule.applyPaymentAndSubmitCart(sourceId);
+                    CheckoutModule.applyPaymentAndSubmitCart(sourceId, true);
                 }
             }, '#dr-paypal-button');
         }

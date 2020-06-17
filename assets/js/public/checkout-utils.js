@@ -209,6 +209,13 @@ const CheckoutUtils = (($, params) => {
     $('#checkout-delivery-form .dr-panel-edit__el').append(html);
   };
 
+  const getSupportedCountries = (addressType) => {
+    const countryCodes = $('#' + addressType + '-field-country > option').map((index, element) => element.value).get();
+    countryCodes.shift();
+
+    return countryCodes;
+  };
+
   return {
     createDisplayItems,
     createShippingOptions,
@@ -227,7 +234,8 @@ const CheckoutUtils = (($, params) => {
     getCompliance,
     resetFormSubmitButton,
     getAjaxErrorMessage,
-    setShippingOption
+    setShippingOption,
+    getSupportedCountries
   };
 })(jQuery, drgc_params);
 
