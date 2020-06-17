@@ -24,7 +24,7 @@ class DRGC_User_Management extends AbstractHttpService {
     parent::__construct($handler);
 
     $this->site_id = get_option( 'drgc_site_id' );
-    $this->endpoint = "https://gc.digitalriver.com/integration/job/request/UserManagement/{$this->site_id}/site/";
+    $this->endpoint = "https://gc.digitalriver.com/integration/job/request/UserManagement/{$this->site_id}/company/";
   }
 
   /**
@@ -48,8 +48,8 @@ class DRGC_User_Management extends AbstractHttpService {
               <subscriptionKey>
                 <subscriptionID>{$id}</subscriptionID>
               </subscriptionKey>
-            </CancelSubscriptionRequest>"; 
-          
+            </CancelSubscriptionRequest>";
+
           break;
         case 'SWITCH_RENEWAL_TYPE':
           if ( isset( $params['renewal_type'] ) ) {

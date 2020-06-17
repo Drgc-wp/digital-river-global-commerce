@@ -25,6 +25,7 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                 <div>
                     <a class="btn dr-btn" href="<?php echo esc_url( drgc_get_page_link( 'cart' ) ); ?>"><?php echo __( 'Cart', 'digital-river-global-commerce' ); ?></a>
                     <a class="btn dr-btn" href="<?php echo esc_url( $checkout_URI ); ?>"><?php echo __( 'Checkout', 'digital-river-global-commerce' ); ?></a>
+                    <a class="btn dr-btn" href="<?php echo esc_url( drgc_get_page_link( 'account' ) ); ?>"><?php echo __( 'My Account', 'digital-river-global-commerce' ); ?></a>
                 </div>
 
                 <a class="dr-btn dr-logout" href="#"><?php echo __( 'Logout', 'digital-river-global-commerce' ); ?></a>
