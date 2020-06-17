@@ -51,7 +51,7 @@ const CheckoutModule = (($) => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'GET',
-                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage`,
+                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage?ESICaching=off`,
                 success: (response) => {
                     const addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
@@ -142,7 +142,7 @@ const CheckoutModule = (($) => {
         });
 
         payload[addressType].emailAddress = email;
-        
+
         if (payload[addressType].country !== 'US') {
             payload[addressType].countrySubdivision = 'NA';
         }
@@ -228,10 +228,10 @@ const CheckoutModule = (($) => {
 
             // If default shipping option is not in the list, then pre-select the 1st one
             if (!defaultExists) {
-                defaultShippingOption = shippingOptions[0].id;   
+                defaultShippingOption = shippingOptions[0].id;
             }
 
-            $('#checkout-delivery-form').children().find('input:radio[data-id="' + defaultShippingOption + '"]').prop("checked", true);  
+            $('#checkout-delivery-form').children().find('input:radio[data-id="' + defaultShippingOption + '"]').prop("checked", true);
 
             return DRCommerceApi.applyShippingOption(defaultShippingOption);
         } else {
@@ -241,19 +241,21 @@ const CheckoutModule = (($) => {
         }
     };
 
-    const applyPaymentAndSubmitCart = (sourceId) => {
+    const applyPaymentAndSubmitCart = (sourceId, isPaymentButton = false) => {
         const $form = $('#checkout-confirmation-form');
-        const $errorMsgElem = $('#dr-checkout-err-field');
 
+        $('body').addClass('dr-loading');
         DRCommerceApi.applyPaymentMethod(sourceId)
         .then(() => DRCommerceApi.submitCart({ ipAddress: drgc_params.client_ip }))
         .then((data) => {
             $('#checkout-confirmation-form > input[name="order_id"]').val(data.submitCart.order.id);
             $form.submit();
         }).catch((jqXHR) => {
+            const $errorMsgElem = isPaymentButton ? $('#dr-payment-failed-msg') : $('#dr-checkout-err-field');
+
             CheckoutUtils.resetFormSubmitButton($form);
-            CheckoutUtils.resetBodyOpacity();
             $errorMsgElem.text(CheckoutUtils.getAjaxErrorMessage(jqXHR)).show();
+            $('body').removeClass('dr-loading');
         });
     };
 
@@ -397,7 +399,7 @@ jQuery(document).ready(($) => {
             const isFormValid = CheckoutModule.validateAddress($form);
 
             if (!isFormValid) return;
-            
+
             addressPayload.shipping = CheckoutModule.buildAddressPayload($form);
             const cartRequest = {
                 address: addressPayload.shipping
@@ -445,7 +447,7 @@ jQuery(document).ready(($) => {
 
             if (!isFormValid) return;
 
-            addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form); 
+            addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form);
             const cartRequest = {
                 address: addressPayload.billing
             };
@@ -466,7 +468,7 @@ jQuery(document).ready(($) => {
                 .then(() => DRCommerceApi.getCart({expand: 'all'}))
                 // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
                 .then((data) => {
-                    return drgc_params.cart.cart.hasPhysicalProduct ? 
+                    return drgc_params.cart.cart.hasPhysicalProduct ?
                         CheckoutModule.preselectShippingOption(data) :
                         new Promise(resolve => resolve(data));
                 })
@@ -526,9 +528,9 @@ jQuery(document).ready(($) => {
         $('form#checkout-delivery-form').on('change', 'input[type="radio"]', function() {
             const $form = $('form#checkout-delivery-form');
             const shippingOptionId = $form.children().find('input:radio:checked').first().data('id');
-            
+
             $('.dr-summary').addClass('dr-loading');
-            
+
             DRCommerceApi.applyShippingOption(shippingOptionId)
                 .then((data) => {
                     CheckoutUtils.updateSummaryPricing(data.cart);
@@ -773,15 +775,15 @@ jQuery(document).ready(($) => {
 
                     if (requestShipping) {
                         payPalPayload['shipping'] = {
-                            'recipient':  `${cart.shippingAddress.firstName} ${cart.shippingAddress.lastName} `,
-                            'phoneNumber':  cart.shippingAddress.phoneNumber,
+                            'recipient':  `${addressPayload.shipping.firstName} ${addressPayload.shipping.lastName}`,
+                            'phoneNumber':  addressPayload.shipping.phoneNumber,
                             'address': {
-                                'line1': cart.shippingAddress.line1,
-                                'line2': cart.shippingAddress.line2,
-                                'city': cart.shippingAddress.city,
-                                'state': cart.shippingAddress.countrySubdivision || 'NA',
-                                'country':  cart.shippingAddress.country,
-                                'postalCode': cart.shippingAddress.postalCode
+                                'line1': addressPayload.shipping.line1,
+                                'line2': addressPayload.shipping.line2,
+                                'city': addressPayload.shipping.city,
+                                'state': addressPayload.shipping.countrySubdivision,
+                                'country':  addressPayload.shipping.country,
+                                'postalCode': addressPayload.shipping.postalCode
                             }
                         }
                     }
@@ -796,11 +798,18 @@ jQuery(document).ready(($) => {
                         }
                     });
                 },
+                onShippingChange: function(data, actions) {
+                    const supportedCountries = CheckoutUtils.getSupportedCountries('shipping');
+
+                    if (supportedCountries.indexOf(data.shipping_address.country_code) === -1) {
+                        return actions.reject();
+                    }
+            
+                    return actions.resolve();
+                },
                 onAuthorize: function() {
                     const sourceId = sessionStorage.getItem('paymentSourceId');
-
-                    $('body').css({'pointer-events': 'none', 'opacity': 0.5});
-                    CheckoutModule.applyPaymentAndSubmitCart(sourceId);
+                    CheckoutModule.applyPaymentAndSubmitCart(sourceId, true);
                 }
             }, '#dr-paypal-button');
         }
