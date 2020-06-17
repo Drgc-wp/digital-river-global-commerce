@@ -2774,7 +2774,7 @@ var CheckoutModule = function ($) {
     return new Promise(function (resolve, reject) {
       $.ajax({
         type: 'GET',
-        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage"),
+        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage?ESICaching=off"),
         success: function success(response) {
           var addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
@@ -3002,8 +3002,9 @@ var CheckoutModule = function ($) {
   }();
 
   var applyPaymentAndSubmitCart = function applyPaymentAndSubmitCart(sourceId) {
+    var isPaymentButton = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     var $form = $('#checkout-confirmation-form');
-    var $errorMsgElem = $('#dr-checkout-err-field');
+    $('body').addClass('dr-loading');
     commerce_api.applyPaymentMethod(sourceId).then(function () {
       return commerce_api.submitCart({
         ipAddress: drgc_params.client_ip
@@ -3012,9 +3013,10 @@ var CheckoutModule = function ($) {
       $('#checkout-confirmation-form > input[name="order_id"]').val(data.submitCart.order.id);
       $form.submit();
     })["catch"](function (jqXHR) {
+      var $errorMsgElem = isPaymentButton ? $('#dr-payment-failed-msg') : $('#dr-checkout-err-field');
       checkout_utils.resetFormSubmitButton($form);
-      checkout_utils.resetBodyOpacity();
       $errorMsgElem.text(checkout_utils.getAjaxErrorMessage(jqXHR)).show();
+      $('body').removeClass('dr-loading');
     });
   };
 
@@ -3494,15 +3496,15 @@ jQuery(document).ready(function ($) {
 
           if (requestShipping) {
             payPalPayload['shipping'] = {
-              'recipient': "".concat(cart.shippingAddress.firstName, " ").concat(cart.shippingAddress.lastName, " "),
-              'phoneNumber': cart.shippingAddress.phoneNumber,
+              'recipient': "".concat(addressPayload.shipping.firstName, " ").concat(addressPayload.shipping.lastName),
+              'phoneNumber': addressPayload.shipping.phoneNumber,
               'address': {
-                'line1': cart.shippingAddress.line1,
-                'line2': cart.shippingAddress.line2,
-                'city': cart.shippingAddress.city,
-                'state': cart.shippingAddress.countrySubdivision || 'NA',
-                'country': cart.shippingAddress.country,
-                'postalCode': cart.shippingAddress.postalCode
+                'line1': addressPayload.shipping.line1,
+                'line2': addressPayload.shipping.line2,
+                'city': addressPayload.shipping.city,
+                'state': addressPayload.shipping.countrySubdivision,
+                'country': addressPayload.shipping.country,
+                'postalCode': addressPayload.shipping.postalCode
               }
             };
           }
@@ -3516,13 +3518,18 @@ jQuery(document).ready(function ($) {
             }
           });
         },
+        onShippingChange: function onShippingChange(data, actions) {
+          var supportedCountries = checkout_utils.getSupportedCountries('shipping');
+
+          if (supportedCountries.indexOf(data.shipping_address.country_code) === -1) {
+            return actions.reject();
+          }
+
+          return actions.resolve();
+        },
         onAuthorize: function onAuthorize() {
           var sourceId = sessionStorage.getItem('paymentSourceId');
-          $('body').css({
-            'pointer-events': 'none',
-            'opacity': 0.5
-          });
-          CheckoutModule.applyPaymentAndSubmitCart(sourceId);
+          CheckoutModule.applyPaymentAndSubmitCart(sourceId, true);
         }
       }, '#dr-paypal-button');
     }
