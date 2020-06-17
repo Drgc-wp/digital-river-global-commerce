@@ -125,17 +125,14 @@ abstract class AbstractHttpService {
      * 
      * @return \GuzzleHttp\Client
      */
-    private function createClient( $force_basic_auth = false, $is_user_management = false ): Client {
-        if ( $this->token && ! $force_basic_auth ) {
+    private function createClient( $force_basic_auth = false, $force_blue_auth = false ): Client {
+        if ( $force_blue_auth ) {
+            $auth = base64_encode( 'drconnectAppUser_drgcdev@' . get_option( 'drgc_site_id' ) . ':25f3994ef571adfe52a37739048ee4ab' );
+            $this->config['headers']['Authorization'] = trim( 'Basic ' . $auth );
+        } else if ( $this->token && ! $force_basic_auth ) {
             $this->config['headers']['Authorization'] = trim( ucfirst( $this->tokenType ) . ' ' . $this->token );
         } else {
-            if ( $is_user_management ) {
-                $auth = base64_encode( get_option( 'drgc_big_blue_username' ) . '@Admin' . ':' . get_option( 'drgc_big_blue_password' ) );
-                $this->config['headers']['Content-Type'] = 'text/xml; charset=UTF8';
-            } else {
-                $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
-            }
-
+            $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
             $this->config['headers']['Authorization'] = trim( 'Basic ' . $auth );
         }
 
@@ -322,23 +319,16 @@ abstract class AbstractHttpService {
 
     /**
      * @param string $uri
-     * @param string $data
+     * @param string $xml
      *
-     * @return string
+     * @return obj
      */
-    protected function postXml( string $uri = '', string $data = '' ) {
-        $client = $this->createClient( true, true );
+    protected function postXml( string $uri = '', string $xml = '' ) {
+        $this->config['headers']['Content-Type'] = 'text/xml; charset=UTF8';
+        $this->config['headers']['Accept'] = 'text/xml; charset=UTF8';
 
-        try {
-            $response = $client->post( $uri, ['body' => $data] );
+        $client = $this->createClient( false, true );
 
-            return $response->getBody();
-        } catch ( RequestException $e ) {
-            if ( $e->hasResponse() ) {
-                return $e->getResponse();
-            }
-        } catch ( \Exception $e ) {
-            return $e->getMessage();
-        }
+        return $client->post( $uri, array( 'body' => $xml ) );
     }
 }

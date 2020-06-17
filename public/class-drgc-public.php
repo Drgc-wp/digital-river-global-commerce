@@ -619,6 +619,49 @@ class DRGC_Public {
 		}
 	}
 
+	public function drgc_toggle_user_subscription() {
+		check_ajax_referer( 'drgc_ajax', 'nonce' );
+
+		if( isset( $_POST['sub_id'] ) && isset( $_POST['subscription'] ) ) {
+
+			$subscription = new DRGC_User_Management();
+
+			if ( 'disabled' == $_POST['subscription'] ) {
+				// $sub_toggle = $subscription->send_request(
+				// 	'CANCEL_SUBS',
+				// 	array(
+				// 		'id'			=> $_POST['sub_id'],
+				// 	)
+				// );
+				$sub_toggle = $subscription->send_request(
+					'SWITCH_RENEWAL_TYPE',
+					array(
+						'id'			=> $_POST['sub_id'],
+						'renewal_type'	=> 'Manual',
+					)
+				);
+			} else if ( 'enabled' == $_POST['subscription'] ) {
+				$sub_toggle = $subscription->send_request(
+					'SWITCH_RENEWAL_TYPE',
+					array(
+						'id'			=> $_POST['sub_id'],
+						'renewal_type'	=> 'Auto',
+					)
+				);
+			}
+
+			if ( 200 == $sub_toggle->getStatusCode()) {
+				wp_send_json_success( array(
+					'message'	=> 'Subscription was successfully ' . $_POST['subscription'],
+				) );
+			}
+		}
+
+		wp_send_json_error( array(
+			'message'	=> 'Something went wrong!',
+		) );
+	}
+
 	/**
 	 * Switch auto renewal type AJAX
 	 *
