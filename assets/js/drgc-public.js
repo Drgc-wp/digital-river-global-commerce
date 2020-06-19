@@ -1367,7 +1367,7 @@ var CheckoutUtils = function ($, params) {
   };
 
   var setShippingOption = function setShippingOption(option, freeShipping) {
-    var html = "\n      <div class=\"field-radio\">\n        <input type=\"radio\"\n          name=\"selector\"\n          id=\"shipping-option-".concat(option.id, "\"\n          data-cost=\"").concat(option.formattedCost, "\"\n          data-id=\"").concat(option.id, "\"\n          data-desc=\"").concat(option.description, "\"\n        >\n        <label for=\"shipping-option-").concat(option.id, "\">\n          <span>").concat(option.description, "</span>\n          <span class=\"black\">").concat(freeShipping ? drgc_params.translations.free_label : option.formattedCost, "</span>\n        </label>\n      </div>\n    ");
+    var html = "\n      <div class=\"field-radio\">\n        <input type=\"radio\"\n          name=\"selector\"\n          id=\"shipping-option-".concat(option.id, "\"\n          data-cost=\"").concat(option.formattedCost, "\"\n          data-id=\"").concat(option.id, "\"\n          data-desc=\"").concat(option.description, "\"\n        >\n        <label for=\"shipping-option-").concat(option.id, "\">\n          <span>").concat(option.description, "</span>\n          <span class=\"black\">").concat(freeShipping ? localizedText.free_label : option.formattedCost, "</span>\n        </label>\n      </div>\n    ");
     $('#checkout-delivery-form .dr-panel-edit__el').append(html);
   };
 

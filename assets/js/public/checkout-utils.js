@@ -218,7 +218,7 @@ const CheckoutUtils = (($, params) => {
         >
         <label for="shipping-option-${option.id}">
           <span>${option.description}</span>
-          <span class="black">${freeShipping ? drgc_params.translations.free_label : option.formattedCost}</span>
+          <span class="black">${freeShipping ? localizedText.free_label : option.formattedCost}</span>
         </label>
       </div>
     `;
