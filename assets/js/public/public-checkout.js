@@ -171,19 +171,7 @@ const CheckoutModule = (($) => {
 
     const displayAddressErrMsg = (jqXHR = {}, $target) => {
         if (Object.keys(jqXHR).length) {
-            if (jqXHR.status === 409) {
-                const errorCode = jqXHR.responseJSON.errors.error[0].code;
-
-                if (errorCode === 'restricted-bill-to-country') {
-                    $target.text(localizedText.address_error_msg).show();
-                } else if (errorCode === 'restricted-ship-to-country') {
-                    $target.text(localizedText.address_error_msg).show();
-                } else {
-                    $target.text(localizedText.undefined_error_msg).show();
-                }
-            } else {
-                $target.text(jqXHR.responseJSON.errors.error[0].description).show();
-            }
+            $target.text(CheckoutUtils.getAjaxErrorMessage(jqXHR)).show();
         } else {
             $target.text(localizedText.shipping_options_error_msg).show();
         }
