@@ -52,6 +52,13 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
                 </a>
             </li>
             <li>
+                <a class="dr-list-group-item dr-list-group-item-action" id="list-payments-list" data-toggle="dr-list" href="#list-payments" role="tab" aria-controls="payments">
+                    <div class="side-nav-icon"><img src="/wp-content/plugins/digital-river-global-commerce/assets/images/payment.svg" alt="payments icon"></div>
+                    <span class="side-nav-label"><?php echo __( 'Payments', 'digital-river-global-commerce' ); ?></span>
+                    <span class="side-nav-chev">&#8250;</span>
+                </a>
+            </li>
+            <li>
                 <a class="dr-list-group-item dr-list-group-item-action" id="list-password-list" data-toggle="dr-list" href="#list-password" role="tab" aria-controls="password">
                     <div class="side-nav-icon"><img src="/wp-content/plugins/digital-river-global-commerce/assets/images/password-icon.svg" alt="password icon"></div>
                     <span class="side-nav-label"><?php echo __( 'Change Password', 'digital-river-global-commerce' ); ?></span>
@@ -80,7 +87,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
                     <?php echo __( 'You have no recorded orders.', 'digital-river-global-commerce' ); ?>
                 <?php endif; ?>
             </div>
-            
+
         </div>
 
         <div class="dr-tab-pane fade" id="list-subscriptions" role="tabpanel" aria-labelledby="list-subscriptions-list">
@@ -113,7 +120,23 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
             </div>
 
         </div>
+        <div class="dr-tab-pane fade" id="list-payments" role="tabpanel" aria-labelledby="list-payments-list">
+            <div class="dr-h4"><span class="back">&lsaquo;</span>My Payments<span class="back close">&times;</span></div>
 
+            <div class="overflowContainer">
+                <?php if ( $payments && count($payments) ) : ?>
+                    <div class="container-fluid">
+                        <div class="row payments">
+                            <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-payments.php'; ?>
+                        </div>
+                    </div>
+
+                <?php else: ?>
+                    <?php echo __( 'You have no saved payments.', 'digital-river-global-commerce' ); ?>
+                <?php endif; ?>
+            </div>
+
+        </div>
         <div class="dr-tab-pane fade" id="list-password" role="tabpanel" aria-labelledby="list-password-list">
             <div class="dr-h4"><span class="back">&lsaquo;</span>Change Password<span class="back close">&times;</span></div>
 
@@ -131,7 +154,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
 
 <?php else: ?>
 
-    <?php 
+    <?php
         //wp_safe_redirect( esc_url( drgc_get_page_link( 'login' ) ) );
         //exit();
     ?>

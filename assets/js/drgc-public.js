@@ -15189,12 +15189,104 @@ jquery_default()(function () {
       $this.attr('data-primary', 'Primary');
       saveAddress($this.find('form.dr-panel-edit'));
     }
+  }); // Payment
+
+  jquery_default()('#dr-account-page-wrapper .payment').on('click', function (e) {
+    var $this = jquery_default()(this);
+
+    if (jquery_default()(e.target).is('.payment-edit-btn')) {
+      $this.parent().addClass('expand');
+      setTimeout(function () {
+        $this.find('.payment-edit').slideDown(200, function () {
+          jquery_default()('html, body').animate({
+            scrollTop: $this.offset().top - 50
+          }, 200);
+        });
+      }, 200);
+    } else {
+      if ($this.attr('data-primary')) return;
+      jquery_default()('#dr-account-page-wrapper .payment').removeAttr('data-primary');
+      $this.attr('data-primary', 'Primary');
+      var $form = $this.find('form');
+      var payload = {
+        'isDefault': true,
+        'sourceId': $form.find('input[name="sourceId"]').val(),
+        'id': $form.find('input[name="id"]').val()
+      };
+      updateShopperPayment(payload);
+    }
+  });
+  jquery_default()('#dr-account-page-wrapper .payment').find('form.dr-panel-edit').on('submit', function (e) {
+    e.preventDefault();
+    var payload = {
+      'nickName': jquery_default()(this).find('input[name="nickName"]').val(),
+      'sourceId': jquery_default()(this).find('input[name="sourceId"]').val(),
+      'id': jquery_default()(this).find('input[name="id"]').val()
+    };
+    jquery_default()(this).find('input[type="submit"]').attr('disabled');
+    updateShopperPayment(payload);
+  });
+  jquery_default()('#paymentDeleteConfirm .dr-confirm-payment-off').on('click', function () {
+    var payment = $body.data('currentPayment');
+    deleteShopperPayment(payment.id);
+  });
+  jquery_default()('#dr-account-page-wrapper .payment').on('click', '.payment-delete-btn', function (e) {
+    e.preventDefault();
+    $body.data({
+      currentPayment: {
+        id: jquery_default()(this).closest('.payment').find('input[name="id"]').val()
+      }
+    });
+    $body.append(jquery_default()('#paymentDeleteConfirm'));
+    jquery_default()('#paymentDeleteConfirm').drModal({
+      backdrop: 'static',
+      keyboard: false
+    });
   });
 
   function fillAddress() {
     var $this = jquery_default()(this);
     var target = $this.attr('name');
     $this.closest('.address').find('.' + target).text($this.val());
+  }
+
+  function updateShopperPayment(payload) {
+    jquery_default.a.ajax({
+      type: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: "Bearer ".concat(drgc_params.accessToken)
+      },
+      data: JSON.stringify({
+        'paymentOption': payload
+      }),
+      url: 'https://' + drgc_params.domain + '/v1/shoppers/me/payment-options/',
+      success: function success() {
+        location.reload();
+      },
+      error: function error(jqXHR) {
+        console.error(jqXHR);
+        location.reload();
+      }
+    });
+  }
+
+  function deleteShopperPayment(id) {
+    jquery_default.a.ajax({
+      type: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: "Bearer ".concat(drgc_params.accessToken)
+      },
+      url: 'https://' + drgc_params.domain + '/v1/shoppers/me/payment-options/' + id,
+      success: function success() {
+        location.reload();
+      },
+      error: function error(jqXHR) {
+        console.error(jqXHR);
+        location.reload();
+      }
+    });
   }
 
   $addresses.find('input[name="firstName"], input[name="lastName"], input[name="companyName"], input[name="line1"], input[name="line2"], input[name="city"], select[name="countrySubdivision"], input[name="postalCode"], input[name="phoneNumber"]').on('change keyup', fillAddress);
