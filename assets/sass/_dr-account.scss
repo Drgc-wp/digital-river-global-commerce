@@ -2,7 +2,7 @@
     margin:30px 0;
     display:flex;
     align-items:self-start;
-    
+
     .dr-list-group {
         margin-top:20px;
 
@@ -169,7 +169,7 @@
 
         &-id {
             width:23%;
-        }        
+        }
         &-date {
             width:20%;
         }
@@ -200,7 +200,7 @@
                 display:none;
             }
 
-            &-id,  
+            &-id,
             &-date,
             &-amount,
             &-status {
@@ -231,7 +231,7 @@
                 display:none;
             }
 
-            &-id,  
+            &-id,
             &-date,
             &-amount,
             &-status {
@@ -375,7 +375,7 @@
         @include media-breakpoint-down(lg) {
             margin:0;
         }
-        
+
         .slider {
             background-color:$danger;
             bottom:0;
@@ -426,7 +426,7 @@
                 font-size:11px;
             }
         }
-        
+
     }
 
     // addresses
@@ -476,7 +476,7 @@
                     border:0;
                 }
             }
-            
+
 
             &[data-primary]::after,
             &:not([data-primary])::after {
@@ -550,6 +550,139 @@
             }
 
         }
+    }
+
+    // payments
+    .payments {
+      margin-top:15px;
+
+      .payment {
+          background-color:$gray-100;
+          height:100%;
+          padding:15px 45px 15px 15px;
+          margin:0;
+          font-size:14px;
+          position:relative;
+          border:1px solid $gray-200;
+          transform:border-color 200ms, background-color 200ms, padding 200ms;
+
+          &:hover {
+              cursor:pointer;
+              .payment-edit-btn,
+              .payment-delete-btn {
+                  opacity:1;
+                  pointer-events:auto;
+                  transform:translate(-50%, -50%);
+              }
+          }
+          @include media-breakpoint-down(md) {
+              .payment-edit-btn,
+              .payment-delete-btn {
+                  opacity:1;
+                  pointer-events:auto;
+                  transform:translate(-50%, -50%);
+              }
+          }
+
+
+          &-edit,
+          &-delete {
+              cursor:auto;
+
+              &-btn {
+                  opacity:0;
+                  pointer-events:none;
+                  position:absolute;
+                  top:50%;
+                  right:0;
+                  transform:translate(0, -50%);
+                  transition:transform 200ms, opacity 200ms;
+                  background:transparent url(../images/edit-icon.svg) center/contain no-repeat;
+                  height:28px;
+                  width:28px;
+                  border:0;
+              }
+          }
+
+          &-delete {
+              &-btn {
+                  top:80%;
+                  background:transparent url(../images/trash.svg) center/contain no-repeat;
+              }
+          }
+
+
+          &[data-primary]::after,
+          &:not([data-primary])::after {
+              position:absolute;
+              font-size:0.85em;
+              line-height:1;
+              padding:7px 12px;
+              background-color:$primary;
+              color:#fff;
+              top:0;
+              right:0;
+          }
+
+          &[data-primary] {
+              border-color:$primary;
+              transition:border-color 1000ms;
+              &::after {
+                  content:attr(data-primary);
+                  background-color:$primary;
+                  color:#fff;
+                  transition:background-color 1000ms, color 1000ms;
+              }
+          }
+
+          &:not([data-primary]) {
+              transition:border-color 200ms;
+              &::after {
+                  transition:background-color 200ms;
+              }
+              &:hover {
+                  border-color:$warning;
+                  &::after {
+                      content:'Make Primary';
+                      background-color:$warning;
+                      color:$gray-700;
+                  }
+              }
+          }
+
+          &-col {
+              margin:15px 0;
+              transition:max-width 200ms, flex-basis 200ms;
+              &.expand {
+                  flex:0 0 100%;
+                  max-width:100%;
+                  .payment {
+                      padding:15px;
+                      .payment-edit-btn,
+                      .payment-delete-btn {
+                          display:none;
+                      }
+                  }
+              }
+          }
+
+          &-name {
+              font-size:1.25em;
+              margin-bottom:15px;
+              font-weight:bold;
+          }
+
+          .nickName,
+          .line1,
+          .line2,
+          .city,
+          .countrySubdivision,
+          .postalCode,
+          .phoneNumber {
+              &:empty {display:none;}
+          }
+
+      }
     }
 
     &#dr-account-page-wrapper .dr-panel-edit {

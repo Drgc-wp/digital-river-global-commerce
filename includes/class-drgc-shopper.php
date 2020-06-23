@@ -269,7 +269,7 @@ class DRGC_Shopper extends AbstractHttpService {
 			$res = $this->get($url);
 
 			return $res;
-			
+
 		} catch (\Exception $e) {
 			return false;
 		}
@@ -297,11 +297,11 @@ class DRGC_Shopper extends AbstractHttpService {
 						$res['subscriptions']['subscription'][$key]['products']['product']['full'] = $this->get($res['subscriptions']['subscription'][$key]['products']['product']['uri']);
 					}
 				}
-				
+
 			}
 
 			return $res;
-			
+
 		} catch (\Exception $e) {
 			return false;
 		}
@@ -381,7 +381,7 @@ class DRGC_Shopper extends AbstractHttpService {
 	 * Retrieve all scriptions for the current authenticated shopper.
 	 *
 	 * @param array $params
-	 * 
+	 *
 	 * @return array|bool
 	 */
 	public function retrieve_subscriptions( $params = array() ) {
@@ -409,7 +409,7 @@ class DRGC_Shopper extends AbstractHttpService {
 	 * Retrieve the scription details by a subscription ID.
 	 *
 	 * @param array $params
-	 * 
+	 *
 	 * @return array|bool
 	 */
 	public function get_subscription_details( $params = array() ) {
@@ -439,10 +439,10 @@ class DRGC_Shopper extends AbstractHttpService {
 
 	/**
 	 * Retrieve a shopper order.
-	 * 
+	 *
 	 * @param string $order_id
 	 * @param array  $params
-	 * 
+	 *
 	 * @return array|bool
 	 */
 	public function retrieve_order( $order_id, $params = array() ) {
@@ -463,6 +463,63 @@ class DRGC_Shopper extends AbstractHttpService {
 			return $res['order'];
 		} catch (\Exception $e) {
 			return false;
+		}
+  }
+
+	public function retrieve_shopper_payments( $params = array() ) {
+		$default = array(
+			'expand'            => 'all'
+		);
+
+		$params = array_merge(
+			$default,
+			array_intersect_key( $params, $default )
+		);
+
+		$url = "/v1/shoppers/me/payment-options?".http_build_query( $params );
+		try {
+			$res = $this->get($url);
+
+			if ( isset($res['paymentOptions']['paymentOption']) && !empty($res['paymentOptions']['paymentOption']) ) {
+				return $res['paymentOptions']['paymentOption'];
+			} else {
+				return false;
+			}
+
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+	public function delete_shopper_payments( $id ) {
+
+		$url = "/v1/shoppers/me/payment-options/".$id;
+		try {
+			$res = $this->delete($url);
+
+			return $res;
+
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+	public function update_shopper_payments( $payLoad = array() ) {
+
+		$jsonData = array('paymentOption' => $payLoad );
+
+		$this->setJsonContentType();
+
+		try {
+			$res = $this->post( "/v1/shoppers/me/payment-options", $jsonData );
+
+			if ( isset( $res['errors']['error'] ) ) {
+				return $res;
+			}
+
+			return $res;
+		} catch (\Exception $e) {
+			return $e->getMessage();
 		}
 	}
 }

@@ -29,14 +29,15 @@ class DR_Shortcode_Account {
 		$customer = DRGC()->shopper->retrieve_shopper();
 		$customer_address = DRGC()->shopper->retrieve_shopper_address();
 		$orders = DRGC()->shopper->retrieve_shopper_orders();
-		$subscriptions = DRGC()->shopper->retrieve_shopper_subscriptions();
+    $subscriptions = DRGC()->shopper->retrieve_shopper_subscriptions();
+    $payments = DRGC()->shopper->retrieve_shopper_payments();
 		$locales = get_option( 'drgc_store_locales' );
 		$usa_states = retrieve_usa_states();
-		
+
 
 		drgc_get_template(
 			'account/account.php',
-			compact( 'cart', 'customer', 'customer_address', 'usa_states', 'orders', 'subscriptions', 'locales')
+      compact( 'cart', 'customer', 'customer_address', 'usa_states', 'orders', 'subscriptions', 'payments', 'locales')
 		);
 	}
 }
