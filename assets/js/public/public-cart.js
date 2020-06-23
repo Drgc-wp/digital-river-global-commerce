@@ -29,6 +29,21 @@ const CartModule = (($) => {
         $checkoutBtn.prop('href', '#dr-autoRenewTermsContainer');
         sessionStorage.setItem('isTermsChecked', 'false');
       }
+
+      const cartPayload = {
+        cart: {
+          customAttributes: {
+            attribute: [
+              {
+                name: "autoRenewOptedInOnCheckout",
+                value: sessionStorage.getItem('isTermsChecked')
+              }
+            ]
+          }
+        }
+      };
+
+      DRCommerceApi.updateCart({}, cartPayload).catch(jqXHR => CheckoutUtils.apiErrorHandler(jqXHR));
     });
 
     $checkoutBtn.click((e) => {

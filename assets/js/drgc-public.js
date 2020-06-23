@@ -12381,6 +12381,20 @@ var CartModule = function ($) {
         $checkoutBtn.prop('href', '#dr-autoRenewTermsContainer');
         sessionStorage.setItem('isTermsChecked', 'false');
       }
+
+      var cartPayload = {
+        cart: {
+          customAttributes: {
+            attribute: [{
+              name: "autoRenewOptedInOnCheckout",
+              value: sessionStorage.getItem('isTermsChecked')
+            }]
+          }
+        }
+      };
+      commerce_api.updateCart({}, cartPayload)["catch"](function (jqXHR) {
+        return checkout_utils.apiErrorHandler(jqXHR);
+      });
     });
     $checkoutBtn.click(function (e) {
       if (!$termsCheckbox.is(':checked')) {
