@@ -99,7 +99,7 @@ const CartModule = (($) => {
       });
   };
 
-  const renderOffers = (lineItems, declinedProductIds) => {
+  const renderOffers = (lineItems) => {
     lineItems.forEach((lineItem, idx) => {
       // Candy Rack (should be inserted after specific line item)
       DRCommerceApi.getOffersByPoP('CandyRack_ShoppingCart', { expand: 'all' }, lineItem.product.id)
@@ -107,7 +107,7 @@ const CartModule = (($) => {
           const offers = res.offers.offer;
           if (offers && offers.length) {
             offers.forEach((offer) => {
-              renderCandyRackOffer(offer, lineItems[idx].product.id, declinedProductIds);
+              renderCandyRackOffer(offer, lineItems[idx].product.id);
             });
           }
         })
@@ -139,10 +139,12 @@ const CartModule = (($) => {
       .catch(jqXHR => CheckoutUtils.apiErrorHandler(jqXHR));
   };
 
-  const renderCandyRackOffer = (offer, driverProductID, declinedProductIds) => {
+  const renderCandyRackOffer = (offer, driverProductID) => {
     const offerType = offer.type;
     const productOffers = offer.productOffers.productOffer;
     const promoText = offer.salesPitch.length ? offer.salesPitch[0] : '';
+    const declinedProductIds = (typeof $.cookie('drgc_upsell_decline') === 'undefined') ? '' : $.cookie('drgc_upsell_decline');
+    const upsellDeclineArr = declinedProductIds ? declinedProductIds.split(',') : [];
 
     if (productOffers && productOffers.length) {
       productOffers.forEach((productOffer) => {
@@ -155,7 +157,7 @@ const CartModule = (($) => {
         const productSalesPitch = productOffer.salesPitch || '';
         const shortDiscription = productOffer.product.shortDiscription || '';
 
-        if ((offerType === 'Up-sell') && (declinedProductIds.indexOf(driverProductID) === -1)) {
+        if ((offerType === 'Up-sell') && (upsellDeclineArr.indexOf(driverProductID.toString()) === -1)) {
           const declineText = localizedText.upsell_decline_label;
           const upsellProductHtml = `
             <div class="modal dr-upsellProduct-modal" data-product-id="${productOffer.product.id}" data-parent-product-id="${driverProductID}">
@@ -167,7 +169,7 @@ const CartModule = (($) => {
                       <div class="dr-offer-header">${promoText}</div>
                       <div class="dr-offer-content">${productSalesPitch}</div>
                       <button type="button" class="dr-btn dr-buy-candyRack dr-buy-${buyBtnText}" data-buy-uri="${productOffer.addProductToCart.uri}">${buyBtnText}</button>
-                      <button type="button" class="dr-btn dr-nothanks dr-modal-decline" data-parent-product-id="${driverProductID}">${declineText}</button>
+                      <button type="button" class="dr-nothanks dr-modal-decline" data-parent-product-id="${driverProductID}">${declineText}</button>
                     </div>
                   </div>
                   <div class="dr-product__price">
@@ -176,8 +178,6 @@ const CartModule = (($) => {
                     <div class="product-short-desc">${shortDiscription}</div>
                     <span class="sale-price">${salePrice}</span>
                     <span class="regular-price dr-strike-price ${salePrice === listPrice ? 'd-none' : ''}">${listPrice}</span>
-                    <button type="button" class="dr-btn dr-buy-candyRack dr-buy-${buyBtnText}" data-buy-uri="${productOffer.addProductToCart.uri}">${buyBtnText}</button>
-                    <button type="button" class="dr-btn dr-nothanks dr-modal-decline" data-parent-product-id="${driverProductID}">${declineText}</button>
                   </div>
                 </div>
               </div>
@@ -251,13 +251,11 @@ const CartModule = (($) => {
     $lineItem.find('.dr-pd-cart-qty-plus').toggleClass('disabled', qty >= max);
   };
 
-  const renderLineItems = async (lineItems, declinedProductIds) => {
+  const renderLineItems = async (lineItems) => {
     const min = 1;
     const max = 999;
     const promises = [];
     const lineItemHTMLArr = [];
-    const upsellDeclineArr = declinedProductIds ? declinedProductIds.split(',') : [];
-    const updatedDeclineArr = [];
     let hasAutoRenewal = false;
 
     lineItems.forEach((lineItem, idx) => {
@@ -293,10 +291,6 @@ const CartModule = (($) => {
       });
       promises.push(promise);
 
-      if ((upsellDeclineArr.indexOf(parentProductID) !== -1) && (updatedDeclineArr.indexOf(parentProductID) === -1)) {
-        updatedDeclineArr.push(parentProductID);
-      }
-
       for (const attr of lineItem.product.customAttributes.attribute) {
         if ((attr.name === 'isAutomatic') && (attr.value === 'true')) {
           hasAutoRenewal = true;
@@ -305,7 +299,6 @@ const CartModule = (($) => {
       }
     });
 
-    if (updatedDeclineArr.length) $.cookie('drgc_upsell_decline', updatedDeclineArr.join(','));
     if (!hasAutoRenewal) $('.dr-cart__auto-renewal-terms').remove();
 
     return Promise.all(promises).then(() => {
@@ -354,7 +347,7 @@ const CartModule = (($) => {
     return new Promise(resolve => resolve());
   };
 
-  const fetchFreshCart = (declinedProductIds = '') => {
+  const fetchFreshCart = () => {
     let lineItems = [];
 
     $('.dr-cart__content').addClass('dr-loading');
@@ -365,11 +358,11 @@ const CartModule = (($) => {
         if (lineItems && lineItems.length) {
           hasPhysicalProduct = hasPhysicalProductInLineItems(lineItems);
           return Promise.all([
-            renderLineItems(lineItems, declinedProductIds),
+            renderLineItems(lineItems),
             renderSummary(res.cart.pricing, hasPhysicalProduct)
           ]);
         } else {
-          if (declinedProductIds) $.removeCookie('drgc_upsell_decline');
+          if (typeof $.cookie('drgc_upsell_decline') !== 'undefined') $.removeCookie('drgc_upsell_decline', {path: '/'});
           $('.dr-cart__auto-renewal-terms').remove();
           $('.dr-cart__products').text(localizedText.empty_cart_msg);
           $('#cart-estimate').remove();
@@ -377,13 +370,27 @@ const CartModule = (($) => {
         }
       })
       .then(() => {
-        if (lineItems && lineItems.length) renderOffers(lineItems, declinedProductIds);
+        if (lineItems && lineItems.length) renderOffers(lineItems);
         $('.dr-cart__content').removeClass('dr-loading'); // Main cart is ready, loading can be ended
       })
       .catch((jqXHR) => {
         CheckoutUtils.apiErrorHandler(jqXHR);
         $('.dr-cart__content').removeClass('dr-loading');
       });
+  };
+
+  const updateUpsellCookie = (id, isDeclined = false) => {
+    const productId = id.toString();
+    const declinedProductIds = (typeof $.cookie('drgc_upsell_decline') === 'undefined') ? '' : $.cookie('drgc_upsell_decline');
+    let upsellDeclineArr = declinedProductIds ? declinedProductIds.split(',') : [];
+
+    if ((upsellDeclineArr.indexOf(productId) === -1) && isDeclined) {
+      upsellDeclineArr.push(productId);
+    } else {
+      upsellDeclineArr = upsellDeclineArr.filter(item => item !== productId);
+    }
+
+    $.cookie('drgc_upsell_decline', upsellDeclineArr.join(','), {path: '/'});
   };
 
   return {
@@ -400,14 +407,14 @@ const CartModule = (($) => {
     renderLineItems,
     getCorrectSubtotalWithDiscount,
     renderSummary,
-    fetchFreshCart
+    fetchFreshCart,
+    updateUpsellCookie
   };
 })(jQuery);
 
 jQuery(document).ready(($) => {
   const drLocale = drgc_params.drLocale || 'en_US';
   const localizedText = drgc_params.translations;
-  const declinedProductIds = (typeof $.cookie('drgc_upsell_decline') === 'undefined') ? '' : $.cookie('drgc_upsell_decline');
   // Very basic throttle function, avoid too many calls within a short period
   const throttle = (func, limit) => {
     let inThrottle;
@@ -431,12 +438,15 @@ jQuery(document).ready(($) => {
     const $this = $(e.target);
     const $lineItem = $this.closest('.dr-product');
     const lineItemID = $lineItem.data('line-item-id');
+    const productId = $lineItem.data('product-id');
+
+    CartModule.updateUpsellCookie(productId, false);
 
     $('.dr-cart__content').addClass('dr-loading');
     DRCommerceApi.removeLineItem(lineItemID)
       .then(() => {
         $lineItem.remove();
-        CartModule.fetchFreshCart(declinedProductIds);
+        CartModule.fetchFreshCart();
       })
       .catch((jqXHR) => {
         CheckoutUtils.apiErrorHandler(jqXHR);
@@ -447,12 +457,10 @@ jQuery(document).ready(($) => {
   $('body').on('click', '.dr-modal-decline', (e) => {
     e.preventDefault();
     const $this = $(e.target);
-    const pid = $this.attr('data-parent-product-id');
-    const upsellDeclineArr = declinedProductIds ? declinedProductIds.split(',') : [];
-
-    upsellDeclineArr.push(pid);
-    $.cookie('drgc_upsell_decline', upsellDeclineArr.join(','));
-    $('.dr-upsellProduct-modal[data-parent-product-id="' + pid + '"]').remove();
+    const productId = $this.data('parent-product-id');
+   
+    CartModule.updateUpsellCookie(productId, true);
+    $('.dr-upsellProduct-modal[data-parent-product-id="' + productId + '"]').remove();
     $('body').removeClass('modal-open').removeClass('drgc-wrapper');
   });
 
@@ -467,7 +475,7 @@ jQuery(document).ready(($) => {
 
     $('.dr-cart__content').addClass('dr-loading');
     DRCommerceApi.postByUrl(`${buyUri}&testOrder=${drgc_params.testOrder}`)
-      .then(() => CartModule.fetchFreshCart(declinedProductIds))
+      .then(() => CartModule.fetchFreshCart())
       .catch((jqXHR) => {
         CheckoutUtils.apiErrorHandler(jqXHR);
         $('.dr-cart__content').removeClass('dr-loading');
@@ -533,7 +541,7 @@ jQuery(document).ready(($) => {
   });
 
   if ($('#dr-cart-page-wrapper').length) {
-    CartModule.fetchFreshCart(declinedProductIds);
+    CartModule.fetchFreshCart();
 
     const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
       'locale': drLocale.split('_').join('-')
