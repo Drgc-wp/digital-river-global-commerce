@@ -22,7 +22,7 @@ $(() => {
 
         if (orderID === drActiveOrderId) {
             $ordersModal.drModal('show');
-        } else { 
+        } else {
             // orderID
             $('.dr-modal-orderNumber').text(orderID);
             // Order Pricing
@@ -95,7 +95,7 @@ $(() => {
                 </div>
             </div>`;
             }
-            
+
             $('.dr-summary__products').html(html);
 
             // set this last
@@ -137,7 +137,7 @@ $(() => {
             //console.log('address edit btn');
 
             $this.parent().addClass('expand');
-            setTimeout(function(){ 
+            setTimeout(function(){
                 $this.find('.address-edit').slideDown(200, function() {
                     $('html, body').animate({
                         scrollTop: $this.offset().top - 50
@@ -147,20 +147,122 @@ $(() => {
         } else if ($(e.target).closest('.address-edit').length) {
 
             return; // handled by form submit callback
-            
+
         } else {
             if ($this.attr('data-primary')) return;
             $addresses.removeAttr('data-primary');
             $this.attr('data-primary', 'Primary');
             saveAddress($this.find('form.dr-panel-edit'));
         }
-    }); 
+    });
+
+    // Payment
+    $('#dr-account-page-wrapper .payment').on('click', function(e) {
+      var $this = $(this);
+      if ($(e.target).is('.payment-edit-btn')) {
+          $this.parent().addClass('expand');
+          setTimeout(function(){
+              $this.find('.payment-edit').slideDown(200, function() {
+                  $('html, body').animate({
+                      scrollTop: $this.offset().top - 50
+                  }, 200);
+              });
+          }, 200);
+      } else {
+          if ($this.attr('data-primary')) return;
+          $('#dr-account-page-wrapper .payment').removeAttr('data-primary');
+          $this.attr('data-primary', 'Primary');
+          let $form = $this.find('form');
+          let payload = {
+              'isDefault': true,
+              'sourceId': $form.find('input[name="sourceId"]').val(),
+              'id'      : $form.find('input[name="id"]').val(),
+          };
+
+          updateShopperPayment(payload);
+      }
+    });
+
+    $('#dr-account-page-wrapper .payment').find('form.dr-panel-edit').on('submit', function(e) {
+      e.preventDefault();
+
+      let payload = {
+          'nickName': $(this).find('input[name="nickName"]').val(),
+          'sourceId': $(this).find('input[name="sourceId"]').val(),
+          'id'      : $(this).find('input[name="id"]').val(),
+      };
+
+      $(this).find('input[type="submit"]').attr('disabled');
+      updateShopperPayment(payload);
+    });
+
+    $('#paymentDeleteConfirm .dr-confirm-payment-off').on('click', function() {
+      var payment = $body.data('currentPayment');
+      deleteShopperPayment(payment.id);
+    });
+
+    $('#dr-account-page-wrapper .payment').on('click', '.payment-delete-btn', function(e) {
+      e.preventDefault();
+
+      $body.data({
+          currentPayment: {
+              id: $(this).closest('.payment').find('input[name="id"]').val()
+          }
+      });
+
+      $body.append($('#paymentDeleteConfirm'));
+      $('#paymentDeleteConfirm').drModal({
+          backdrop:'static',
+          keyboard:false
+      });
+    });
+
+
 
     function fillAddress() {
         var $this = $(this);
         var target = $this.attr('name');
         $this.closest('.address').find('.' + target).text( $this.val() );
     }
+
+    function updateShopperPayment(payload) {
+
+      $.ajax({
+          type: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${drgc_params.accessToken}`
+          },
+          data: JSON.stringify({'paymentOption': payload}),
+          url: 'https://' + drgc_params.domain + '/v1/shoppers/me/payment-options/',
+          success: () => {
+              location.reload();
+          },
+          error: (jqXHR) => {
+              console.error(jqXHR);
+              location.reload();
+          }
+      });
+    }
+
+    function deleteShopperPayment(id) {
+      $.ajax({
+          type: 'DELETE',
+          headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${drgc_params.accessToken}`
+          },
+          url: 'https://' + drgc_params.domain + '/v1/shoppers/me/payment-options/' + id,
+          success: () => {
+              location.reload();
+          },
+          error: (jqXHR) => {
+              console.error(jqXHR);
+              location.reload();
+          }
+      });
+    }
+
 
     $addresses.find('input[name="firstName"], input[name="lastName"], input[name="companyName"], input[name="line1"], input[name="line2"], input[name="city"], select[name="countrySubdivision"], input[name="postalCode"], input[name="phoneNumber"]').on('change keyup', fillAddress);
 
@@ -202,7 +304,7 @@ $(() => {
                 $selector.closest('.address-edit').slideUp(200, function(){
                     if ($selector.closest('.expand').length < 1) return;
                     $selector.closest('.expand').removeClass('expand');
-                    setTimeout(function(){ 
+                    setTimeout(function(){
                         $('html, body').animate({
                             scrollTop: $selector.closest('.address').offset().top - 50
                         }, 200);
@@ -232,7 +334,7 @@ $(() => {
     var $subscriptionConfirmAccept = $subscriptionConfirm.find('.dr-confirm-ar-off');
     var $subscriptionConfirmCancel = $subscriptionConfirm.find('.dr-confirm-cancel');
 
-    
+
     function updateSubscription(data = {}, $toggle) {
         $.post(drgc_params.ajaxUrl, data, function(response) {
             if(response.success) {
@@ -243,7 +345,7 @@ $(() => {
                     var renewalText = (data.subscription === 'enabled') ? $renewalDate.attr('data-on') : $renewalDate.attr('data-off');
                     $renewalDate.find('strong').text(renewalText);
                 }
-                
+
             } else {
                 $subscriptionError.drModal('show');
                 $toggle.prop('checked', !(data.subscription === 'enabled'));
@@ -299,7 +401,7 @@ $(() => {
         toggle.selector.prop('checked', !(toggle.ar === 'enabled'));
     });
 
-    
+
     $body.append($subscriptionError).append($subscriptionConfirm);
 
     // mobile back button

@@ -24,14 +24,14 @@ abstract class AbstractHttpService {
 
     /**
      * Token type
-     * 
+     *
      * @var string
      */
     public $tokenType = 'Bearer';
 
     /**
      * Default configuration
-     * 
+     *
      * @var array
      */
     protected $config = array(
@@ -47,14 +47,14 @@ abstract class AbstractHttpService {
 
     /**
      * Most recent status
-     * 
+     *
      * @var string
      */
     protected $status = '';
 
     /**
      * Env
-     * 
+     *
      * @var string
      */
     public $env;
@@ -82,7 +82,7 @@ abstract class AbstractHttpService {
 
     /**
      * Validate status code
-     * 
+     *
      * @param \Psr\Http\Message\ResponseInterface $response
      */
     private function validateStatusCode( ResponseInterface $response ) {
@@ -96,7 +96,7 @@ abstract class AbstractHttpService {
 
     /**
      * Get response data from the body
-     * 
+     *
      * @param \Psr\Http\Message\ResponseInterface $response
      *
      * @return array
@@ -108,7 +108,7 @@ abstract class AbstractHttpService {
 
     /**
      * Prepare params for "form-urlencoded" content type
-     * 
+     *
      * @param array $requestParams
      *
      * @return array
@@ -119,10 +119,10 @@ abstract class AbstractHttpService {
 
     /**
      * Initialize new client
-     * 
+     *
      * @param boolean $force_basic_auth
      * @param boolean $is_user_management
-     * 
+     *
      * @return \GuzzleHttp\Client
      */
     private function createClient( $force_basic_auth = false, $force_blue_auth = false ): Client {
@@ -138,10 +138,10 @@ abstract class AbstractHttpService {
 
         return new Client($this->config);
     }
-    
+
     /**
      * Set current response status
-     * 
+     *
      * @param string $status
      */
     private function setStatus( string $status ) {
@@ -150,7 +150,7 @@ abstract class AbstractHttpService {
 
     /**
      * Get most recent response status
-     * 
+     *
      * @return string
      */
     public function getStatus(): string {
@@ -159,7 +159,7 @@ abstract class AbstractHttpService {
 
     /**
      * Get the domain uri
-     * 
+     *
      * @return string
      */
     protected function normalizeUri($uri): string {
@@ -215,12 +215,12 @@ abstract class AbstractHttpService {
 
     /**
      * Get the URL for the sessionToken site action
-     * 
+     *
      * @return string
      */
     protected function authUrl(): string {
         $gc_domain = ( ( $this->env === 'test' ) ? 'drhadmin-sys-drx.drextenv.net' : 'store.digitalriver.com' );
-        
+
         return "https://{$gc_domain}/store/{$this->site_id}/SessionToken";
     }
 
@@ -243,7 +243,7 @@ abstract class AbstractHttpService {
 
         $client = new Client( $config );
         $response = $client->get( $url, $data );
-        
+
         $this->validateStatusCode( $response );
 
         return $this->getResponseData( $response );
@@ -260,7 +260,7 @@ abstract class AbstractHttpService {
         $client = $this->createClient( $force_basic_auth );
         $uri = $this->normalizeUri($uri);
         $response = $client->get( $uri, $data );
-        
+
         $this->validateStatusCode( $response );
 
         return $this->getResponseData( $response );
@@ -313,9 +313,31 @@ abstract class AbstractHttpService {
         $uri = $this->normalizeUri($uri);
 
         $response = $client->post( $uri, $data );
-        
+
         return $this->getResponseData( $response );
     }
+
+    /**
+     * @param string $uri
+     * @param array  $data
+     *
+     * @return array
+     */
+    protected function delete( string $uri = '', array $data = array() ) {
+      if ( $this->config['headers']['Content-Type'] === 'application/json' ) {
+          $data = array( GuzzleHttp\RequestOptions::JSON => $data );
+      }
+
+      $client = $this->createClient();
+
+      $uri = $this->normalizeUri($uri);
+
+      $response = $client->delete( $uri, $data );
+
+      return $this->getResponseData( $response );
+    }
+
+
 
     /**
      * @param string $uri
