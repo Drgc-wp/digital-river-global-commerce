@@ -110,7 +110,7 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
 
                     <label for="billing-field-company-vat" class="float-label">
 
-                        <?php echo __( 'Company VAT' ); ?>
+                        <?php echo __( 'Company EIN' ); ?>
 
                     </label>
 

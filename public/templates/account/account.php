@@ -39,8 +39,8 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
             </li>
             <li>
                 <a class="dr-list-group-item dr-list-group-item-action" id="list-subscriptions-list" data-toggle="dr-list" href="#list-subscriptions" role="tab" aria-controls="subscriptions">
-                    <div class="side-nav-icon"><img src="<?php echo DRGC_PLUGIN_URL . 'assets/images/subscription-icon.svg' ?>" alt="subsciptions icon"></div>
-                    <span class="side-nav-label"><?php echo __( 'Subsciptions', 'digital-river-global-commerce' ); ?></span>
+                    <div class="side-nav-icon"><img src="<?php echo DRGC_PLUGIN_URL . 'assets/images/subscription-icon.svg' ?>" alt="subscriptions icon"></div>
+                    <span class="side-nav-label"><?php echo __( 'Subscriptions', 'digital-river-global-commerce' ); ?></span>
                     <span class="side-nav-chev">&#8250;</span>
                 </a>
             </li>
