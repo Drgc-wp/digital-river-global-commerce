@@ -539,7 +539,18 @@ class DRGC_Public {
 		$items[] = (object) $new_item;
 
 		if ( $is_logged_in ) {
-			$new_sub_item = array(
+			$new_sub_item_account = array(
+				'title'            => __( 'My Account', 'digital-river-global-commerce' ),
+				'menu_item_parent' => 'login',
+				'ID'               => 'account',
+				'db_id'            => 'account',
+				'url'              => get_site_url() . '/account',
+				'classes'          => array( 'menu-item' ),
+				'target'           => null,
+				'xfn'              => null,
+				'current'          => null // for preventing warning in debug mode
+			);
+			$new_sub_item_logout = array(
 				'title'            => __( 'Logout', 'digital-river-global-commerce' ),
 				'menu_item_parent' => 'login',
 				'ID'               => 'logout',
@@ -550,7 +561,8 @@ class DRGC_Public {
 				'xfn'              => null,
 				'current'          => null // for preventing warning in debug mode
 			);
-			$items[] = (object) $new_sub_item;
+			$items[] = (object) $new_sub_item_account;
+			$items[] = (object) $new_sub_item_logout;
 		}
 
 		return $items;

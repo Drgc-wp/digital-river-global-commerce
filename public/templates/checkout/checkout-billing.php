@@ -1,4 +1,5 @@
 <?php
+$current_locale = DRGC()->shopper->get_locale();
 $companyVat = '';
 $billingAddress = $cart['cart']['billingAddress'];
 // var_dump($cart['cart']);
@@ -71,6 +72,8 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
         </div>
 
         <div class="billing-section" <?php echo !$cart['cart']['hasPhysicalProduct'] ? 'style="display: block;"' : '' ?>>
+
+          <?php if ( 'en_US' === $current_locale ) : ?>
           <div class="form-group dr-panel-edit__el">
 
               <div class="field-checkbox">
@@ -86,7 +89,7 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
               </div>
 
           </div>
-            <div class="form-group dr-panel-edit__el form-group-business<?php echo !$billingAddress['companyName'] ? ' hide' : '' ?>">
+          <div class="form-group dr-panel-edit__el form-group-business<?php echo !$billingAddress['companyName'] ? ' hide' : '' ?>">
 
                 <div class="float-container float-container--company-name">
 
@@ -116,6 +119,8 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
                 </div>
 
             </div>
+            <?php endif; ?>
+
             <div class="form-group dr-panel-edit__el">
 
                 <div class="float-container float-container--first-name">
