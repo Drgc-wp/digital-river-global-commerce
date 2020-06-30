@@ -5,7 +5,7 @@
  * Used on the account page, the account shortcode displays the account contents and other relevant pieces.
  *
  * @link       https://www.digitalriver.com
- * @since      1.0.0
+ * @since      1.3.0
  *
  * @package    Digital_River_Global_Commerce
  * @subpackage Digital_River_Global_Commerce/includes/shortcodes
@@ -18,26 +18,26 @@ defined( 'ABSPATH' ) || exit;
  */
 class DR_Shortcode_Account {
 
-	/**
-	 * Output the account shortcode.
-	 *
-     * @since    1.0.0
-     * @access   public
-	 * @param array $atts Shortcode attributes.
-	 */
-	public static function output( $atts ) {
-		$customer = DRGC()->shopper->retrieve_shopper();
-		$customer_address = DRGC()->shopper->retrieve_shopper_address();
-		$orders = DRGC()->shopper->retrieve_shopper_orders();
-    $subscriptions = DRGC()->shopper->retrieve_shopper_subscriptions();
+  /**
+   * Output the account shortcode.
+   *
+   * @since    1.3.0
+   * @access   public
+   * @param array $atts Shortcode attributes.
+   */
+  public static function output( $atts ) {
+    $customer = DRGC()->shopper->retrieve_shopper();
+    $customer_address = DRGC()->shopper->retrieve_shopper_address();
+    $orders = DRGC()->shopper->retrieve_orders();
+    $subscriptions = DRGC()->shopper->retrieve_subscriptions();
     $payments = DRGC()->shopper->retrieve_shopper_payments();
-		$locales = get_option( 'drgc_store_locales' );
-		$usa_states = retrieve_usa_states();
+    $locales = get_option( 'drgc_store_locales' );
+    $usa_states = retrieve_usa_states();
 
 
-		drgc_get_template(
-			'account/account.php',
+    drgc_get_template(
+      'account/account.php',
       compact( 'cart', 'customer', 'customer_address', 'usa_states', 'orders', 'subscriptions', 'payments', 'locales')
-		);
-	}
+    );
+  }
 }

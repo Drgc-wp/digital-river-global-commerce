@@ -14,6 +14,8 @@
 
 $first_name = isset($customer['firstName']) ? $customer['firstName'] : '' ;
 $last_name = isset($customer['lastName']) ? $customer['lastName'] : '';
+$subs_count = is_array( $subscriptions['subscriptions']['subscription'] ) ? count( $subscriptions['subscriptions']['subscription'] ) : 0;
+$addr_count = is_array( $customer_address ) ? count( $customer_address ) : 0;
 
 if($first_name !== '' && $last_name !== '') {
     $full_name = $first_name . ' ' . $last_name;
@@ -94,7 +96,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
             <div class="dr-h4"><span class="back">&lsaquo;</span>My Subscriptions<span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
-                <?php if ( count($subscriptions['subscriptions']['subscription']) ) : ?>
+                <?php if ( $subs_count ) : ?>
                     <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-subscriptions.php'; ?>
                 <?php else: ?>
                     <?php echo __( 'You have no subscription products.', 'digital-river-global-commerce' ); ?>
@@ -107,7 +109,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
             <div class="dr-h4"><span class="back">&lsaquo;</span>My Addresses<span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
-                <?php if ( count($customer_address) ) : ?>
+                <?php if ( $addr_count ) : ?>
                     <div class="container-fluid">
                         <div class="row addresses">
                             <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-addresses.php'; ?>

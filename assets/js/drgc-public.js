@@ -11903,6 +11903,20 @@ var CheckoutUtils = function ($, params) {
     return cartRequest;
   };
 
+  var isSubsAddedToCart = function isSubsAddedToCart(lineItems) {
+    if (!lineItems.length) return false;
+
+    for (var i = 0; i < lineItems.length; i++) {
+      var lineItem = lineItems[i];
+      var customAttributes = lineItem.product.customAttributes.attribute || [];
+      if (customAttributes.some(function (attr) {
+        return attr.name === 'subscriptionType';
+      })) return true;
+    }
+
+    return false;
+  };
+
   return {
     createDisplayItems: createDisplayItems,
     createShippingOptions: createShippingOptions,
@@ -11923,7 +11937,8 @@ var CheckoutUtils = function ($, params) {
     getAjaxErrorMessage: getAjaxErrorMessage,
     setShippingOption: setShippingOption,
     getSupportedCountries: getSupportedCountries,
-    createCartRequest: createCartRequest
+    createCartRequest: createCartRequest,
+    isSubsAddedToCart: isSubsAddedToCart
   };
 }(jQuery, drgc_params);
 
@@ -12658,7 +12673,15 @@ var CartModule = function ($) {
         });
       }
     }).then(function () {
-      if (lineItems && lineItems.length) renderOffers(lineItems, declinedProductIds);
+      if (lineItems && lineItems.length) {
+        if (drgc_params.isLogin !== 'true') {
+          var href = checkout_utils.isSubsAddedToCart(lineItems) ? drgc_params.loginPath : drgc_params.checkoutUrl;
+          $('a.dr-summary__proceed-checkout').prop('href', href);
+        }
+
+        renderOffers(lineItems, declinedProductIds);
+      }
+
       $('.dr-cart__content').removeClass('dr-loading'); // Main cart is ready, loading can be ended
     })["catch"](function (jqXHR) {
       checkout_utils.apiErrorHandler(jqXHR);
@@ -15079,6 +15102,8 @@ jQuery(document).ready(function ($) {
 // CONCATENATED MODULE: ./assets/js/public/public-account.js
 
 
+
+
 var AccountModule = {};
 jquery_default()(function () {
   if (jquery_default()('#dr-account-page-wrapper').length < 1) return;
@@ -15365,12 +15390,12 @@ jquery_default()(function () {
         var $renewalDate = $toggle.closest('.subscription').find('.subscription-dates .nextRenewalDate');
 
         if ($renewalDate.length) {
-          var renewalText = data.subscription === 'enabled' ? $renewalDate.attr('data-on') : $renewalDate.attr('data-off');
+          var renewalText = data.renewalType === 'Auto' ? $renewalDate.attr('data-on') : $renewalDate.attr('data-off');
           $renewalDate.find('strong').text(renewalText);
         }
       } else {
         $subscriptionError.drModal('show');
-        $toggle.prop('checked', !(data.subscription === 'enabled'));
+        $toggle.prop('checked', !(data.renewalType === 'Auto'));
       }
     });
   }
@@ -15378,7 +15403,7 @@ jquery_default()(function () {
   $subs.find('.subscription-ar .switch input[type="checkbox"]').on('change', function () {
     var $this = jquery_default()(this);
     var subID = $this.closest('.subscription').length && $this.closest('.subscription').attr('data-id') ? $this.closest('.subscription').attr('data-id') : '';
-    var ar = $this.is(':checked') ? 'enabled' : 'disabled';
+    var ar = $this.is(':checked') ? 'Auto' : 'Manual';
     $body.data({
       currentToggle: {
         selector: $this,
@@ -15387,13 +15412,13 @@ jquery_default()(function () {
       }
     });
     var data = {
-      action: 'drgc_toggle_user_subscription',
+      action: 'drgc_toggle_auto_renewal_ajax',
       nonce: drgc_params.ajaxNonce,
-      sub_id: subID,
-      subscription: ar
+      subscriptionId: subID,
+      renewalType: ar
     };
 
-    if (ar === 'disabled') {
+    if (ar === 'Manual') {
       $subscriptionConfirm.drModal({
         backdrop: 'static',
         keyboard: false
@@ -15406,17 +15431,44 @@ jquery_default()(function () {
   $subscriptionConfirmAccept.on('click', function () {
     var toggle = $body.data('currentToggle');
     var data = {
-      action: 'drgc_toggle_user_subscription',
+      action: 'drgc_toggle_auto_renewal_ajax',
       nonce: drgc_params.ajaxNonce,
-      sub_id: toggle.subID,
-      subscription: toggle.ar
+      subscriptionId: toggle.subID,
+      renewalType: toggle.ar
     };
     updateSubscription(data, toggle.selector);
   }); // reset toggle if event is canceled
 
   $subscriptionConfirmCancel.on('click', function () {
     var toggle = $body.data('currentToggle');
-    toggle.selector.prop('checked', !(toggle.ar === 'enabled'));
+    toggle.selector.prop('checked', !(toggle.ar === 'Auto'));
+  });
+  jquery_default()('#list-subscriptions .dr-renew-btn').on('click', function (e) {
+    var payload = {
+      cart: {
+        lineItems: {
+          lineItem: [{
+            quantity: e.target.dataset.renewalQty,
+            product: {
+              id: e.target.dataset.productId
+            },
+            customAttributes: {
+              attribute: [{
+                name: 'RenewingSubscriptionID',
+                value: e.target.dataset.subsId
+              }]
+            }
+          }]
+        }
+      }
+    };
+    jquery_default()('body').addClass('dr-loading');
+    commerce_api.updateCart({}, payload).then(function () {
+      window.location.href = drgc_params.cartUrl;
+    })["catch"](function (jqXHR) {
+      checkout_utils.apiErrorHandler(jqXHR);
+      jquery_default()('body').removeClass('dr-loading');
+    });
   });
   $body.append($subscriptionError).append($subscriptionConfirm); // mobile back button
 

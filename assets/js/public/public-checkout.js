@@ -280,7 +280,7 @@ jQuery(document).ready(($) => {
         const domain = drgc_params.domain;
         const isLogin = drgc_params.isLogin;
         const drLocale = drgc_params.drLocale || 'en_US';
-        let cartData = drgc_params.cart.cart;
+        const cartData = drgc_params.cart.cart;
         const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
         const isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
         const isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';

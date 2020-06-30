@@ -608,87 +608,44 @@ class DRGC_Public {
 	 */
 	public function redirect_on_page_load() {
 		if ( is_page( 'checkout' ) ) {
+			$cart = DRGC()->cart->retrieve_cart();
 			$customer = DRGC()->shopper->retrieve_shopper();
 			$is_logged_in = $customer && 'Anonymous' !== $customer['id'];
 			$is_guest = 'true' === $_COOKIE['drgc_guest_flag'];
+			$has_subs = drgc_is_subs_added_to_cart( $cart );
 
-			if ( ! $is_logged_in && ! $is_guest ) {
+			if ( ! $is_logged_in && ( ! $is_guest || $has_subs ) ) {
 				wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
 				exit;
 			}
 		}
 	}
 
-	public function drgc_toggle_user_subscription() {
-		check_ajax_referer( 'drgc_ajax', 'nonce' );
-
-		if( isset( $_POST['sub_id'] ) && isset( $_POST['subscription'] ) ) {
-
-			$subscription = new DRGC_User_Management();
-
-			if ( 'disabled' == $_POST['subscription'] ) {
-				// $sub_toggle = $subscription->send_request(
-				// 	'CANCEL_SUBS',
-				// 	array(
-				// 		'id'			=> $_POST['sub_id'],
-				// 	)
-				// );
-				$sub_toggle = $subscription->send_request(
-					'SWITCH_RENEWAL_TYPE',
-					array(
-						'id'			=> $_POST['sub_id'],
-						'renewal_type'	=> 'Manual',
-					)
-				);
-			} else if ( 'enabled' == $_POST['subscription'] ) {
-				$sub_toggle = $subscription->send_request(
-					'SWITCH_RENEWAL_TYPE',
-					array(
-						'id'			=> $_POST['sub_id'],
-						'renewal_type'	=> 'Auto',
-					)
-				);
-			}
-
-			if ( 200 == $sub_toggle->getStatusCode()) {
-				wp_send_json_success( array(
-					'message'	=> 'Subscription was successfully ' . $_POST['subscription'],
-				) );
-			}
-		}
-
-		wp_send_json_error( array(
-			'message'	=> 'Something went wrong!',
-		) );
-	}
-
 	/**
-	 * Switch auto renewal type AJAX
+	 *  ON/OFF auto renewal AJAX
 	 *
 	 * @since  1.3.0
 	 */
-	public function switch_renewal_type_ajax() {
+	public function toggle_auto_renewal_ajax() {
 		check_ajax_referer( 'drgc_ajax', 'nonce' );
 
 		if ( isset( $_POST['subscriptionId'] ) && isset( $_POST['renewalType'] ) ) {
 			$plugin = DRGC();
-			$subscription_id = sanitize_text_field( $_POST['subscriptionId'] );
-			$renewal_type = sanitize_text_field( $_POST['renewalType'] );
 			$params = array(
-				'id' => $subscription_id,
-				'renewal_type' => $renewal_type
+				'id' => $_POST['subscriptionId'],
+				'renewal_type' => $_POST['renewalType']
 			);
 
-			$response = $plugin->user_management->send_request( 'SWITCH_RENEWAL_TYPE', $params );
+			$response = $plugin->user_management->send_request( 'SWITCH_RENEWAL_TYPE', $params );			
 
 			if ( $response ) {
 				$plugin->user_management->send_json_response( $response );
 			} else {
-				wp_send_json_error();
+				wp_send_json_error( array( 'message' => 'Something went wrong!' ) );
 			}
-		} else {
-			wp_send_json_error();
 		}
+
+		wp_send_json_error( array( 'message' => 'Something went wrong!' ) );
 	}
 
 	/**
