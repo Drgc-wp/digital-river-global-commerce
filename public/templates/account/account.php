@@ -71,23 +71,23 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
     <div class="dr-tab-content" id="nav-tabContent">
 
         <div class="dr-tab-pane fade" id="list-orders" role="tabpanel" aria-labelledby="list-orders-list">
-            <div class="dr-h4"><span class="back">&lsaquo;</span>My Orders<span class="back close">&times;</span></div>
+            <div class="dr-h4"><span class="back">&lsaquo;</span><?php echo __( 'My Orders', 'digital-river-global-commerce' ); ?><span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
                 <?php if ( 0 < $orders['orders']['totalResults'] ) : ?>
                     <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-orders.php'; ?>
                 <?php else: ?>
-                    <?php echo __( 'You have no recorded orders.', 'digital-river-global-commerce' ); ?>
+                    <?php echo __( 'You have no recorded orders. If you just place an order, please wait a few miniutes and reload the page. The order detail will be there.', 'digital-river-global-commerce' ); ?>
                 <?php endif; ?>
             </div>
 
         </div>
 
         <div class="dr-tab-pane fade" id="list-subscriptions" role="tabpanel" aria-labelledby="list-subscriptions-list">
-            <div class="dr-h4"><span class="back">&lsaquo;</span>My Subscriptions<span class="back close">&times;</span></div>
+            <div class="dr-h4"><span class="back">&lsaquo;</span><?php echo __( 'My Subscriptions', 'digital-river-global-commerce' ); ?><span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
-                <?php if ( count($subscriptions['subscriptions']['subscription']) ) : ?>
+                <?php if ( 0 < $subscriptions['subscriptions']['subscription'] ) : ?>
                     <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-subscriptions.php'; ?>
                 <?php else: ?>
                     <?php echo __( 'You have no subscription products.', 'digital-river-global-commerce' ); ?>
@@ -97,10 +97,10 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
         </div>
 
         <div class="dr-tab-pane fade" id="list-addresses" role="tabpanel" aria-labelledby="list-addresses-list">
-            <div class="dr-h4"><span class="back">&lsaquo;</span>My Addresses<span class="back close">&times;</span></div>
+            <div class="dr-h4"><span class="back">&lsaquo;</span><?php echo __( 'My Addresses', 'digital-river-global-commerce' ); ?><span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
-                <?php if ( count($customer_address) ) : ?>
+                <?php if ( 0 < $customer_address ) : ?>
                     <div class="container-fluid">
                         <div class="row addresses">
                             <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-addresses.php'; ?>
@@ -114,7 +114,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
 
         </div>
         <div class="dr-tab-pane fade" id="list-payments" role="tabpanel" aria-labelledby="list-payments-list">
-            <div class="dr-h4"><span class="back">&lsaquo;</span>My Payments<span class="back close">&times;</span></div>
+            <div class="dr-h4"><span class="back">&lsaquo;</span><?php echo __( 'My Payments', 'digital-river-global-commerce' ); ?><span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
                 <?php if ( $payments && count($payments) ) : ?>
@@ -131,7 +131,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
 
         </div>
         <div class="dr-tab-pane fade" id="list-password" role="tabpanel" aria-labelledby="list-password-list">
-            <div class="dr-h4"><span class="back">&lsaquo;</span>Change Password<span class="back close">&times;</span></div>
+            <div class="dr-h4"><span class="back">&lsaquo;</span><?php echo __( 'Change Password', 'digital-river-global-commerce' ); ?><span class="back close">&times;</span></div>
 
             <div class="overflowContainer">
                 <?php include DRGC_PLUGIN_DIR . 'public/templates/account/account-password.php'; ?>
