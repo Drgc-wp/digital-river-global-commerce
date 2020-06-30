@@ -12689,7 +12689,7 @@ var CartModule = function ($) {
           $('a.dr-summary__proceed-checkout').prop('href', href);
         }
 
-        renderOffers(lineItems, declinedProductIds);
+        renderOffers(lineItems);
       }
 
       $('.dr-cart__content').removeClass('dr-loading'); // Main cart is ready, loading can be ended
