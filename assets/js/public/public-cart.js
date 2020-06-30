@@ -168,7 +168,7 @@ const CartModule = (($) => {
                     <div class="dr-product__info">
                       <div class="dr-offer-header">${promoText}</div>
                       <div class="dr-offer-content">${productSalesPitch}</div>
-                      <button type="button" class="dr-btn dr-buy-candyRack dr-buy-${buyBtnText}" data-buy-uri="${productOffer.addProductToCart.uri}">${buyBtnText}</button>
+                      <button type="button" class="dr-btn dr-buy-candyRack dr-buy-${buyBtnText}" data-buy-uri="${productOffer.addProductToCart.uri}" data-parent-product-id="${driverProductID}">${buyBtnText}</button>
                       <button type="button" class="dr-nothanks dr-modal-decline" data-parent-product-id="${driverProductID}">${declineText}</button>
                     </div>
                   </div>
@@ -458,7 +458,7 @@ jQuery(document).ready(($) => {
     e.preventDefault();
     const $this = $(e.target);
     const productId = $this.data('parent-product-id');
-   
+
     CartModule.updateUpsellCookie(productId, true);
     $('.dr-upsellProduct-modal[data-parent-product-id="' + productId + '"]').remove();
     $('body').removeClass('modal-open').removeClass('drgc-wrapper');
@@ -468,14 +468,17 @@ jQuery(document).ready(($) => {
     e.preventDefault();
     const $this = $(e.target);
     const buyUri = $this.attr('data-buy-uri');
-
+    const productId = $this.attr('data-parent-product-id');
     if ($this.hasClass('dr-buy-Upgrade')) {
       $('body').removeClass('modal-open').removeClass('drgc-wrapper');
     }
 
     $('.dr-cart__content').addClass('dr-loading');
     DRCommerceApi.postByUrl(`${buyUri}&testOrder=${drgc_params.testOrder}`)
-      .then(() => CartModule.fetchFreshCart())
+      .then(() => {
+        CartModule.updateUpsellCookie(productId, true);
+        CartModule.fetchFreshCart();
+      })
       .catch((jqXHR) => {
         CheckoutUtils.apiErrorHandler(jqXHR);
         $('.dr-cart__content').removeClass('dr-loading');
