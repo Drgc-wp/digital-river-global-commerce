@@ -137,12 +137,12 @@ function drgc_the_posts_pagination( $wp_query ) {
 /**
  * Currency switcher
  */
-function drgc_currency_toggler() {
+function drgc_currency_toggler( string $classes = '' ) {
 	$locales = get_option( 'drgc_store_locales' );
 	$current_locale = DRGC()->shopper->get_locale();
 
 	if ( ! empty( $locales['locales'] ) && count( $locales['locales'] ) > 1 ) {
-		$output = '<div class="dr-currency-toggler">';
+		$output = "<div class=\"dr-currency-toggler {$classes}\">";
 		$output .= sprintf("<span>%s</span>", __( 'Currency: ', 'digital-river-global-commerce' ) );
 		$output .= '<select class="custom-select dr-currency-select">';
 
