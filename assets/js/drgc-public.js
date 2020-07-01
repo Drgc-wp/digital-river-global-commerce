@@ -15417,6 +15417,7 @@ jquery_default()(function () {
   function updateSubscription() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var $toggle = arguments.length > 1 ? arguments[1] : undefined;
+    jquery_default()('body').addClass('dr-loading');
     jquery_default.a.post(drgc_params.ajaxUrl, data, function (response) {
       if (response.success) {
         var $renewalDate = $toggle.closest('.subscription').find('.subscription-dates .nextRenewalDate');
@@ -15429,6 +15430,8 @@ jquery_default()(function () {
         $subscriptionError.drModal('show');
         $toggle.prop('checked', !(data.renewalType === 'Auto'));
       }
+
+      jquery_default()('body').removeClass('dr-loading');
     });
   }
 
