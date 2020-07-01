@@ -324,6 +324,12 @@
             > p {
                 margin:0;
             }
+            > button {
+                white-space: nowrap;
+            }
+            > button:focus {
+                outline: none;
+            }
         }
         &-id {
             position:absolute;

@@ -255,6 +255,19 @@ const CheckoutUtils = (($, params) => {
     return cartRequest;
   };
 
+  const isSubsAddedToCart = (lineItems) => {
+    if (!lineItems.length) return false;
+
+    for (let i = 0; i < lineItems.length; i++) {
+      const lineItem = lineItems[i];
+      const customAttributes = lineItem.product.customAttributes.attribute || [];
+
+      if (customAttributes.some(attr => attr.name === 'subscriptionType')) return true;
+    }
+
+    return false;
+  };
+
   return {
     createDisplayItems,
     createShippingOptions,
@@ -275,7 +288,8 @@ const CheckoutUtils = (($, params) => {
     getAjaxErrorMessage,
     setShippingOption,
     getSupportedCountries,
-    createCartRequest
+    createCartRequest,
+    isSubsAddedToCart
   };
 })(jQuery, drgc_params);
 

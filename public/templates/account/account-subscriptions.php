@@ -10,76 +10,98 @@
  * @package    Digital_River_Global_Commerce
  * @subpackage Digital_River_Global_Commerce/public/partials
  */
-
 ?>
 
 <?php foreach ($subscriptions['subscriptions']['subscription'] as $key => $sub): ?>
 
+<?php
+  $subs_id = $sub['id'];
+  $product_id = $sub['products']['product']['id'];
+  $product_name = $sub['products']['product']['displayName'];
+  $product_image = $sub['products']['product']['full']['product']['productImage'] ?? '';
+  $is_auto = false;
+  $custom_attributes = $sub['products']['product']['customAttributes']['attribute'] ?? [];
 
-<div class="subscription" data-id="<?php echo $sub['id'] ?>">
+  if ( $custom_attributes ) {
+    foreach ( $custom_attributes as $att ) { 
+      if ( $att['name'] === 'isAutomatic' && $att['value'] === 'true' ) {
+        $is_auto = true;
+        break;
+      }
+    }
+  }
+?>
 
-    <?php if ($sub['products']['product']['full']['product']['productImage']): ?>
-        <div class="subscription-img">
-            <img class="img-fluid" src="<?php echo $sub['products']['product']['full']['product']['productImage'] ?>" alt="<?php echo $sub['products']['product']['displayName'] ?>">
-        </div>
+<div class="subscription" data-id="<?php echo $subs_id ?>">
+
+  <?php if ( $product_image ): ?>
+    <div class="subscription-img">
+      <img class="img-fluid" src="<?php echo $product_image ?>" alt="<?php echo $product_name ?>">
+    </div>
+  <?php endif; ?>
+
+  <div class="subscription-info">
+    <div class="subscription-title"><?php echo $product_name ?></div>
+    <div class="subscription-content">
+      <p><strong>PID:</strong> <?php echo $product_id ?></p>
+      <p><strong>SKU:</strong> <?php echo $sub['products']['product']['sku'] ?></p>
+    </div>
+  </div>
+
+  <div class="subscription-dates">
+    <div class="subscription-title"><?php echo __( 'Date', 'digital-river-global-commerce' ); ?></div>
+    <div class="subscription-content">
+      <?php if ($sub['activationDate']) : ?>
+        <p class="activationDate">
+          <strong><?php echo __( 'Activated:', 'digital-river-global-commerce' ); ?></strong> 
+          <?php echo date_format(date_create($sub['activationDate']),"m/d/Y"); ?>
+        </p>
+      <?php endif; ?>
+      <?php if ($sub['nextRenewalDate']) : ?>
+        <p class="nextRenewalDate" data-on="<?php echo __( 'Renews on:', 'digital-river-global-commerce' ); ?>" data-off="<?php echo __( 'Renewal Due:', 'digital-river-global-commerce' ); ?>">
+          <strong>
+            <?php 
+              if ($sub['autoRenewal'] === 'enabled') {
+                echo __( 'Renews on:', 'digital-river-global-commerce' );
+              } else {
+                echo __( 'Renewal Due:', 'digital-river-global-commerce' );
+              }
+            ?>
+          </strong> 
+          <?php echo date_format(date_create($sub['nextRenewalDate']),"m/d/Y"); ?>
+        </p>
+      <?php endif; ?>
+      <?php if ($sub['cancellationDate']) : ?>
+        <p class="cancellationDate">
+          <strong><?php echo __( 'Cancels on:', 'digital-river-global-commerce' ); ?></strong> 
+          <?php echo date_format(date_create($sub['cancellationDate']),"m/d/Y"); ?>
+        </p>
+      <?php endif; ?>
+    </div>
+  </div>
+
+  <div class="subscription-status">
+    <div class="subscription-title"><?php echo __( 'Status', 'digital-river-global-commerce' ); ?></div>
+    <div class="subscription-content <?php echo  str_replace(' ', '', strtolower($sub['status'])); ?>"><?php echo $sub['status'] ?></div>
+  </div>
+
+  <div class="subscription-ar">
+    <?php if ( $is_auto ) : ?>  
+      <div class="subscription-title"><?php echo __( 'Auto Renewal', 'digital-river-global-commerce' ); ?></div>
+      <label class="switch" for="ar-switch-<?php echo $key ?>">
+          <input type="checkbox" id="ar-switch-<?php echo $key ?>" <?php if ($sub['autoRenewal'] === 'enabled') echo ' checked'; ?>>
+          <div class="slider" data-on="<?php echo __( 'on', 'digital-river-global-commerce' ); ?>" data-off="<?php echo __( 'off', 'digital-river-global-commerce' ); ?>"></div>
+      </label>
+    <?php else : ?>
+      <div class="subscription-title"><?php echo __( 'Manual Renewal', 'digital-river-global-commerce' ); ?></div>
+      <div class="subscription-content">
+        <button type="button" class="dr-btn dr-renew-btn" data-subs-id="<?php echo $subs_id ?>" data-product-id="<?php echo $product_id ?>" data-renewal-qty="<?php echo $sub['nextRenewalQuantity'] ?>"><?php echo __( 'Renew Now', 'digital-river-global-commerce' ); ?></button>
+      </div>
     <?php endif; ?>
+  </div>
 
-    <div class="subscription-info">
-        <div class="subscription-title"><?php echo $sub['products']['product']['displayName'] ?></div>
-        <div class="subscription-content">
-            <p><strong>PID:</strong> <?php echo $sub['products']['product']['id'] ?></p>
-            <p><strong>SKU:</strong> <?php echo $sub['products']['product']['sku'] ?></p>
-        </div>
-    </div>
+  <div class="subscription-id">ID: <?php echo $subs_id ?></div>
 
-    <div class="subscription-dates">
-        <div class="subscription-title"><?php echo __( 'Date', 'digital-river-global-commerce' ); ?></div>
-
-        <div class="subscription-content">
-            <?php if ($sub['activationDate']) : ?>
-                <p class="activationDate">
-                    <strong><?php echo __( 'Activated:', 'digital-river-global-commerce' ); ?></strong> 
-                    <?php echo date_format(date_create($sub['activationDate']),"m/d/Y"); ?>
-                </p>
-            <?php endif; ?>
-            <?php if ($sub['nextRenewalDate']) : ?>
-                <p class="nextRenewalDate" data-on="<?php echo __( 'Renews on:', 'digital-river-global-commerce' ); ?>" data-off="<?php echo __( 'Renewal Due:', 'digital-river-global-commerce' ); ?>">
-                    <strong>
-                        <?php 
-                            if ($sub['autoRenewal'] === 'enabled') {
-                                echo __( 'Renews on:', 'digital-river-global-commerce' );
-                            } else {
-                                echo __( 'Renewal Due:', 'digital-river-global-commerce' );
-                            }
-                        ?>
-                    </strong> 
-                    <?php echo date_format(date_create($sub['nextRenewalDate']),"m/d/Y"); ?>
-                </p>
-            <?php endif; ?>
-            <?php if ($sub['cancellationDate']) : ?>
-                <p class="cancellationDate">
-                    <strong><?php echo __( 'Cancels on:', 'digital-river-global-commerce' ); ?></strong> 
-                    <?php echo date_format(date_create($sub['cancellationDate']),"m/d/Y"); ?>
-                </p>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <div class="subscription-status">
-        <div class="subscription-title"><?php echo __( 'Status', 'digital-river-global-commerce' ); ?></div>
-        <div class="subscription-content <?php echo  str_replace(' ', '', strtolower($sub['status'])); ?>"><?php echo $sub['status'] ?></div>
-    </div>
-
-    <div class="subscription-ar">
-        <div class="subscription-title"><?php echo __( 'Auto Renew', 'digital-river-global-commerce' ); ?></div>
-        <label class="switch" for="ar-switch-<?php echo $key ?>">
-            <input type="checkbox" id="ar-switch-<?php echo $key ?>" <?php if ($sub['autoRenewal'] === 'enabled') echo ' checked'; ?>>
-            <div class="slider" data-on="<?php echo __( 'on', 'digital-river-global-commerce' ); ?>" data-off="<?php echo __( 'off', 'digital-river-global-commerce' ); ?>"></div>
-        </label>
-    </div>
-
-    <div class="subscription-id">ID: <?php echo $sub['id'] ?></div>
-    
 </div>
 
 <?php endforeach; ?>

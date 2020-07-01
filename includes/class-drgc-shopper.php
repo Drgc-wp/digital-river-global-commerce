@@ -254,60 +254,6 @@ class DRGC_Shopper extends AbstractHttpService {
 		}
 	}
 
-	public function retrieve_shopper_orders( $params = array() ) {
-		$default = array(
-			'expand'            => 'all'
-		);
-
-		$params = array_merge(
-			$default,
-			array_intersect_key( $params, $default )
-		);
-
-		$url = "/v1/shoppers/me/orders?".http_build_query( $params );
-		try {
-			$res = $this->get($url);
-
-			return $res;
-
-		} catch (\Exception $e) {
-			return false;
-		}
-	}
-
-	public function retrieve_shopper_subscriptions( $params = array() ) {
-		$default = array(
-			'expand'            => 'all'
-		);
-
-		$params = array_merge(
-			$default,
-			array_intersect_key( $params, $default )
-		);
-
-		$url = "/v1/shoppers/me/subscriptions?".http_build_query( $params );
-		try {
-			$res = $this->get($url);
-
-
-			if ($res['subscriptions']['subscription']) {
-
-				foreach ($res['subscriptions']['subscription'] as $key => $sub) {
-					if ($res['subscriptions']['subscription'][$key]['products']['product']['uri']) {
-						$res['subscriptions']['subscription'][$key]['products']['product']['full'] = $this->get($res['subscriptions']['subscription'][$key]['products']['product']['uri']);
-					}
-				}
-
-			}
-
-			return $res;
-
-		} catch (\Exception $e) {
-			return false;
-		}
-	}
-
-
 	/**
 	 * Create a new shopper.
 	 * The base shopper account information includes the shopper's name and email address.
@@ -377,33 +323,41 @@ class DRGC_Shopper extends AbstractHttpService {
 		return $this->locale;
 	}
 
-	/**
-	 * Retrieve all scriptions for the current authenticated shopper.
-	 *
-	 * @param array $params
-	 *
-	 * @return array|bool
-	 */
-	public function retrieve_subscriptions( $params = array() ) {
-		$default = array(
-			'expand' => 'all'
-		);
+  /**
+   * Retrieve all scriptions for the current authenticated shopper.
+   *
+   * @param array $params
+   *
+   * @return array|bool
+   */
+  public function retrieve_subscriptions( $params = array() ) {
+    $default = array(
+      'expand' => 'all'
+    );
 
-		$params = array_merge(
-			$default,
-			array_intersect_key( $params, $default )
-		);
+    $params = array_merge(
+      $default,
+      array_intersect_key( $params, $default )
+    );
 
-		$url = "/v1/shoppers/me/subscriptions?" . http_build_query( $params );
+    $url = "/v1/shoppers/me/subscriptions?" . http_build_query( $params );
 
-		try {
-			$res = $this->get($url);
-
-			return isset( $res['subscriptions']['subscription'] ) ? $res['subscriptions']['subscription'] : '';
-		} catch (\Exception $e) {
-			return false;
-		}
-	}
+    try {
+      $res = $this->get( $url );
+      
+      if ( isset( $res['subscriptions']['subscription'] ) ) {
+        foreach ( $res['subscriptions']['subscription'] as $key => $sub ) {
+          if ( $res['subscriptions']['subscription'][$key]['products']['product']['uri'] ) {
+            $res['subscriptions']['subscription'][$key]['products']['product']['full'] = $this->get( $res['subscriptions']['subscription'][$key]['products']['product']['uri'] );
+          }
+        }
+      }
+      
+      return $res;
+    } catch (\Exception $e) {
+      return false;
+    }
+  }
 
 	/**
 	 * Retrieve the scription details by a subscription ID.
@@ -437,8 +391,36 @@ class DRGC_Shopper extends AbstractHttpService {
 		}
 	}
 
+  /**
+   * Retrieve all orders for the current authenticated shopper.
+   *
+   * @param array $params
+   *
+   * @return array|bool
+   */
+  public function retrieve_orders( $params = array() ) {
+    $default = array(
+      'expand' => 'all'
+    );
+
+    $params = array_merge(
+      $default,
+      array_intersect_key( $params, $default )
+    );
+
+    $url = "/v1/shoppers/me/orders?" . http_build_query( $params );
+
+    try {
+      $res = $this->get( $url );
+
+      return $res;
+    } catch (\Exception $e) {
+      return false;
+    }
+  }
+
 	/**
-	 * Retrieve a shopper order.
+	 * Retrieve a shopper order by an order ID.
 	 *
 	 * @param string $order_id
 	 * @param array  $params

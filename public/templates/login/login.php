@@ -12,6 +12,7 @@
  */
 
 $checkout_URI = drgc_get_page_link( 'checkout' );
+$has_subs = drgc_is_subs_added_to_cart( $cart );
 ?>
 
 <div class="dr-login-wrapper dr-login" id="full-width-page-wrapper">
@@ -165,7 +166,9 @@ $checkout_URI = drgc_get_page_link( 'checkout' );
                     <div>
                         <button type="submit" class="dr-btn dr-signup"><?php echo __( 'Sign Up', 'digital-river-global-commerce' ); ?></button>
 
-                        <a class="dr-btn" id="dr-guest-btn" href="#"><?php echo __( 'Continue As Guest', 'digital-river-global-commerce' ); ?></a>
+                        <?php if ( ! $has_subs ) : ?>
+                            <a class="dr-btn" id="dr-guest-btn" href="#"><?php echo __( 'Continue As Guest', 'digital-river-global-commerce' ); ?></a>
+                        <?php endif; ?>
                     </div>
                 </form>
 
