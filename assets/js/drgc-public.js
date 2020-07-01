@@ -10597,6 +10597,222 @@ __webpack_require__.r(__webpack_exports__);
 var helpers_typeof = __webpack_require__(1);
 var typeof_default = /*#__PURE__*/__webpack_require__.n(helpers_typeof);
 
+// CONCATENATED MODULE: ./assets/js/public/modal.js
+
+
+/*
+ * modal.js by Bootstrap
+ * https://github.com/twbs/bootstrap
+ */
+jQuery(document).ready(function ($) {
+  if (typeof $().modal !== "function") {
+    'use strict'; // MODAL CLASS DEFINITION
+    // ======================
+
+
+    var Modal = function Modal(element, options) {
+      this.options = options;
+      this.$element = $(element);
+      this.$backdrop = this.isShown = null;
+
+      if (this.options.remote) {
+        this.$element.find('.modal-content').load(this.options.remote, $.proxy(function () {
+          this.$element.trigger('loaded.bs.modal');
+        }, this));
+      }
+    };
+
+    Modal.DEFAULTS = {
+      backdrop: true,
+      keyboard: true,
+      show: true
+    };
+
+    Modal.prototype.toggle = function (_relatedTarget) {
+      return this[!this.isShown ? 'show' : 'hide'](_relatedTarget);
+    };
+
+    Modal.prototype.show = function (_relatedTarget) {
+      var that = this;
+      var e = $.Event('show.bs.modal', {
+        relatedTarget: _relatedTarget
+      });
+      this.$element.trigger(e);
+
+      if (this.isShown || e.isDefaultPrevented()) {
+        return;
+      }
+
+      this.isShown = true;
+      this.escape();
+      this.$element.on('click.dismiss.bs.modal', '[data-dismiss="modal"]', $.proxy(this.hide, this));
+      this.backdrop(function () {
+        var transition = $.support.transition && that.$element.hasClass('fade');
+
+        if (!that.$element.parent().length) {
+          that.$element.appendTo(document.body); // don't move modals dom position
+        }
+
+        that.$element.show().scrollTop(0);
+
+        if (transition) {
+          that.$element[0].offsetWidth; // force reflow
+        }
+
+        that.$element.addClass('in').attr('aria-hidden', false);
+        that.enforceFocus();
+        var e = $.Event('shown.bs.modal', {
+          relatedTarget: _relatedTarget
+        });
+        transition ? that.$element.find('.modal-dialog') // wait for modal to slide in
+        .one($.support.transition.end, function () {
+          that.$element.focus().trigger(e);
+        }).emulateTransitionEnd(300) : that.$element.focus().trigger(e);
+      });
+    };
+
+    Modal.prototype.hide = function (e) {
+      if (e) {
+        e.preventDefault();
+      }
+
+      e = $.Event('hide.bs.modal');
+      this.$element.trigger(e);
+
+      if (!this.isShown || e.isDefaultPrevented()) {
+        return;
+      }
+
+      this.isShown = false;
+      this.escape();
+      $(document).off('focusin.bs.modal');
+      this.$element.removeClass('in').attr('aria-hidden', true).off('click.dismiss.bs.modal');
+      $.support.transition && this.$element.hasClass('fade') ? this.$element.one($.support.transition.end, $.proxy(this.hideModal, this)).emulateTransitionEnd(300) : this.hideModal();
+    };
+
+    Modal.prototype.enforceFocus = function () {
+      $(document).off('focusin.bs.modal') // guard against infinite focus loop
+      .on('focusin.bs.modal', $.proxy(function (e) {
+        if (this.$element[0] !== e.target && !this.$element.has(e.target).length) {
+          this.$element.focus();
+        }
+      }, this));
+    };
+
+    Modal.prototype.escape = function () {
+      if (this.isShown && this.options.keyboard) {
+        this.$element.on('keyup.dismiss.bs.modal', $.proxy(function (e) {
+          e.which === 27 && this.hide();
+        }, this));
+      } else if (!this.isShown) {
+        this.$element.off('keyup.dismiss.bs.modal');
+      }
+    };
+
+    Modal.prototype.hideModal = function () {
+      var that = this;
+      this.$element.hide();
+      this.backdrop(function () {
+        that.removeBackdrop();
+        that.$element.trigger('hidden.bs.modal');
+      });
+    };
+
+    Modal.prototype.removeBackdrop = function () {
+      this.$backdrop && this.$backdrop.remove();
+      this.$backdrop = null;
+    };
+
+    Modal.prototype.backdrop = function (callback) {
+      var animate = this.$element.hasClass('fade') ? 'fade' : '';
+
+      if (this.isShown && this.options.backdrop) {
+        var doAnimate = $.support.transition && animate;
+        this.$backdrop = $('<div class="modal-backdrop ' + animate + '" />').appendTo(document.body);
+        this.$element.on('click.dismiss.bs.modal', $.proxy(function (e) {
+          if (e.target !== e.currentTarget) {
+            return;
+          }
+
+          this.options.backdrop === 'static' ? this.$element[0].focus.call(this.$element[0]) : this.hide.call(this);
+        }, this));
+
+        if (doAnimate) {
+          this.$backdrop[0].offsetWidth;
+        } // force reflow
+
+
+        this.$backdrop.addClass('in');
+
+        if (!callback) {
+          return;
+        }
+
+        doAnimate ? this.$backdrop.one($.support.transition.end, callback).emulateTransitionEnd(150) : callback();
+      } else if (!this.isShown && this.$backdrop) {
+        this.$backdrop.removeClass('in');
+        $.support.transition && this.$element.hasClass('fade') ? this.$backdrop.one($.support.transition.end, callback).emulateTransitionEnd(150) : callback();
+      } else if (callback) {
+        callback();
+      }
+    }; // MODAL PLUGIN DEFINITION
+    // =======================
+
+
+    var old = $.fn.modal;
+
+    $.fn.modal = function (option, _relatedTarget) {
+      return this.each(function () {
+        var $this = $(this);
+        var data = $this.data('bs.modal');
+        var options = $.extend({}, Modal.DEFAULTS, $this.data(), typeof_default()(option) === 'object' && option);
+
+        if (!data) {
+          $this.data('bs.modal', data = new Modal(this, options));
+        }
+
+        if (typeof option === 'string') {
+          data[option](_relatedTarget);
+        } else if (options.show) {
+          data.show(_relatedTarget);
+        }
+      });
+    };
+
+    $.fn.modal.Constructor = Modal; // MODAL NO CONFLICT
+    // =================
+
+    $.fn.modal.noConflict = function () {
+      $.fn.modal = old;
+      return this;
+    }; // MODAL DATA-API
+    // ==============
+
+
+    $(document).on('click.bs.modal.data-api', '[data-toggle="modal"]', function (e) {
+      var $this = $(this);
+      var href = $this.attr('href');
+      var $target = $($this.attr('data-target') || href && href.replace(/.*(?=#[^\s]+$)/, '')); //strip for ie7
+
+      var option = $target.data('bs.modal') ? 'toggle' : $.extend({
+        remote: !/#/.test(href) && href
+      }, $target.data(), $this.data());
+
+      if ($this.is('a')) {
+        e.preventDefault();
+      }
+
+      $target.modal(option, this).one('hide', function () {
+        $this.is(':visible') && $this.focus();
+      });
+    });
+    $(document).on('body', '.modal', function () {
+      $(document.body).addClass('modal-open');
+    }).on('body', '.modal', function () {
+      $(document.body).removeClass('modal-open');
+    });
+  }
+});
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/defineProperty.js
 var defineProperty = __webpack_require__(4);
 var defineProperty_default = /*#__PURE__*/__webpack_require__.n(defineProperty);
@@ -10770,7 +10986,7 @@ var Util = {
 };
 setTransitionEndSupport();
 /* harmony default export */ var util = (Util);
-// CONCATENATED MODULE: ./assets/js/public/modal.js
+// CONCATENATED MODULE: ./assets/js/public/dr-modal.js
 
 
 
@@ -10849,7 +11065,7 @@ var Selector = {
  * ------------------------------------------------------------------------
  */
 
-var modal_Modal = /*#__PURE__*/function () {
+var dr_modal_Modal = /*#__PURE__*/function () {
   function Modal(element, config) {
     classCallCheck_default()(this, Modal);
 
@@ -11371,7 +11587,7 @@ jquery_default()(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, functi
     });
   });
 
-  modal_Modal._jQueryInterface.call(jquery_default()(target), config, this);
+  dr_modal_Modal._jQueryInterface.call(jquery_default()(target), config, this);
 });
 /**
  * ------------------------------------------------------------------------
@@ -11379,16 +11595,16 @@ jquery_default()(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, functi
  * ------------------------------------------------------------------------
  */
 
-jquery_default.a.fn[NAME] = modal_Modal._jQueryInterface;
-jquery_default.a.fn[NAME].Constructor = modal_Modal;
+jquery_default.a.fn[NAME] = dr_modal_Modal._jQueryInterface;
+jquery_default.a.fn[NAME].Constructor = dr_modal_Modal;
 
 jquery_default.a.fn[NAME].noConflict = function () {
   jquery_default.a.fn[NAME] = JQUERY_NO_CONFLICT;
-  return modal_Modal._jQueryInterface;
+  return dr_modal_Modal._jQueryInterface;
 };
 
-/* harmony default export */ var modal = (modal_Modal);
-// CONCATENATED MODULE: ./assets/js/public/tab.js
+/* harmony default export */ var dr_modal = (dr_modal_Modal);
+// CONCATENATED MODULE: ./assets/js/public/dr-tab.js
 
 
 
@@ -11406,27 +11622,27 @@ jquery_default.a.fn[NAME].noConflict = function () {
  * ------------------------------------------------------------------------
  */
 
-var tab_NAME = 'drTab';
-var tab_VERSION = '4.3.1';
-var tab_DATA_KEY = 'dr.bs.tab';
-var tab_EVENT_KEY = ".".concat(tab_DATA_KEY);
-var tab_DATA_API_KEY = '.data-api';
-var tab_JQUERY_NO_CONFLICT = jquery_default.a.fn[tab_NAME];
-var tab_Event = {
-  HIDE: "hide".concat(tab_EVENT_KEY),
-  HIDDEN: "hidden".concat(tab_EVENT_KEY),
-  SHOW: "show".concat(tab_EVENT_KEY),
-  SHOWN: "shown".concat(tab_EVENT_KEY),
-  CLICK_DATA_API: "click".concat(tab_EVENT_KEY).concat(tab_DATA_API_KEY)
+var dr_tab_NAME = 'drTab';
+var dr_tab_VERSION = '4.3.1';
+var dr_tab_DATA_KEY = 'dr.bs.tab';
+var dr_tab_EVENT_KEY = ".".concat(dr_tab_DATA_KEY);
+var dr_tab_DATA_API_KEY = '.data-api';
+var dr_tab_JQUERY_NO_CONFLICT = jquery_default.a.fn[dr_tab_NAME];
+var dr_tab_Event = {
+  HIDE: "hide".concat(dr_tab_EVENT_KEY),
+  HIDDEN: "hidden".concat(dr_tab_EVENT_KEY),
+  SHOW: "show".concat(dr_tab_EVENT_KEY),
+  SHOWN: "shown".concat(dr_tab_EVENT_KEY),
+  CLICK_DATA_API: "click".concat(dr_tab_EVENT_KEY).concat(dr_tab_DATA_API_KEY)
 };
-var tab_ClassName = {
+var dr_tab_ClassName = {
   DROPDOWN_MENU: 'dr-dropdown-menu',
   ACTIVE: 'active',
   DISABLED: 'disabled',
   FADE: 'fade',
   SHOW: 'show'
 };
-var tab_Selector = {
+var dr_tab_Selector = {
   DROPDOWN: '.dr-dropdown',
   NAV_LIST_GROUP: '.dr-nav, .dr-list-group',
   ACTIVE: '.active',
@@ -11441,7 +11657,7 @@ var tab_Selector = {
  * ------------------------------------------------------------------------
  */
 
-var tab_Tab = /*#__PURE__*/function () {
+var dr_tab_Tab = /*#__PURE__*/function () {
   function Tab(element) {
     classCallCheck_default()(this, Tab);
 
@@ -11455,25 +11671,25 @@ var tab_Tab = /*#__PURE__*/function () {
     value: function show() {
       var _this = this;
 
-      if (this._element.parentNode && this._element.parentNode.nodeType === Node.ELEMENT_NODE && jquery_default()(this._element).hasClass(tab_ClassName.ACTIVE) || jquery_default()(this._element).hasClass(tab_ClassName.DISABLED)) {
+      if (this._element.parentNode && this._element.parentNode.nodeType === Node.ELEMENT_NODE && jquery_default()(this._element).hasClass(dr_tab_ClassName.ACTIVE) || jquery_default()(this._element).hasClass(dr_tab_ClassName.DISABLED)) {
         return;
       }
 
       var target;
       var previous;
-      var listElement = jquery_default()(this._element).closest(tab_Selector.NAV_LIST_GROUP)[0];
+      var listElement = jquery_default()(this._element).closest(dr_tab_Selector.NAV_LIST_GROUP)[0];
       var selector = util.getSelectorFromElement(this._element);
 
       if (listElement) {
-        var itemSelector = listElement.nodeName === 'UL' || listElement.nodeName === 'OL' ? tab_Selector.ACTIVE_UL : tab_Selector.ACTIVE;
+        var itemSelector = listElement.nodeName === 'UL' || listElement.nodeName === 'OL' ? dr_tab_Selector.ACTIVE_UL : dr_tab_Selector.ACTIVE;
         previous = jquery_default.a.makeArray(jquery_default()(listElement).find(itemSelector));
         previous = previous[previous.length - 1];
       }
 
-      var hideEvent = jquery_default.a.Event(tab_Event.HIDE, {
+      var hideEvent = jquery_default.a.Event(dr_tab_Event.HIDE, {
         relatedTarget: this._element
       });
-      var showEvent = jquery_default.a.Event(tab_Event.SHOW, {
+      var showEvent = jquery_default.a.Event(dr_tab_Event.SHOW, {
         relatedTarget: previous
       });
 
@@ -11494,10 +11710,10 @@ var tab_Tab = /*#__PURE__*/function () {
       this._activate(this._element, listElement);
 
       var complete = function complete() {
-        var hiddenEvent = jquery_default.a.Event(tab_Event.HIDDEN, {
+        var hiddenEvent = jquery_default.a.Event(dr_tab_Event.HIDDEN, {
           relatedTarget: _this._element
         });
-        var shownEvent = jquery_default.a.Event(tab_Event.SHOWN, {
+        var shownEvent = jquery_default.a.Event(dr_tab_Event.SHOWN, {
           relatedTarget: previous
         });
         jquery_default()(previous).trigger(hiddenEvent);
@@ -11513,7 +11729,7 @@ var tab_Tab = /*#__PURE__*/function () {
   }, {
     key: "dispose",
     value: function dispose() {
-      jquery_default.a.removeData(this._element, tab_DATA_KEY);
+      jquery_default.a.removeData(this._element, dr_tab_DATA_KEY);
       this._element = null;
     } // Private
 
@@ -11522,9 +11738,9 @@ var tab_Tab = /*#__PURE__*/function () {
     value: function _activate(element, container, callback) {
       var _this2 = this;
 
-      var activeElements = container && (container.nodeName === 'UL' || container.nodeName === 'OL') ? jquery_default()(container).find(tab_Selector.ACTIVE_UL) : jquery_default()(container).children(tab_Selector.ACTIVE);
+      var activeElements = container && (container.nodeName === 'UL' || container.nodeName === 'OL') ? jquery_default()(container).find(dr_tab_Selector.ACTIVE_UL) : jquery_default()(container).children(dr_tab_Selector.ACTIVE);
       var active = activeElements[0];
-      var isTransitioning = callback && active && jquery_default()(active).hasClass(tab_ClassName.FADE);
+      var isTransitioning = callback && active && jquery_default()(active).hasClass(dr_tab_ClassName.FADE);
 
       var complete = function complete() {
         return _this2._transitionComplete(element, active, callback);
@@ -11532,7 +11748,7 @@ var tab_Tab = /*#__PURE__*/function () {
 
       if (active && isTransitioning) {
         var transitionDuration = util.getTransitionDurationFromElement(active);
-        jquery_default()(active).removeClass(tab_ClassName.SHOW).one(util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
+        jquery_default()(active).removeClass(dr_tab_ClassName.SHOW).one(util.TRANSITION_END, complete).emulateTransitionEnd(transitionDuration);
       } else {
         complete();
       }
@@ -11541,11 +11757,11 @@ var tab_Tab = /*#__PURE__*/function () {
     key: "_transitionComplete",
     value: function _transitionComplete(element, active, callback) {
       if (active) {
-        jquery_default()(active).removeClass(tab_ClassName.ACTIVE);
-        var dropdownChild = jquery_default()(active.parentNode).find(tab_Selector.DROPDOWN_ACTIVE_CHILD)[0];
+        jquery_default()(active).removeClass(dr_tab_ClassName.ACTIVE);
+        var dropdownChild = jquery_default()(active.parentNode).find(dr_tab_Selector.DROPDOWN_ACTIVE_CHILD)[0];
 
         if (dropdownChild) {
-          jquery_default()(dropdownChild).removeClass(tab_ClassName.ACTIVE);
+          jquery_default()(dropdownChild).removeClass(dr_tab_ClassName.ACTIVE);
         }
 
         if (active.getAttribute('role') === 'tab') {
@@ -11553,7 +11769,7 @@ var tab_Tab = /*#__PURE__*/function () {
         }
       }
 
-      jquery_default()(element).addClass(tab_ClassName.ACTIVE);
+      jquery_default()(element).addClass(dr_tab_ClassName.ACTIVE);
 
       if (element.getAttribute('role') === 'tab') {
         element.setAttribute('aria-selected', true);
@@ -11561,16 +11777,16 @@ var tab_Tab = /*#__PURE__*/function () {
 
       util.reflow(element);
 
-      if (element.classList.contains(tab_ClassName.FADE)) {
-        element.classList.add(tab_ClassName.SHOW);
+      if (element.classList.contains(dr_tab_ClassName.FADE)) {
+        element.classList.add(dr_tab_ClassName.SHOW);
       }
 
-      if (element.parentNode && jquery_default()(element.parentNode).hasClass(tab_ClassName.DROPDOWN_MENU)) {
-        var dropdownElement = jquery_default()(element).closest(tab_Selector.DROPDOWN)[0];
+      if (element.parentNode && jquery_default()(element.parentNode).hasClass(dr_tab_ClassName.DROPDOWN_MENU)) {
+        var dropdownElement = jquery_default()(element).closest(dr_tab_Selector.DROPDOWN)[0];
 
         if (dropdownElement) {
-          var dropdownToggleList = [].slice.call(dropdownElement.querySelectorAll(tab_Selector.DROPDOWN_TOGGLE));
-          jquery_default()(dropdownToggleList).addClass(tab_ClassName.ACTIVE);
+          var dropdownToggleList = [].slice.call(dropdownElement.querySelectorAll(dr_tab_Selector.DROPDOWN_TOGGLE));
+          jquery_default()(dropdownToggleList).addClass(dr_tab_ClassName.ACTIVE);
         }
 
         element.setAttribute('aria-expanded', true);
@@ -11586,11 +11802,11 @@ var tab_Tab = /*#__PURE__*/function () {
     value: function _jQueryInterface(config) {
       return this.each(function () {
         var $this = jquery_default()(this);
-        var data = $this.data(tab_DATA_KEY);
+        var data = $this.data(dr_tab_DATA_KEY);
 
         if (!data) {
           data = new Tab(this);
-          $this.data(tab_DATA_KEY, data);
+          $this.data(dr_tab_DATA_KEY, data);
         }
 
         if (typeof config === 'string') {
@@ -11605,7 +11821,7 @@ var tab_Tab = /*#__PURE__*/function () {
   }, {
     key: "VERSION",
     get: function get() {
-      return tab_VERSION;
+      return dr_tab_VERSION;
     }
   }]);
 
@@ -11618,10 +11834,10 @@ var tab_Tab = /*#__PURE__*/function () {
  */
 
 
-jquery_default()(document).on(tab_Event.CLICK_DATA_API, tab_Selector.DATA_TOGGLE, function (event) {
+jquery_default()(document).on(dr_tab_Event.CLICK_DATA_API, dr_tab_Selector.DATA_TOGGLE, function (event) {
   event.preventDefault();
 
-  tab_Tab._jQueryInterface.call(jquery_default()(this), 'show');
+  dr_tab_Tab._jQueryInterface.call(jquery_default()(this), 'show');
 });
 /**
  * ------------------------------------------------------------------------
@@ -11629,15 +11845,15 @@ jquery_default()(document).on(tab_Event.CLICK_DATA_API, tab_Selector.DATA_TOGGLE
  * ------------------------------------------------------------------------
  */
 
-jquery_default.a.fn[tab_NAME] = tab_Tab._jQueryInterface;
-jquery_default.a.fn[tab_NAME].Constructor = tab_Tab;
+jquery_default.a.fn[dr_tab_NAME] = dr_tab_Tab._jQueryInterface;
+jquery_default.a.fn[dr_tab_NAME].Constructor = dr_tab_Tab;
 
-jquery_default.a.fn[tab_NAME].noConflict = function () {
-  jquery_default.a.fn[tab_NAME] = tab_JQUERY_NO_CONFLICT;
-  return tab_Tab._jQueryInterface;
+jquery_default.a.fn[dr_tab_NAME].noConflict = function () {
+  jquery_default.a.fn[dr_tab_NAME] = dr_tab_JQUERY_NO_CONFLICT;
+  return dr_tab_Tab._jQueryInterface;
 };
 
-/* harmony default export */ var tab = (tab_Tab);
+/* harmony default export */ var dr_tab = (dr_tab_Tab);
 // EXTERNAL MODULE: ./assets/js/public/jquery-cookie.js
 var jquery_cookie = __webpack_require__(8);
 
@@ -15594,6 +15810,7 @@ var DrgcUserWatcher = function (w, d, p, $) {
 /* harmony default export */ var user_activity_watcher = (DrgcUserWatcher);
 // CONCATENATED MODULE: ./assets/js/public/public.js
 // 3rd-party plugins
+
 
 
  // maintained by DR
