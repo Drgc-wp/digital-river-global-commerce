@@ -1,6 +1,6 @@
 <?php
 $current_locale = DRGC()->shopper->get_locale();
-$companyVat = '';
+$companyEIN = '';
 $billingAddress = $cart['cart']['billingAddress'];
 // var_dump($cart['cart']);
 // exit;
@@ -15,8 +15,8 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
 }
 if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
     foreach( $cart['cart']['customAttributes']['attribute'] as $attr ) {
-        if ( 'companyVat' == $attr['name'] ) {
-            $companyVat = $attr['value'];
+        if ( 'companyEIN' == $attr['name'] ) {
+            $companyEIN = $attr['value'];
             break;
         }
         continue;
@@ -95,7 +95,7 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
 
                     <label for="billing-field-company-name" class="float-label">
 
-                        <?php echo __( 'Company Name' ); ?>
+                        <?php echo __( 'Company Name', 'digital-river-global-commerce' ); ?>
 
                     </label>
 
@@ -110,11 +110,11 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
 
                     <label for="billing-field-company-ein" class="float-label">
 
-                        <?php echo __( 'Company EIN' ); ?>
+                        <?php echo __( 'Company EIN', 'digital-river-global-commerce' ); ?>
 
                     </label>
 
-                    <input id="billing-field-company-ein" type="text" name="billing-companyVat" value="<?php echo $companyVat; ?>" class="form-control float-field float-field--company-vat" >
+                    <input id="billing-field-company-ein" type="text" name="billing-companyEIN" value="<?php echo $companyEIN; ?>" class="form-control float-field float-field--company-ein" >
 
                 </div>
 
