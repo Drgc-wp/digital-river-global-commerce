@@ -19,7 +19,6 @@ if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
             $companyEIN = $attr['value'];
             break;
         }
-        continue;
     }
 }
 
