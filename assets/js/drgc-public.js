@@ -13834,10 +13834,14 @@ jQuery(document).ready(function ($) {
 
       if ('on' == $('#checkbox-business').val()) {
         companyMeta = {
-          attribute: [{
-            name: 'companyVat',
-            value: $('#billing-field-company-vat').val()
-          }]
+          cart: {
+            customAttributes: {
+              attribute: [{
+                name: 'companyEIN',
+                value: $('#billing-field-company-ein').val()
+              }]
+            }
+          }
         };
       }
 
@@ -13856,12 +13860,11 @@ jQuery(document).ready(function ($) {
         }
       }
 
-      commerce_api.updateCart({}, {
-        customAttributes: companyMeta
-      });
       commerce_api.updateCartBillingAddress({
         expand: 'all'
       }, cartRequest).then(function () {
+        return commerce_api.updateCart({}, companyMeta);
+      }).then(function () {
         return commerce_api.getCart({
           expand: 'all'
         });
