@@ -88,7 +88,7 @@
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+/* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*!
  * jQuery JavaScript Library v3.5.1
@@ -9564,16 +9564,16 @@
 /* 1 */
 /***/ (function(module, exports) {
 
-function _typeof(obj) {
-  "@babel/helpers - typeof";
+function _typeof2(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+function _typeof(obj) {
+  if (typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol") {
     module.exports = _typeof = function _typeof(obj) {
-      return typeof obj;
+      return _typeof2(obj);
     };
   } else {
     module.exports = _typeof = function _typeof(obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof2(obj);
     };
   }
 
@@ -9875,7 +9875,7 @@ module.exports = __webpack_amd_options__;
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+/* WEBPACK VAR INJECTION */(function(module) {function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -10011,7 +10011,7 @@ var runtime = function (exports) {
     };
   };
 
-  function AsyncIterator(generator, PromiseImpl) {
+  function AsyncIterator(generator) {
     function invoke(method, arg, resolve, reject) {
       var record = tryCatch(generator[method], generator, arg);
 
@@ -10022,14 +10022,14 @@ var runtime = function (exports) {
         var value = result.value;
 
         if (value && _typeof(value) === "object" && hasOwn.call(value, "__await")) {
-          return PromiseImpl.resolve(value.__await).then(function (value) {
+          return Promise.resolve(value.__await).then(function (value) {
             invoke("next", value, resolve, reject);
           }, function (err) {
             invoke("throw", err, resolve, reject);
           });
         }
 
-        return PromiseImpl.resolve(value).then(function (unwrapped) {
+        return Promise.resolve(value).then(function (unwrapped) {
           // When a yielded Promise is resolved, its final value becomes
           // the .value of the Promise<{value,done}> result for the
           // current iteration.
@@ -10047,7 +10047,7 @@ var runtime = function (exports) {
 
     function enqueue(method, arg) {
       function callInvokeWithMethodAndArg() {
-        return new PromiseImpl(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           invoke(method, arg, resolve, reject);
         });
       }
@@ -10084,9 +10084,8 @@ var runtime = function (exports) {
   // AsyncIterator objects; they just return a Promise for the value of
   // the final result produced by the iterator.
 
-  exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) {
-    if (PromiseImpl === void 0) PromiseImpl = Promise;
-    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);
+  exports.async = function (innerFn, outerFn, self, tryLocsList) {
+    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList));
     return exports.isGeneratorFunction(outerFn) ? iter // If outerFn is a generator, return the full iterator.
     : iter.next().then(function (result) {
       return result.done ? result.value : iter.next();
@@ -10590,7 +10589,6 @@ try {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/typeof.js
@@ -11065,7 +11063,9 @@ var Selector = {
  * ------------------------------------------------------------------------
  */
 
-var dr_modal_Modal = /*#__PURE__*/function () {
+var dr_modal_Modal =
+/*#__PURE__*/
+function () {
   function Modal(element, config) {
     classCallCheck_default()(this, Modal);
 
@@ -11214,7 +11214,7 @@ var dr_modal_Modal = /*#__PURE__*/function () {
   }, {
     key: "_getConfig",
     value: function _getConfig(config) {
-      config = _objectSpread(_objectSpread({}, Default), config);
+      config = _objectSpread({}, Default, {}, config);
       util.typeCheckConfig(NAME, config, DefaultType);
       return config;
     }
@@ -11519,7 +11519,7 @@ var dr_modal_Modal = /*#__PURE__*/function () {
       return this.each(function () {
         var data = jquery_default()(this).data(DATA_KEY);
 
-        var _config = _objectSpread(_objectSpread(_objectSpread({}, Default), jquery_default()(this).data()), typeof_default()(config) === 'object' && config ? config : {});
+        var _config = _objectSpread({}, Default, {}, jquery_default()(this).data(), {}, typeof_default()(config) === 'object' && config ? config : {});
 
         if (!data) {
           data = new Modal(this, _config);
@@ -11568,7 +11568,7 @@ jquery_default()(document).on(Event.CLICK_DATA_API, Selector.DATA_TOGGLE, functi
     target = document.querySelector(selector);
   }
 
-  var config = jquery_default()(target).data(DATA_KEY) ? 'toggle' : _objectSpread(_objectSpread({}, jquery_default()(target).data()), jquery_default()(this).data());
+  var config = jquery_default()(target).data(DATA_KEY) ? 'toggle' : _objectSpread({}, jquery_default()(target).data(), {}, jquery_default()(this).data());
 
   if (this.tagName === 'A' || this.tagName === 'AREA') {
     event.preventDefault();
@@ -11657,7 +11657,9 @@ var dr_tab_Selector = {
  * ------------------------------------------------------------------------
  */
 
-var dr_tab_Tab = /*#__PURE__*/function () {
+var dr_tab_Tab =
+/*#__PURE__*/
+function () {
   function Tab(element) {
     classCallCheck_default()(this, Tab);
 
@@ -11886,6 +11888,8 @@ var asyncToGenerator_default = /*#__PURE__*/__webpack_require__.n(asyncToGenerat
 
 // CONCATENATED MODULE: ./assets/js/public/checkout-utils.js
 var CheckoutUtils = function ($, params) {
+  var localizedText = drgc_params.translations;
+
   var createDisplayItems = function createDisplayItems(cartData) {
     var displayItems = [{
       label: params.translations.subtotal_label,
@@ -12027,10 +12031,7 @@ var CheckoutUtils = function ($, params) {
   };
 
   var apiErrorHandler = function apiErrorHandler(jqXHR) {
-    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) {
-      var currentError = jqXHR.responseJSON.errors.error[0];
-      drToast.displayMessage(currentError.description, 'error');
-    }
+    drToast.displayMessage(getAjaxErrorMessage(jqXHR), 'error');
   };
 
   var resetBodyOpacity = function resetBodyOpacity() {
@@ -12064,11 +12065,32 @@ var CheckoutUtils = function ($, params) {
   };
 
   var getAjaxErrorMessage = function getAjaxErrorMessage(jqXHR) {
-    return jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors ? jqXHR.responseJSON.errors.error[0].description : '';
+    var errMsg = localizedText.undefined_error_msg;
+
+    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) {
+      var err = jqXHR.responseJSON.errors.error[0];
+
+      switch (err.code) {
+        case 'restricted-bill-to-country':
+        case 'restricted-ship-to-country':
+          errMsg = localizedText.address_error_msg;
+          break;
+
+        case 'cart-fraud-failure':
+        case 'order-fraud-failure':
+          errMsg = localizedText.unable_place_order_msg;
+          break;
+
+        default:
+          errMsg = err.description;
+      }
+    }
+
+    return errMsg;
   };
 
   var setShippingOption = function setShippingOption(option, freeShipping) {
-    var html = "\n      <div class=\"field-radio\">\n        <input type=\"radio\"\n          name=\"selector\"\n          id=\"shipping-option-".concat(option.id, "\"\n          data-cost=\"").concat(option.formattedCost, "\"\n          data-id=\"").concat(option.id, "\"\n          data-desc=\"").concat(option.description, "\"\n        >\n        <label for=\"shipping-option-").concat(option.id, "\">\n          <span>").concat(option.description, "</span>\n          <span class=\"black\">").concat(freeShipping ? drgc_params.translations.free_label : option.formattedCost, "</span>\n        </label>\n      </div>\n    ");
+    var html = "\n      <div class=\"field-radio\">\n        <input type=\"radio\"\n          name=\"selector\"\n          id=\"shipping-option-".concat(option.id, "\"\n          data-cost=\"").concat(option.formattedCost, "\"\n          data-id=\"").concat(option.id, "\"\n          data-desc=\"").concat(option.description, "\"\n        >\n        <label for=\"shipping-option-").concat(option.id, "\">\n          <span>").concat(option.description, "</span>\n          <span class=\"black\">").concat(freeShipping ? localizedText.free_label : option.formattedCost, "</span>\n        </label>\n      </div>\n    ");
     $('#checkout-delivery-form .dr-panel-edit__el').append(html);
   };
 
@@ -12572,12 +12594,6 @@ var DRCommerceApi = function ($, params) {
 
 
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 /* global drgc_params, iFrameResize */
 
 /* eslint-disable no-alert, no-console */
@@ -12787,8 +12803,12 @@ var CartModule = function ($) {
     $lineItem.find('.dr-pd-cart-qty-plus').toggleClass('disabled', qty >= max);
   };
 
-  var renderLineItems = /*#__PURE__*/function () {
-    var _ref = asyncToGenerator_default()( /*#__PURE__*/regenerator_default.a.mark(function _callee(lineItems) {
+  var renderLineItems =
+  /*#__PURE__*/
+  function () {
+    var _ref = asyncToGenerator_default()(
+    /*#__PURE__*/
+    regenerator_default.a.mark(function _callee(lineItems) {
       var min, max, promises, lineItemHTMLArr, hasAutoRenewal;
       return regenerator_default.a.wrap(function _callee$(_context) {
         while (1) {
@@ -12808,12 +12828,12 @@ var CartModule = function ($) {
                   lineItemHTMLArr[idx] = lineItemHTML; // Insert item to specific index to keep sequence asynchronously
                 });
                 promises.push(promise);
-
-                var _iterator = _createForOfIteratorHelper(lineItem.product.customAttributes.attribute),
-                    _step;
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
 
                 try {
-                  for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                  for (var _iterator = lineItem.product.customAttributes.attribute[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                     var attr = _step.value;
 
                     if (attr.name === 'isAutomatic' && attr.value === 'true') {
@@ -12822,9 +12842,18 @@ var CartModule = function ($) {
                     }
                   }
                 } catch (err) {
-                  _iterator.e(err);
+                  _didIteratorError = true;
+                  _iteratorError = err;
                 } finally {
-                  _iterator.f();
+                  try {
+                    if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+                      _iterator["return"]();
+                    }
+                  } finally {
+                    if (_didIteratorError) {
+                      throw _iteratorError;
+                    }
+                  }
                 }
               });
               if (!hasAutoRenewal) $('.dr-cart__auto-renewal-terms').remove();
@@ -13142,8 +13171,12 @@ var FloatLabel = function () {
 
 
 var DRGooglePay = function ($, translations) {
-  var isConnectionSecure = /*#__PURE__*/function () {
-    var _ref = asyncToGenerator_default()( /*#__PURE__*/regenerator_default.a.mark(function _callee() {
+  var isConnectionSecure =
+  /*#__PURE__*/
+  function () {
+    var _ref = asyncToGenerator_default()(
+    /*#__PURE__*/
+    regenerator_default.a.mark(function _callee() {
       var canPay, details;
       return regenerator_default.a.wrap(function _callee$(_context) {
         while (1) {
@@ -13232,7 +13265,7 @@ var DRGooglePay = function ($, translations) {
           event.updateWith({
             status: 'failure',
             error: {
-              message: jqXHR.responseJSON.errors.error[0].description
+              message: checkout_utils.getAjaxErrorMessage(jqXHR)
             }
           });
         });
@@ -13266,7 +13299,7 @@ var DRGooglePay = function ($, translations) {
         event.updateWith({
           status: 'failure',
           error: {
-            message: jqXHR.responseJSON.errors.error[0].description
+            message: checkout_utils.getAjaxErrorMessage(jqXHR)
           }
         });
       });
@@ -13307,7 +13340,7 @@ var DRGooglePay = function ($, translations) {
           $('#checkout-confirmation-form > input[name="order_id"]').val(data.submitCart.order.id);
           $('#checkout-confirmation-form').submit();
         })["catch"](function (jqXHR) {
-          checkout_utils.displayAlertMessage(jqXHR.responseJSON.errors.error[0].description);
+          checkout_utils.displayAlertMessage(checkout_utils.getAjaxErrorMessage(jqXHR));
           $('body').removeClass('dr-loading');
         });
         event.complete('success');
@@ -13436,7 +13469,7 @@ var DRApplePay = function ($, translations) {
             event.updateWith({
               status: 'failure',
               error: {
-                message: jqXHR.responseJSON.errors.error[0].description
+                message: checkout_utils.getAjaxErrorMessage(jqXHR)
               }
             });
           });
@@ -13458,7 +13491,7 @@ var DRApplePay = function ($, translations) {
             event.updateWith({
               status: 'failure',
               error: {
-                message: jqXHR.responseJSON.errors.error[0].description
+                message: checkout_utils.getAjaxErrorMessage(jqXHR)
               }
             });
           });
@@ -13486,7 +13519,7 @@ var DRApplePay = function ($, translations) {
         event.updateWith({
           status: 'failure',
           error: {
-            message: jqXHR.responseJSON.errors.error[0].description
+            message: checkout_utils.getAjaxErrorMessage(jqXHR)
           }
         });
       });
@@ -13524,7 +13557,7 @@ var DRApplePay = function ($, translations) {
             ipAddress: drgc_params.client_ip
           });
         })["catch"](function (jqXHR) {
-          checkout_utils.displayAlertMessage(jqXHR.responseJSON.errors.error[0].description);
+          checkout_utils.displayAlertMessage(checkout_utils.getAjaxErrorMessage(jqXHR));
           $('body').removeClass('dr-loading');
         });
         event.complete('success');
@@ -13622,7 +13655,7 @@ var CheckoutModule = function ($) {
     return new Promise(function (resolve, reject) {
       $.ajax({
         type: 'GET',
-        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage"),
+        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage?ESICaching=off"),
         success: function success(response) {
           var addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
@@ -13743,19 +13776,7 @@ var CheckoutModule = function ($) {
     var $target = arguments.length > 1 ? arguments[1] : undefined;
 
     if (Object.keys(jqXHR).length) {
-      if (jqXHR.status === 409) {
-        var errorCode = jqXHR.responseJSON.errors.error[0].code;
-
-        if (errorCode === 'restricted-bill-to-country') {
-          $target.text(localizedText.address_error_msg).show();
-        } else if (errorCode === 'restricted-ship-to-country') {
-          $target.text(localizedText.address_error_msg).show();
-        } else {
-          $target.text(localizedText.undefined_error_msg).show();
-        }
-      } else {
-        $target.text(jqXHR.responseJSON.errors.error[0].description).show();
-      }
+      $target.text(checkout_utils.getAjaxErrorMessage(jqXHR)).show();
     } else {
       $target.text(localizedText.shipping_options_error_msg).show();
     }
@@ -13766,8 +13787,12 @@ var CheckoutModule = function ($) {
     $target.text(addressArr.join(', '));
   };
 
-  var preselectShippingOption = /*#__PURE__*/function () {
-    var _ref = asyncToGenerator_default()( /*#__PURE__*/regenerator_default.a.mark(function _callee(data) {
+  var preselectShippingOption =
+  /*#__PURE__*/
+  function () {
+    var _ref = asyncToGenerator_default()(
+    /*#__PURE__*/
+    regenerator_default.a.mark(function _callee(data) {
       var $errorMsgElem, defaultShippingOption, shippingOptions, defaultExists, index, option, res, freeShipping;
       return regenerator_default.a.wrap(function _callee$(_context) {
         while (1) {
@@ -13850,8 +13875,9 @@ var CheckoutModule = function ($) {
   }();
 
   var applyPaymentAndSubmitCart = function applyPaymentAndSubmitCart(sourceId) {
+    var isPaymentButton = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     var $form = $('#checkout-confirmation-form');
-    var $errorMsgElem = $('#dr-checkout-err-field');
+    $('body').addClass('dr-loading');
     commerce_api.applyPaymentMethod(sourceId).then(function () {
       return commerce_api.submitCart({
         ipAddress: drgc_params.client_ip
@@ -13860,9 +13886,10 @@ var CheckoutModule = function ($) {
       $('#checkout-confirmation-form > input[name="order_id"]').val(data.submitCart.order.id);
       $form.submit();
     })["catch"](function (jqXHR) {
+      var $errorMsgElem = isPaymentButton ? $('#dr-payment-failed-msg') : $('#dr-checkout-err-field');
       checkout_utils.resetFormSubmitButton($form);
-      checkout_utils.resetBodyOpacity();
       $errorMsgElem.text(checkout_utils.getAjaxErrorMessage(jqXHR)).show();
+      $('body').removeClass('dr-loading');
     });
   };
 
@@ -14362,15 +14389,15 @@ jQuery(document).ready(function ($) {
 
           if (requestShipping) {
             payPalPayload['shipping'] = {
-              'recipient': "".concat(cart.shippingAddress.firstName, " ").concat(cart.shippingAddress.lastName, " "),
-              'phoneNumber': cart.shippingAddress.phoneNumber,
+              'recipient': "".concat(addressPayload.shipping.firstName, " ").concat(addressPayload.shipping.lastName),
+              'phoneNumber': addressPayload.shipping.phoneNumber,
               'address': {
-                'line1': cart.shippingAddress.line1,
-                'line2': cart.shippingAddress.line2,
-                'city': cart.shippingAddress.city,
-                'state': cart.shippingAddress.countrySubdivision || 'NA',
-                'country': cart.shippingAddress.country,
-                'postalCode': cart.shippingAddress.postalCode
+                'line1': addressPayload.shipping.line1,
+                'line2': addressPayload.shipping.line2,
+                'city': addressPayload.shipping.city,
+                'state': addressPayload.shipping.countrySubdivision,
+                'country': addressPayload.shipping.country,
+                'postalCode': addressPayload.shipping.postalCode
               }
             };
           }
@@ -14384,13 +14411,18 @@ jQuery(document).ready(function ($) {
             }
           });
         },
+        onShippingChange: function onShippingChange(data, actions) {
+          var supportedCountries = checkout_utils.getSupportedCountries('shipping');
+
+          if (supportedCountries.indexOf(data.shipping_address.country_code) === -1) {
+            return actions.reject();
+          }
+
+          return actions.resolve();
+        },
         onAuthorize: function onAuthorize() {
           var sourceId = sessionStorage.getItem('paymentSourceId');
-          $('body').css({
-            'pointer-events': 'none',
-            'opacity': 0.5
-          });
-          CheckoutModule.applyPaymentAndSubmitCart(sourceId);
+          CheckoutModule.applyPaymentAndSubmitCart(sourceId, true);
         }
       }, '#dr-paypal-button');
     }
@@ -15220,7 +15252,7 @@ jQuery(document).ready(function ($) {
       }, cartRequest).then(function () {
         window.location.href = drgc_params.cartUrl;
       })["catch"](function (jqXHR) {
-        checkout_utils.displayAlertMessage(jqXHR.responseJSON.errors.error[0].description);
+        checkout_utils.displayAlertMessage(checkout_utils.getAjaxErrorMessage(jqXHR));
         checkout_utils.resetBodyOpacity();
       });
     });
@@ -15330,7 +15362,7 @@ jQuery(document).ready(function ($) {
       }, cartRequest).then(function () {
         window.location.href = drgc_params.cartUrl;
       })["catch"](function (jqXHR) {
-        checkout_utils.displayAlertMessage(jqXHR.responseJSON.errors.error[0].description);
+        checkout_utils.displayAlertMessage(checkout_utils.getAjaxErrorMessage(jqXHR));
         checkout_utils.resetBodyOpacity();
       });
     });

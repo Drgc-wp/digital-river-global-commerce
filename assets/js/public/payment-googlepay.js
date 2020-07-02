@@ -67,7 +67,7 @@ const DRGooglePay = (($, translations) => {
           event.updateWith({
             status: 'failure',
             error: {
-              message: jqXHR.responseJSON.errors.error[0].description
+              message: CheckoutUtils.getAjaxErrorMessage(jqXHR)
             }
           });
         });
@@ -106,7 +106,7 @@ const DRGooglePay = (($, translations) => {
         event.updateWith({
           status: 'failure',
           error: {
-            message: jqXHR.responseJSON.errors.error[0].description
+            message: CheckoutUtils.getAjaxErrorMessage(jqXHR)
           }
         });
       });
@@ -148,7 +148,7 @@ const DRGooglePay = (($, translations) => {
             $('#checkout-confirmation-form').submit();
           })
           .catch((jqXHR) => {
-            CheckoutUtils.displayAlertMessage(jqXHR.responseJSON.errors.error[0].description);
+            CheckoutUtils.displayAlertMessage(CheckoutUtils.getAjaxErrorMessage(jqXHR));
             $('body').removeClass('dr-loading');
           });
 

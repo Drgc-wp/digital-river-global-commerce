@@ -163,7 +163,8 @@ class DRGC_Public {
       'invalid_postal_code_msg'        => __('Your postal code is invalid.', 'digital-river-global-commerce'),
       'invalid_city_msg'               => __('Your city is invalid.', 'digital-river-global-commerce'),
       'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce'),
-      'upsell_decline_label'           => __('No, thanks', 'digital-river-global-commerce')
+      'upsell_decline_label'           => __('No, thanks', 'digital-river-global-commerce'),
+      'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce')
 		);
 
 		// transfer drgc options from PHP to JS

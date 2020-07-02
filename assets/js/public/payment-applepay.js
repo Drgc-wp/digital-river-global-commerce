@@ -85,7 +85,7 @@ const DRApplePay = (($, translations) => {
             event.updateWith({
               status: 'failure',
               error: {
-                message: jqXHR.responseJSON.errors.error[0].description
+                message: CheckoutUtils.getAjaxErrorMessage(jqXHR)
               }
             });
           });
@@ -107,7 +107,7 @@ const DRApplePay = (($, translations) => {
             event.updateWith({
               status: 'failure',
               error: {
-                message: jqXHR.responseJSON.errors.error[0].description
+                message: CheckoutUtils.getAjaxErrorMessage(jqXHR)
               }
             });
           });
@@ -140,7 +140,7 @@ const DRApplePay = (($, translations) => {
         event.updateWith({
           status: 'failure',
           error: {
-            message: jqXHR.responseJSON.errors.error[0].description
+            message: CheckoutUtils.getAjaxErrorMessage(jqXHR)
           }
         });
       });
@@ -178,7 +178,7 @@ const DRApplePay = (($, translations) => {
           .then(() => DRCommerceApi.applyPaymentMethod(sourceId))
           .then(() => DRCommerceApi.submitCart({ipAddress: drgc_params.client_ip}))
           .catch((jqXHR) => {
-            CheckoutUtils.displayAlertMessage(jqXHR.responseJSON.errors.error[0].description);
+            CheckoutUtils.displayAlertMessage(CheckoutUtils.getAjaxErrorMessage(jqXHR));
             $('body').removeClass('dr-loading');
           });
 
