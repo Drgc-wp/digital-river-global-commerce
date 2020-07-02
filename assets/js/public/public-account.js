@@ -339,6 +339,7 @@ $(() => {
 
 
     function updateSubscription(data = {}, $toggle) {
+        $('body').addClass('dr-loading');
         $.post(drgc_params.ajaxUrl, data, function(response) {
             if (response.success) {
                 var $renewalDate = $toggle.closest('.subscription').find('.subscription-dates .nextRenewalDate');
@@ -351,6 +352,8 @@ $(() => {
                 $subscriptionError.drModal('show');
                 $toggle.prop('checked', !(data.renewalType === 'Auto'));
             }
+
+            $('body').removeClass('dr-loading');
         });
     }
 
