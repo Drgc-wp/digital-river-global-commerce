@@ -3,7 +3,7 @@ import CheckoutUtils from './checkout-utils';
 const ThankYouModule = {};
 
 jQuery(document).ready(($) => {
-    if ($('.dr-thank-you-wrapper').length) {
+    if ($('.dr-thank-you-wrapper:visible').length) {
         $(document).on('click', '#print-button', function() {
             var printContents = $('.dr-thank-you-wrapper').html();
             var originalContents = document.body.innerHTML;

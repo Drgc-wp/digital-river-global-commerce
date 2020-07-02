@@ -270,7 +270,7 @@ jQuery(document).ready(($) => {
         const domain = drgc_params.domain;
         const isLogin = drgc_params.isLogin;
         const drLocale = drgc_params.drLocale || 'en_US';
-        let cartData = drgc_params.cart.cart;
+        const cartData = drgc_params.cart.cart;
         const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
         const isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
         const isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
@@ -432,9 +432,22 @@ jQuery(document).ready(($) => {
             const $button = $form.find('button[type="submit"]');
             const billingSameAsShipping = $('[name="checkbox-billing"]').is(':visible:checked');
             const isFormValid = CheckoutModule.validateAddress($form);
+            let companyMeta = {};
 
             if (!isFormValid) return;
 
+            if('on' == $('#checkbox-business').val()) {
+              companyMeta = {
+                cart: {
+                  customAttributes: {
+                   attribute:[{
+                      name: 'companyEIN',
+                      value: $('#billing-field-company-ein').val()
+                   }]
+                  }
+                }
+              }
+            }
             addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form);
             const cartRequest = {
                 address: addressPayload.billing
@@ -453,6 +466,7 @@ jQuery(document).ready(($) => {
             }
 
             DRCommerceApi.updateCartBillingAddress({expand: 'all'}, cartRequest)
+                .then(() => DRCommerceApi.updateCart({}, companyMeta))
                 .then(() => DRCommerceApi.getCart({expand: 'all'}))
                 // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
                 .then((data) => {
@@ -478,6 +492,10 @@ jQuery(document).ready(($) => {
                     $button.removeClass('sending').blur();
                     CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
                 });
+        });
+
+        $("#checkbox-business").on("change", function(){
+          $(".form-group-business").toggle("hide");
         });
 
         // Submit delivery form

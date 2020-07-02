@@ -170,6 +170,7 @@ class DRGC {
 		 */
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-cart.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-login.php';
+		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-account.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-checkout.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-thank-you.php';
 		require_once DRGC_PLUGIN_DIR . 'includes/shortcodes/class-dr-shortcode-my-subs.php';
@@ -333,6 +334,9 @@ class DRGC {
 
     $this->loader->add_action( 'wp_ajax_nopriv_drgc_cancel_subscription', $plugin_public, 'cancel_subscription_ajax' );
 		$this->loader->add_action( 'wp_ajax_drgc_cancel_subscription', $plugin_public, 'cancel_subscription_ajax' );
+
+		$this->loader->add_action( 'wp_ajax_nopriv_drgc_toggle_auto_renewal_ajax', $plugin_public, 'toggle_auto_renewal_ajax' );
+		$this->loader->add_action( 'wp_ajax_drgc_toggle_auto_renewal_ajax', $plugin_public, 'toggle_auto_renewal_ajax' );
 
 		$this->loader->add_action( 'wp_ajax_nopriv_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );
 		$this->loader->add_action( 'wp_ajax_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );

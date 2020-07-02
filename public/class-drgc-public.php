@@ -162,8 +162,9 @@ class DRGC_Public {
       'billing_country_error_msg'      => __('Billing country is not supported.', 'digital-river-global-commerce'),
       'invalid_postal_code_msg'        => __('Your postal code is invalid.', 'digital-river-global-commerce'),
       'invalid_city_msg'               => __('Your city is invalid.', 'digital-river-global-commerce'),
-			'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce'),
-			'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce')
+      'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce'),
+      'upsell_decline_label'           => __('No, thanks', 'digital-river-global-commerce'),
+      'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce')
 		);
 
 		// transfer drgc options from PHP to JS
@@ -539,7 +540,18 @@ class DRGC_Public {
 		$items[] = (object) $new_item;
 
 		if ( $is_logged_in ) {
-			$new_sub_item = array(
+			$new_sub_item_account = array(
+				'title'            => __( 'My Account', 'digital-river-global-commerce' ),
+				'menu_item_parent' => 'login',
+				'ID'               => 'account',
+				'db_id'            => 'account',
+				'url'              => get_site_url() . '/account',
+				'classes'          => array( 'menu-item' ),
+				'target'           => null,
+				'xfn'              => null,
+				'current'          => null // for preventing warning in debug mode
+			);
+			$new_sub_item_logout = array(
 				'title'            => __( 'Logout', 'digital-river-global-commerce' ),
 				'menu_item_parent' => 'login',
 				'ID'               => 'logout',
@@ -550,7 +562,8 @@ class DRGC_Public {
 				'xfn'              => null,
 				'current'          => null // for preventing warning in debug mode
 			);
-			$items[] = (object) $new_sub_item;
+			$items[] = (object) $new_sub_item_account;
+			$items[] = (object) $new_sub_item_logout;
 		}
 
 		return $items;
@@ -608,11 +621,13 @@ class DRGC_Public {
 	 */
 	public function redirect_on_page_load() {
 		if ( is_page( 'checkout' ) ) {
+			$cart = DRGC()->cart->retrieve_cart();
 			$customer = DRGC()->shopper->retrieve_shopper();
 			$is_logged_in = $customer && 'Anonymous' !== $customer['id'];
 			$is_guest = 'true' === $_COOKIE['drgc_guest_flag'];
+			$has_subs = drgc_is_subs_added_to_cart( $cart );
 
-			if ( ! $is_logged_in && ! $is_guest ) {
+			if ( ! $is_logged_in && ( ! $is_guest || $has_subs ) ) {
 				wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
 				exit;
 			}
@@ -620,32 +635,30 @@ class DRGC_Public {
 	}
 
 	/**
-	 * Switch auto renewal type AJAX
+	 *  ON/OFF auto renewal AJAX
 	 *
 	 * @since  1.3.0
 	 */
-	public function switch_renewal_type_ajax() {
+	public function toggle_auto_renewal_ajax() {
 		check_ajax_referer( 'drgc_ajax', 'nonce' );
 
 		if ( isset( $_POST['subscriptionId'] ) && isset( $_POST['renewalType'] ) ) {
 			$plugin = DRGC();
-			$subscription_id = sanitize_text_field( $_POST['subscriptionId'] );
-			$renewal_type = sanitize_text_field( $_POST['renewalType'] );
 			$params = array(
-				'id' => $subscription_id,
-				'renewal_type' => $renewal_type
+				'id' => $_POST['subscriptionId'],
+				'renewal_type' => $_POST['renewalType']
 			);
 
-			$response = $plugin->user_management->send_request( 'SWITCH_RENEWAL_TYPE', $params );
+			$response = $plugin->user_management->send_request( 'SWITCH_RENEWAL_TYPE', $params );			
 
 			if ( $response ) {
 				$plugin->user_management->send_json_response( $response );
 			} else {
-				wp_send_json_error();
+				wp_send_json_error( array( 'message' => 'Something went wrong!' ) );
 			}
-		} else {
-			wp_send_json_error();
 		}
+
+		wp_send_json_error( array( 'message' => 'Something went wrong!' ) );
 	}
 
 	/**

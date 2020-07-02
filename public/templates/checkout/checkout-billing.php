@@ -1,5 +1,9 @@
 <?php
+$current_locale = DRGC()->shopper->get_locale();
+$companyEIN = '';
 $billingAddress = $cart['cart']['billingAddress'];
+// var_dump($cart['cart']);
+// exit;
 if ( $customer_address ) {
     $billingAddress = $customer_address[0];
 } elseif ( $customer ) {
@@ -9,6 +13,15 @@ if ( $customer_address ) {
 if ( $cart['cart']['billingAddress']['line1'] != '') {
     $billingAddress = $cart['cart']['billingAddress'];
 }
+if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
+    foreach( $cart['cart']['customAttributes']['attribute'] as $attr ) {
+        if ( 'companyEIN' == $attr['name'] ) {
+            $companyEIN = $attr['value'];
+            break;
+        }
+    }
+}
+
 ?>
 <div class="dr-checkout__billing dr-checkout__el">
     <div class="dr-accordion">
@@ -58,6 +71,54 @@ if ( $cart['cart']['billingAddress']['line1'] != '') {
         </div>
 
         <div class="billing-section" <?php echo !$cart['cart']['hasPhysicalProduct'] ? 'style="display: block;"' : '' ?>>
+
+          <?php if ( 'en_US' === $current_locale ) : ?>
+          <div class="form-group dr-panel-edit__el">
+
+              <div class="field-checkbox">
+
+                  <input type="checkbox" name="checkbox-business" id="checkbox-business" <?php echo $billingAddress['companyName'] ? 'checked="checked"' : '' ?> value="on">
+
+                  <label for="checkbox-business" class="checkbox-label">
+
+                      <?php echo __( 'Business Checkout' ); ?>
+
+                  </label>
+
+              </div>
+
+          </div>
+          <div class="form-group dr-panel-edit__el form-group-business<?php echo !$billingAddress['companyName'] ? ' hide' : '' ?>">
+
+                <div class="float-container float-container--company-name">
+
+                    <label for="billing-field-company-name" class="float-label">
+
+                        <?php echo __( 'Company Name', 'digital-river-global-commerce' ); ?>
+
+                    </label>
+
+                    <input id="billing-field-company-name" type="text" name="billing-companyName" value="<?php echo $billingAddress['companyName'] ?>" class="form-control float-field float-field--company-name" >
+
+                </div>
+
+            </div>
+            <div class="form-group dr-panel-edit__el form-group-business <?php echo !$billingAddress['companyName'] ? ' hide' : '' ?>">
+
+                <div class="float-container float-container--company-ein">
+
+                    <label for="billing-field-company-ein" class="float-label">
+
+                        <?php echo __( 'Company EIN', 'digital-river-global-commerce' ); ?>
+
+                    </label>
+
+                    <input id="billing-field-company-ein" type="text" name="billing-companyEIN" value="<?php echo $companyEIN; ?>" class="form-control float-field float-field--company-ein" >
+
+                </div>
+
+            </div>
+            <?php endif; ?>
 
             <div class="form-group dr-panel-edit__el">
 

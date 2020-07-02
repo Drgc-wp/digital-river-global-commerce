@@ -1,26 +1,40 @@
 .dr-btn {
     position: relative;
     display: inline-block;
-    background-color: $blue;
-    color: white;
+    background-color: $blue !important;
+    color: white !important;
     font-family: 'Open Sans', sans-serif;
     font-size: 15px;
     font-weight: 700;
     line-height: 1;
     text-transform: uppercase;
     text-align: center;
-    border: none;
+    border: none !important;
     padding: 13px;
-    text-decoration: none;
+    text-decoration: none !important;
 
     &:hover {
-        background-color: $blue-dark;
+        background: $blue-dark !important;
         text-decoration: none;
         color: white;
     }
 
     &:focus {
         outline: none;
+    }
+
+    &-black {
+        background-color: $gray-900 !important;
+        &:hover {
+            background-color: $black !important;
+        }
+    }
+
+    &-green {
+        background-color: $success !important;
+        &:hover {
+            background-color: darken($success, 10) !important;
+        }
     }
 
     &:not(.disabled) {
