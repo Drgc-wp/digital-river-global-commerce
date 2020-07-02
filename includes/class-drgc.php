@@ -335,8 +335,8 @@ class DRGC {
     $this->loader->add_action( 'wp_ajax_nopriv_drgc_cancel_subscription', $plugin_public, 'cancel_subscription_ajax' );
 		$this->loader->add_action( 'wp_ajax_drgc_cancel_subscription', $plugin_public, 'cancel_subscription_ajax' );
 
-		$this->loader->add_action( 'wp_ajax_nopriv_drgc_toggle_user_subscription', $plugin_public, 'drgc_toggle_user_subscription' );
-		$this->loader->add_action( 'wp_ajax_drgc_toggle_user_subscription', $plugin_public, 'drgc_toggle_user_subscription' );
+		$this->loader->add_action( 'wp_ajax_nopriv_drgc_toggle_auto_renewal_ajax', $plugin_public, 'toggle_auto_renewal_ajax' );
+		$this->loader->add_action( 'wp_ajax_drgc_toggle_auto_renewal_ajax', $plugin_public, 'toggle_auto_renewal_ajax' );
 
 		$this->loader->add_action( 'wp_ajax_nopriv_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );
 		$this->loader->add_action( 'wp_ajax_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );

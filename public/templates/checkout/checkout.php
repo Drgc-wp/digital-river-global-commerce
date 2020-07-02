@@ -11,16 +11,18 @@
  * @subpackage Digital_River_Global_Commerce/public/templates/parts
  */
 
-    $display = '';
-    if ($cart['cart']['totalItemsInCart'] == 0 ) {
-        echo __( 'Your cart is empty!', 'digital-river-global-commerce' );
-        $display = 'style="display:none;"';
-    }
-    
-    $customerEmail = '';
-    if ( $customer && $customer['id'] != 'Anonymous' ) {
-        $customerEmail = $customer['emailAddress'];
-    }
+$display = '';
+if ($cart['cart']['totalItemsInCart'] == 0 ) {
+    echo __( 'Your cart is empty!', 'digital-river-global-commerce' );
+    $display = 'style="display:none;"';
+}
+
+$customerEmail = '';
+if ( $customer && $customer['id'] != 'Anonymous' ) {
+    $customerEmail = $customer['emailAddress'];
+}
+
+$has_subs = drgc_is_subs_added_to_cart( $cart );
 ?>
 
 <div class="dr-checkout-wrapper" id="dr-checkout-page-wrapper">
@@ -41,9 +43,13 @@
 
                 <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-pretandc.php'; ?>
 
-                <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-googlepay.php'; ?>
+                <?php if ( ! $has_subs ) : ?>
 
-                <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-applepay.php'; ?>
+                    <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-googlepay.php'; ?>
+
+                    <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-applepay.php'; ?>
+
+                <?php endif; ?>
 
                 <div class="invalid-feedback" id="dr-preTAndC-err-msg"></div>
 
@@ -69,7 +75,7 @@
 
         <div class="dr-summary dr-summary--checkout">
 
-            <?php drgc_currency_toggler(); ?>
+            <?php drgc_currency_toggler( 'd-none' ); ?>
 
             <div class="dr-summary__products">
 

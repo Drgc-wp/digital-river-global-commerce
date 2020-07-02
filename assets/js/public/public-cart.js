@@ -370,7 +370,15 @@ const CartModule = (($) => {
         }
       })
       .then(() => {
-        if (lineItems && lineItems.length) renderOffers(lineItems);
+        if (lineItems && lineItems.length) {
+          if (drgc_params.isLogin !== 'true') {
+            const href = CheckoutUtils.isSubsAddedToCart(lineItems) ? drgc_params.loginPath : drgc_params.checkoutUrl;
+            $('a.dr-summary__proceed-checkout').prop('href', href);
+          }
+
+          renderOffers(lineItems);
+        }
+
         $('.dr-cart__content').removeClass('dr-loading'); // Main cart is ready, loading can be ended
       })
       .catch((jqXHR) => {

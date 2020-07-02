@@ -1,5 +1,8 @@
 import FloatLabel from './float-label';
 import $ from 'jquery';
+import DRCommerceApi from './commerce-api';
+import CheckoutUtils from './checkout-utils';
+
 const AccountModule = {};
 
 $(() => {
@@ -336,28 +339,28 @@ $(() => {
 
 
     function updateSubscription(data = {}, $toggle) {
+        $('body').addClass('dr-loading');
         $.post(drgc_params.ajaxUrl, data, function(response) {
-            if(response.success) {
-
+            if (response.success) {
                 var $renewalDate = $toggle.closest('.subscription').find('.subscription-dates .nextRenewalDate');
 
                 if ($renewalDate.length) {
-                    var renewalText = (data.subscription === 'enabled') ? $renewalDate.attr('data-on') : $renewalDate.attr('data-off');
+                    var renewalText = (data.renewalType === 'Auto') ? $renewalDate.attr('data-on') : $renewalDate.attr('data-off');
                     $renewalDate.find('strong').text(renewalText);
                 }
-
             } else {
                 $subscriptionError.drModal('show');
-                $toggle.prop('checked', !(data.subscription === 'enabled'));
+                $toggle.prop('checked', !(data.renewalType === 'Auto'));
             }
+
+            $('body').removeClass('dr-loading');
         });
     }
 
     $subs.find('.subscription-ar .switch input[type="checkbox"]').on('change', function() {
-
         var $this = $(this);
         var subID = ($this.closest('.subscription').length && $this.closest('.subscription').attr('data-id')) ? $this.closest('.subscription').attr('data-id') : '';
-        var ar = $this.is(':checked') ? 'enabled' : 'disabled';
+        var ar = $this.is(':checked') ? 'Auto' : 'Manual';
 
         $body.data({
             currentToggle: {
@@ -368,16 +371,16 @@ $(() => {
         });
 
         var data = {
-            action       : 'drgc_toggle_user_subscription',
-            nonce        : drgc_params.ajaxNonce,
-            sub_id       : subID,
-            subscription : ar
+            action         : 'drgc_toggle_auto_renewal_ajax',
+            nonce          : drgc_params.ajaxNonce,
+            subscriptionId : subID,
+            renewalType    : ar
         };
 
-        if (ar === 'disabled') {
+        if (ar === 'Manual') {
             $subscriptionConfirm.drModal({
-                backdrop:'static',
-                keyboard:false
+                backdrop: 'static',
+                keyboard: false
             });
         } else {
             updateSubscription(data, $this);
@@ -388,19 +391,53 @@ $(() => {
     $subscriptionConfirmAccept.on('click', function() {
         var toggle = $body.data('currentToggle');
         var data = {
-            action       : 'drgc_toggle_user_subscription',
-            nonce        : drgc_params.ajaxNonce,
-            sub_id       : toggle.subID,
-            subscription : toggle.ar
+            action         : 'drgc_toggle_auto_renewal_ajax',
+            nonce          : drgc_params.ajaxNonce,
+            subscriptionId : toggle.subID,
+            renewalType    : toggle.ar
         };
         updateSubscription(data, toggle.selector);
     });
     // reset toggle if event is canceled
     $subscriptionConfirmCancel.on('click', function() {
         var toggle = $body.data('currentToggle');
-        toggle.selector.prop('checked', !(toggle.ar === 'enabled'));
+        toggle.selector.prop('checked', !(toggle.ar === 'Auto'));
     });
 
+    $('#list-subscriptions .dr-renew-btn').on('click', (e) => {
+        const payload = {
+            cart: {
+                lineItems: {
+                    lineItem: [
+                        {
+                            quantity: e.target.dataset.renewalQty,
+                            product: {
+                                id: e.target.dataset.productId
+                            },
+                            customAttributes: {
+                                attribute: [
+                                    {
+                                        name: 'RenewingSubscriptionID',
+                                        value: e.target.dataset.subsId
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        };
+
+        $('body').addClass('dr-loading');
+        DRCommerceApi.updateCart({}, payload)
+            .then(() => {
+                window.location.href = drgc_params.cartUrl;
+            })
+            .catch((jqXHR) => {
+                CheckoutUtils.apiErrorHandler(jqXHR);
+                $('body').removeClass('dr-loading');
+            });
+    });
 
     $body.append($subscriptionError).append($subscriptionConfirm);
 
@@ -409,6 +446,8 @@ $(() => {
         $('.dr-tab-pane').removeClass('active show');
         $('.dr-list-group-item').removeClass('active').attr('aria-selected', 'false');
     });
+
+
 
 });
 

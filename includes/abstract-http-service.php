@@ -120,19 +120,23 @@ abstract class AbstractHttpService {
     /**
      * Initialize new client
      *
-     * @param boolean $force_basic_auth
+     * @param boolean $force_bearer_token
      * @param boolean $is_user_management
      *
      * @return \GuzzleHttp\Client
      */
-    private function createClient( $force_basic_auth = false, $force_blue_auth = false ): Client {
-        if ( $force_blue_auth ) {
-            $auth = base64_encode( 'drconnectAppUser_drgcdev@' . get_option( 'drgc_site_id' ) . ':25f3994ef571adfe52a37739048ee4ab' );
-            $this->config['headers']['Authorization'] = trim( 'Basic ' . $auth );
-        } else if ( $this->token && ! $force_basic_auth ) {
+    private function createClient( $force_bearer_token = true, $is_user_management = false ): Client {
+        if ( $this->token && $force_bearer_token ) {
             $this->config['headers']['Authorization'] = trim( ucfirst( $this->tokenType ) . ' ' . $this->token );
         } else {
-            $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
+            if ( $is_user_management ) {
+                $auth = base64_encode( get_option( 'drgc_big_blue_username' ) . '@' . get_option( 'drgc_site_id' ) . ':' . get_option( 'drgc_big_blue_password' ) );
+                $this->config['headers']['Content-Type'] = 'text/xml; charset=UTF8';
+                $this->config['headers']['Accept'] = 'text/xml; charset=UTF8';
+            } else {
+                $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
+            }
+
             $this->config['headers']['Authorization'] = trim( 'Basic ' . $auth );
         }
 
@@ -252,12 +256,12 @@ abstract class AbstractHttpService {
     /**
      * @param string $uri
      * @param array  $data
-     * @param boolean $force_basic_auth
+     * @param boolean $force_bearer_token
      *
      * @return array
      */
-    protected function get( string $uri = '', array $data = array(), $force_basic_auth = false ): array {
-        $client = $this->createClient( $force_basic_auth );
+    protected function get( string $uri = '', array $data = array(), $force_bearer_token = true ): array {
+        $client = $this->createClient( $force_bearer_token );
         $uri = $this->normalizeUri($uri);
         $response = $client->get( $uri, $data );
 
@@ -337,20 +341,16 @@ abstract class AbstractHttpService {
       return $this->getResponseData( $response );
     }
 
-
-
     /**
      * @param string $uri
      * @param string $xml
      *
-     * @return obj
+     * @return string
      */
     protected function postXml( string $uri = '', string $xml = '' ) {
-        $this->config['headers']['Content-Type'] = 'text/xml; charset=UTF8';
-        $this->config['headers']['Accept'] = 'text/xml; charset=UTF8';
-
         $client = $this->createClient( false, true );
+        $response =  $client->post( $uri, array( 'body' => $xml ) );
 
-        return $client->post( $uri, array( 'body' => $xml ) );
+        return $response->getBody();
     }
 }

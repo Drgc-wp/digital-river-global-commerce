@@ -1104,8 +1104,6 @@ body .modal-scrollbar-measure { position: absolute; top: -9999px; width: 50px; h
 
 .drgc-wrapper html { font-family: sans-serif; line-height: 1.15; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
 
-.drgc-wrapper article, .drgc-wrapper aside, .drgc-wrapper figcaption, .drgc-wrapper figure, .drgc-wrapper footer, .drgc-wrapper header, .drgc-wrapper hgroup, .drgc-wrapper main, .drgc-wrapper nav, .drgc-wrapper section { display: block; }
-
 .drgc-wrapper body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; font-size: 1em; font-weight: 400; line-height: 1.5; color: #212529; text-align: left; background-color: #fff; }
 
 .drgc-wrapper [tabindex="-1"]:focus:not(:focus-visible) { outline: 0 !important; }
@@ -1173,8 +1171,6 @@ body .modal-scrollbar-measure { position: absolute; top: -9999px; width: 50px; h
 .drgc-wrapper input, .drgc-wrapper button, .drgc-wrapper select, .drgc-wrapper optgroup, .drgc-wrapper textarea { margin: 0; font-family: inherit; font-size: inherit; line-height: inherit; }
 
 .drgc-wrapper button, .drgc-wrapper input { overflow: visible; }
-
-.drgc-wrapper button, .drgc-wrapper select { text-transform: none; }
 
 .drgc-wrapper [role="button"] { cursor: pointer; }
 
@@ -1730,6 +1726,10 @@ input[type=number] { -webkit-appearance: textfield; -moz-appearance: textfield; 
 .dr-account-wrapper .subscription-content { font-size: 0.85em; }
 
 .dr-account-wrapper .subscription-content > p { margin: 0; }
+
+.dr-account-wrapper .subscription-content > button { white-space: nowrap; }
+
+.dr-account-wrapper .subscription-content > button:focus { outline: none; }
 
 .dr-account-wrapper .subscription-id { position: absolute; top: 0; left: 0; padding: 4px 8px; font-size: 12px; font-style: italic; color: #adb5bd; }
 

@@ -34,7 +34,7 @@
   // TODO: remove in v5
   // stylelint-disable-next-line selector-list-comma-newline-after
   article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
-    display: block;
+    //display: block;
   }
 
   // Body
@@ -331,7 +331,7 @@
 
   button,
   select {
-    text-transform: none; // Remove the inheritance of text transform in Firefox
+    //text-transform: none; // Remove the inheritance of text transform in Firefox
   }
 
   // Set the cursor for non-`<button>` buttons
