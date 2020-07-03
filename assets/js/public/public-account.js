@@ -429,7 +429,7 @@ $(() => {
         };
 
         $('body').addClass('dr-loading');
-        DRCommerceApi.updateCart({}, payload)
+        DRCommerceApi.updateCart({testOrder: drgc_params.testOrder}, payload)
             .then(() => {
                 window.location.href = drgc_params.cartUrl;
             })
