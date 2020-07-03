@@ -505,7 +505,7 @@ class DRGC_Admin {
       <label for="applepay_long"><?php _e( 'Long', 'digital-river-global-commerce' ); ?></label><br />
       <input type="radio" id="applepay_plain" name="<?php echo $this->option_name; ?>_applepay_button_type" value="plain" <?php checked( $button_type, 'plain' ); ?> />
       <label for="applepay_plain"><?php _e( 'Plain', 'digital-river-global-commerce' ); ?></label>
-    </fieldset>;
+    </fieldset>
   <?php }
   
   /**
@@ -559,7 +559,7 @@ class DRGC_Admin {
       <label for="googlepay_long"><?php _e( 'Long', 'digital-river-global-commerce' ); ?></label><br />
       <input type="radio" id="googlepay_plain" name="<?php echo $this->option_name; ?>_googlepay_button_type" value="plain" <?php checked( $button_type, 'plain' ); ?> />
       <label for="googlepay_plain"><?php _e( 'Plain', 'digital-river-global-commerce' ); ?></label>
-    </fieldset>;
+    </fieldset>
   <?php }
 
   /**
