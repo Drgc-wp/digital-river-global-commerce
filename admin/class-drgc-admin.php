@@ -506,6 +506,9 @@ class DRGC_Admin {
       <input type="radio" id="applepay_plain" name="<?php echo $this->option_name; ?>_applepay_button_type" value="plain" <?php checked( $button_type, 'plain' ); ?> />
       <label for="applepay_plain"><?php _e( 'Plain', 'digital-river-global-commerce' ); ?></label>
     </fieldset>
+  <?php if ( $disabled ): ?>
+    <input type="hidden" id="applepay_button_type" name="<?php echo $this->option_name; ?>_applepay_button_type" value="buy" />
+  <?php endif; ?>
   <?php }
   
   /**
@@ -513,8 +516,8 @@ class DRGC_Admin {
    *
    * @since    1.3.0
    */
-	public function drgc_applepay_button_color_cb() {
-		$button_color = get_option( $this->option_name . '_applepay_button_color' );
+  public function drgc_applepay_button_color_cb() {
+    $button_color = get_option( $this->option_name . '_applepay_button_color' );
     $option = get_option( $this->option_name . '_applepay_handler' );
     $disabled = ( is_array( $option ) && $option['checkbox'] === '1' ) ? '' : 'disabled';
   ?>
@@ -525,6 +528,9 @@ class DRGC_Admin {
       <input type="radio" id="applepay_white" name="<?php echo $this->option_name; ?>_applepay_button_color" value="light" <?php checked( $button_color, 'light' ); ?> />
       <label for="applepay_white"><?php _e( 'White', 'digital-river-global-commerce' ); ?></label>
     </fieldset>
+  <?php if ( $disabled ): ?>
+    <input type="hidden" id="applepay_button_color" name="<?php echo $this->option_name; ?>_applepay_button_color" value="dark" />
+  <?php endif; ?>
   <?php }
 
 	/**
@@ -548,7 +554,7 @@ class DRGC_Admin {
    *
    * @since    1.3.0
    */
-	public function drgc_googlepay_button_type_cb() {
+  public function drgc_googlepay_button_type_cb() {
     $button_type = get_option( $this->option_name . '_googlepay_button_type' );
     $option = get_option( $this->option_name . '_googlepay_handler' );
     $disabled = ( is_array( $option ) && $option['checkbox'] === '1' ) ? '' : 'disabled';
@@ -560,6 +566,9 @@ class DRGC_Admin {
       <input type="radio" id="googlepay_plain" name="<?php echo $this->option_name; ?>_googlepay_button_type" value="plain" <?php checked( $button_type, 'plain' ); ?> />
       <label for="googlepay_plain"><?php _e( 'Plain', 'digital-river-global-commerce' ); ?></label>
     </fieldset>
+  <?php if ( $disabled ): ?>
+    <input type="hidden" id="googlepay_button_type" name="<?php echo $this->option_name; ?>_googlepay_button_type" value="long" />
+  <?php endif; ?>
   <?php }
 
   /**
@@ -567,7 +576,7 @@ class DRGC_Admin {
    *
    * @since    1.3.0
    */
-	public function drgc_googlepay_button_color_cb() {
+  public function drgc_googlepay_button_color_cb() {
     $button_color = get_option( $this->option_name . '_googlepay_button_color' );
     $option = get_option( $this->option_name . '_googlepay_handler' );
     $disabled = ( is_array( $option ) && $option['checkbox'] === '1' ) ? '' : 'disabled';
@@ -579,6 +588,9 @@ class DRGC_Admin {
       <input type="radio" id="googlepay_white" name="<?php echo $this->option_name; ?>_googlepay_button_color" value="light" <?php checked( $button_color, 'light' ); ?> />
       <label for="googlepay_white"><?php _e( 'White', 'digital-river-global-commerce' ); ?></label>
     </fieldset>
+  <?php if ( $disabled ): ?>
+    <input type="hidden" id="googlepay_button_color" name="<?php echo $this->option_name; ?>_googlepay_button_color" value="dark" />
+  <?php endif; ?>
   <?php }
   
   /**
