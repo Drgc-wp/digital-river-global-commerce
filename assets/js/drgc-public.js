@@ -13087,8 +13087,8 @@ jQuery(document).ready(function ($) {
     checkout_utils.applyLegalLinks(digitalriverjs);
 
     if ($('#dr-autoRenewTermsContainer').length) {
-      $('#autoRenewOptedInOnCheckout').prop('checked', false);
       CartModule.initAutoRenewalTerms(digitalriverjs, drLocale);
+      $('#autoRenewOptedInOnCheckout').prop('checked', false).trigger('change');
     }
   }
 });
