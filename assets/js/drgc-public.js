@@ -14101,22 +14101,7 @@ jQuery(document).ready(function ($) {
       var $button = $form.find('button[type="submit"]');
       var billingSameAsShipping = $('[name="checkbox-billing"]').is(':visible:checked');
       var isFormValid = CheckoutModule.validateAddress($form);
-      var companyMeta = {};
       if (!isFormValid) return;
-
-      if ('on' == $('#checkbox-business').val()) {
-        companyMeta = {
-          cart: {
-            customAttributes: {
-              attribute: [{
-                name: 'companyEIN',
-                value: $('#billing-field-company-ein').val()
-              }]
-            }
-          }
-        };
-      }
-
       addressPayload.billing = billingSameAsShipping ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form);
       var cartRequest = {
         address: addressPayload.billing
@@ -14135,6 +14120,20 @@ jQuery(document).ready(function ($) {
       commerce_api.updateCartBillingAddress({
         expand: 'all'
       }, cartRequest).then(function () {
+        var $companyEin = $('#billing-field-company-ein');
+        if (!$companyEin.length) return new Promise(function (resolve) {
+          return resolve();
+        });
+        var companyMeta = {
+          cart: {
+            customAttributes: {
+              attribute: [{
+                name: 'companyEIN',
+                value: $companyEin.val()
+              }]
+            }
+          }
+        };
         return commerce_api.updateCart({}, companyMeta);
       }).then(function () {
         return commerce_api.getCart({
@@ -15794,7 +15793,9 @@ jquery_default()(function () {
       }
     };
     jquery_default()('body').addClass('dr-loading');
-    commerce_api.updateCart({}, payload).then(function () {
+    commerce_api.updateCart({
+      testOrder: drgc_params.testOrder
+    }, payload).then(function () {
       window.location.href = drgc_params.cartUrl;
     })["catch"](function (jqXHR) {
       checkout_utils.apiErrorHandler(jqXHR);

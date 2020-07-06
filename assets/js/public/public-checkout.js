@@ -432,22 +432,9 @@ jQuery(document).ready(($) => {
             const $button = $form.find('button[type="submit"]');
             const billingSameAsShipping = $('[name="checkbox-billing"]').is(':visible:checked');
             const isFormValid = CheckoutModule.validateAddress($form);
-            let companyMeta = {};
 
             if (!isFormValid) return;
 
-            if('on' == $('#checkbox-business').val()) {
-              companyMeta = {
-                cart: {
-                  customAttributes: {
-                   attribute:[{
-                      name: 'companyEIN',
-                      value: $('#billing-field-company-ein').val()
-                   }]
-                  }
-                }
-              }
-            }
             addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form);
             const cartRequest = {
                 address: addressPayload.billing
@@ -466,7 +453,24 @@ jQuery(document).ready(($) => {
             }
 
             DRCommerceApi.updateCartBillingAddress({expand: 'all'}, cartRequest)
-                .then(() => DRCommerceApi.updateCart({}, companyMeta))
+                .then(() => {
+                    const $companyEin = $('#billing-field-company-ein');
+
+                    if (!$companyEin.length) return new Promise(resolve => resolve());
+
+                    const companyMeta = {
+                        cart: {
+                            customAttributes: {
+                                attribute:[{
+                                    name: 'companyEIN',
+                                    value: $companyEin.val()
+                                }]
+                            }
+                        }
+                    };
+
+                    return DRCommerceApi.updateCart({}, companyMeta);
+                })
                 .then(() => DRCommerceApi.getCart({expand: 'all'}))
                 // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
                 .then((data) => {
