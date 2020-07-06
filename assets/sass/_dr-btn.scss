@@ -4,13 +4,14 @@
     background-color: $blue !important;
     color: white !important;
     font-family: 'Open Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1;
-    text-transform: uppercase;
-    text-align: center;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+    text-align: center !important;
     border: none !important;
-    padding: 13px;
+    border-radius: 0 !important;
+    padding: 13px !important;
     text-decoration: none !important;
 
     &:hover {
@@ -34,6 +35,17 @@
         background-color: $success !important;
         &:hover {
             background-color: darken($success, 10) !important;
+        }
+    }
+
+    &-gray {
+        background-color: $gray !important;
+        &:hover {
+            background-color: $gray-darker !important;
+        }
+        &:focus {
+            outline: none !important;
+            border: none !important;
         }
     }
 

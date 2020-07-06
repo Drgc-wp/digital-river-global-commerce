@@ -398,7 +398,7 @@ jQuery(document).ready(($) => {
             if (isLogin === 'true') {
                 const address = CheckoutModule.getAddress('shipping', true);
 
-                DRCommerceApi.updateShopperAddress(address).catch((jqXHR) => {
+                DRCommerceApi.saveShopperAddress(address).catch((jqXHR) => {
                     CheckoutUtils.apiErrorHandler(jqXHR);
                 });
             }
@@ -459,7 +459,7 @@ jQuery(document).ready(($) => {
                 if ((requestShipping && !billingSameAsShipping) || !requestShipping) {
                     const address = CheckoutModule.getAddress('billing', false);
 
-                    DRCommerceApi.updateShopperAddress(address).catch((jqXHR) => {
+                    DRCommerceApi.saveShopperAddress(address).catch((jqXHR) => {
                         CheckoutUtils.apiErrorHandler(jqXHR);
                     });
                 }

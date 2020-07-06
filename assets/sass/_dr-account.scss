@@ -451,21 +451,36 @@
 
             &:hover {
                 cursor:pointer;
-                .address-edit-btn {
+
+                .address-edit-btn, .address-delete-btn {
                     opacity:1;
                     pointer-events:auto;
-                    transform:translate(-50%, -50%);
+                }
+
+                .address-edit-btn {
+                    transform: translate(-50%, -50%);
+                }
+
+                .address-delete-btn {
+                    transform: translate(-50%, 80%);
                 }
             }
             @include media-breakpoint-down(md) {
-                .address-edit-btn {
+                .address-edit-btn, .address-delete-btn {
                     opacity:1;
                     pointer-events:auto;
-                    transform:translate(-50%, -50%);
+                }
+
+                .address-edit-btn {
+                    transform: translate(-50%, -50%);
+                }
+
+                .address-delete-btn {
+                    transform: translate(-50%, 80%);
                 }
             }
 
-            &-edit {
+            &-edit, &-delete {
                 cursor:auto;
 
                 &-btn {
@@ -476,11 +491,18 @@
                     right:0;
                     transform:translate(0, -50%);
                     transition:transform 200ms, opacity 200ms;
-                    background:transparent url(../images/edit-icon.svg) center/contain no-repeat;
                     height:28px;
                     width:28px;
                     border:0;
                 }
+            }
+
+            &-edit-btn {
+                background: transparent url(../images/edit-icon.svg) center/contain no-repeat;
+            }
+
+            &-delete-btn {
+                background: transparent url(../images/garbage.svg) center/contain no-repeat;
             }
 
 
@@ -530,17 +552,24 @@
                     max-width:100%;
                     .address {
                         padding:15px;
-                        .address-edit-btn {
+                        .address-edit-btn, .address-delete-btn {
                             display:none;
                         }
                     }
                 }
             }
 
-            &-name {
-                font-size:1.25em;
-                margin-bottom:15px;
-                font-weight:bold;
+            &-name, &-nickname {
+                font-weight: bold;
+            }
+
+            &-nickname {
+                font-size: 1.25em;
+                margin-bottom: 15px;
+            }
+
+            &.ajax-error {
+                border: 2px solid red;
             }
 
             .firstName,
