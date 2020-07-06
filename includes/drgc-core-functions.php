@@ -421,24 +421,44 @@ function drgc_should_display_vat( $currency = '' ) {
  * Check if there is any subs in the cart
  *
  * @param array $cart
- * @return bool
+ * @return array
  */
 function drgc_is_subs_added_to_cart( $cart ) {
   $line_items = $cart['cart']['lineItems']['lineItem'] ?? [];
   $has_subs = false;
+  $is_auto = false;
 
   if ( count( $line_items ) > 0 ) {
     foreach ( $line_items as $line_item ) {
       $custom_attrs = $line_item['product']['customAttributes']['attribute'] ?? [];
 
       foreach ( $custom_attrs as $attr ) {
-        if ( $attr['name'] === 'subscriptionType' ) {
+        if ( $attr['name'] === 'isAutomatic' ) {
           $has_subs = true;
+          $is_auto = ( $attr['value'] === 'true' );
           break 2;
         }
       }
     }
   }
 
-  return $has_subs;
+  return array( 'has_subs' => $has_subs, 'is_auto' => $is_auto );
+}
+
+/**
+ * Check if the auto-renewal terms checkbox is checked
+ *
+ * @param array $cart
+ * @return bool
+ */
+function drgc_is_auto_renewal_terms_checked( $cart ) {
+  $custom_attrs = $cart['cart']['customAttributes']['attribute'] ?? [];
+
+  if ( count( $custom_attrs ) === 0 ) return false;
+
+  foreach ( $custom_attrs as $attr ) {
+    if ( $attr['name'] === 'autoRenewOptedInOnCheckout' ) return ( $attr['value'] === 'true' );
+  }
+
+  return false;
 }
