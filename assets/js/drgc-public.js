@@ -12709,7 +12709,7 @@ var CartModule = function ($) {
 
         if (offers && offers.length) {
           offers.forEach(function (offer) {
-            disableEditBtnsForBundle(offer);
+            disableEditBtnsForBundle(offer, lineItem.product.id);
           });
         }
       })["catch"](function (jqXHR) {
@@ -12768,16 +12768,19 @@ var CartModule = function ($) {
     $('.dr-cart__products').append(html);
   };
 
-  var disableEditBtnsForBundle = function disableEditBtnsForBundle(offer) {
+  var disableEditBtnsForBundle = function disableEditBtnsForBundle(offer, productID) {
     var hasBundleTight = offer.type === 'Bundling' && offer.policyName === 'Tight Bundle Policy';
     var productOffers = offer.productOffers.productOffer;
 
     if (hasBundleTight && productOffers && productOffers.length) {
       productOffers.forEach(function (productOffer) {
-        $(".dr-product-line-item[data-product-id=".concat(productOffer.product.id, "]")).find('.remove-icon, .dr-pd-cart-qty-minus, .dr-pd-cart-qty-plus').css({
-          opacity: 0,
-          'pointer-events': 'none'
-        });
+        if (productOffer.product.id !== productID) {
+          // Hide action buttons only when it's triggered by parent product
+          $(".dr-product-line-item[data-product-id=".concat(productOffer.product.id, "]")).find('.remove-icon, .dr-pd-cart-qty-minus, .dr-pd-cart-qty-plus').css({
+            opacity: 0,
+            'pointer-events': 'none'
+          });
+        }
       });
     }
   };

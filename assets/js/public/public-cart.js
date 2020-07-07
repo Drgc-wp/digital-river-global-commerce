@@ -109,7 +109,7 @@ const CartModule = (($) => {
           const offers = res.offers.offer;
           if (offers && offers.length) {
             offers.forEach((offer) => {
-              disableEditBtnsForBundle(offer);
+              disableEditBtnsForBundle(offer, lineItem.product.id);
             });
           }
         })
@@ -216,15 +216,17 @@ const CartModule = (($) => {
     $('.dr-cart__products').append(html);
   };
 
-  const disableEditBtnsForBundle = (offer) => {
+  const disableEditBtnsForBundle = (offer, productID) => {
     const hasBundleTight = (offer.type === 'Bundling' && offer.policyName === 'Tight Bundle Policy');
     const productOffers = offer.productOffers.productOffer;
 
     if (hasBundleTight && productOffers && productOffers.length) {
       productOffers.forEach((productOffer) => {
-        $(`.dr-product-line-item[data-product-id=${productOffer.product.id}]`)
-          .find('.remove-icon, .dr-pd-cart-qty-minus, .dr-pd-cart-qty-plus')
-          .css({ opacity: 0, 'pointer-events': 'none' });
+        if (productOffer.product.id !== productID) { // Hide action buttons only when it's triggered by parent product
+          $(`.dr-product-line-item[data-product-id=${productOffer.product.id}]`)
+            .find('.remove-icon, .dr-pd-cart-qty-minus, .dr-pd-cart-qty-plus')
+            .css({ opacity: 0, 'pointer-events': 'none' });
+        }
       });
     }
   };
