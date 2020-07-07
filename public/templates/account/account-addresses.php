@@ -53,7 +53,7 @@
 
                         <div class="float-container float-container--nickname">
 
-                            <label for="nickname-<?php echo $key ?>" class="float-label ">
+                            <label for="nickname-<?php echo $key ?>" class="float-label">
 
                                 <?php echo __( 'Nickname *', 'digital-river-global-commerce' ); ?>
 
@@ -75,7 +75,7 @@
 
                         <div class="float-container float-container--first-name">
 
-                            <label for="first-name-<?php echo $key ?>" class="float-label ">
+                            <label for="first-name-<?php echo $key ?>" class="float-label">
 
                                 <?php echo __( 'First Name *', 'digital-river-global-commerce' ); ?>
 
@@ -97,7 +97,7 @@
 
                         <div class="float-container float-container--last-name">
 
-                            <label for="last-name-<?php echo $key ?>" class="float-label ">
+                            <label for="last-name-<?php echo $key ?>" class="float-label">
 
                                 <?php echo __( 'Last Name *', 'digital-river-global-commerce' ); ?>
 
@@ -119,7 +119,7 @@
 
                         <div class="float-container float-container--company">
 
-                            <label for="company-<?php echo $key ?>" class="float-label ">
+                            <label for="company-<?php echo $key ?>" class="float-label">
 
                                 <?php echo __( 'Company Name', 'digital-river-global-commerce' ); ?>
 
@@ -141,7 +141,7 @@
 
                         <div class="float-container float-container--address1">
 
-                            <label for="address1-<?php echo $key ?>" class="float-label ">
+                            <label for="address1-<?php echo $key ?>" class="float-label">
 
                                 <?php echo __( 'Address line 1 *', 'digital-river-global-commerce' ); ?>
 
@@ -241,6 +241,10 @@
                                     <?php echo __( 'Select State *', 'digital-river-global-commerce' ); ?>
                                 </option>
 
+                                <option value="NA">
+                                    <?php echo __( 'Not Applicable', 'digital-river-global-commerce' ); ?>
+                                </option>
+
                                 <?php foreach ($usa_states as $key2 => $state): ?>
                                     <?php 
                                         $option = "<option ";
@@ -330,6 +334,170 @@
     </div>
 
 <?php endforeach; ?>
+
+<div class="col-12 col-lg-6 address-col">
+    <div class="address address-add-new">
+        <button class="address-add-btn" role="img" aria-label="Add New Address" title="Add New Address"></button>
+        <div class="address-add-text"><span><?php echo __( 'Add New Address', 'digital-river-global-commerce' ); ?></span></div>
+        <div class="address-edit" style="display:none;">
+            <div class="address-add-title"><span><?php echo __( 'Add New Address', 'digital-river-global-commerce' ); ?></span></div>
+            <form class="dr-panel-edit" id="dr-new-address-form">
+                <div class="required-text">
+                    <?php echo __( 'Fields marked with * are mandatory', 'digital-river-global-commerce' ); ?>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--nickname">
+                        <label for="nickname" class="float-label">
+                            <?php echo __( 'Nickname *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="nickname" type="text" value="" name="nickname" class="form-control float-field float-field--nickname" required />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--first-name">
+                        <label for="first-name" class="float-label">
+                            <?php echo __( 'First Name *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="first-name" type="text" value="" name="firstName" class="form-control float-field float-field--first-name" required />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--last-name">
+                        <label for="last-name" class="float-label">
+                            <?php echo __( 'Last Name *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="last-name" type="text" value="" name="lastName" class="form-control float-field float-field--last-name" required />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--company">
+                        <label for="company" class="float-label">
+                            <?php echo __( 'Company Name', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="company" type="text" value="" name="companyName" class="form-control float-field float-field--company" />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--address1">
+                        <label for="address1" class="float-label">
+                            <?php echo __( 'Address line 1 *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="address1" type="text" value="" name="line1" class="form-control float-field float-field--address1" required />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--address2">
+                        <label for="address2" class="float-label">
+                            <?php echo __( 'Address line 2', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="address2" type="text" name="line2" value="" class="form-control float-field float-field--address2" />
+                    </div>
+                </div>
+
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--city">
+                        <label for="city" class="float-label">
+                            <?php echo __( 'City *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="city" type="text" name="city" value="" class="form-control float-field float-field--city" required />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <select class="form-control custom-select" name="country" id="country">
+                        <option value="">
+                            <?php echo __( 'Select Country *', 'digital-river-global-commerce' ); ?>
+                        </option>
+                        <?php foreach ( $locales['locales'] as $locale => $currency ): ?>
+                            <?php
+                                $country = drgc_code_to_counry($locale);
+                                $abrvCountyName = drgc_code_to_counry($locale, true);
+
+                                $output = "<option ";
+                                $output .= "value=\"{$abrvCountyName}\">{$country}</option>";
+                                echo $output;
+                            ?>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="invalid-feedback">
+                        <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--state active">
+                        <label for="state" class="float-label">
+                            <?php echo __( 'State *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <select class="form-control custom-select" name="countrySubdivision" id="state">
+                            <option value="">
+                                <?php echo __( 'Select State *', 'digital-river-global-commerce' ); ?>
+                            </option>
+                            <option value="NA">
+                                <?php echo __( 'Not Applicable', 'digital-river-global-commerce' ); ?>
+                            </option>
+                            <?php foreach ($usa_states as $key2 => $state): ?>
+                                <?php 
+                                    $option = "<option ";
+                                    $option .= "value=\"{$key2}\">{$state}</option>";
+                                    echo $option;
+                                ?>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--zip">
+                        <label for="zip" class="float-label">
+                            <?php echo __( 'Zipcode *', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="zip" type="text" name="postalCode" value="" class="form-control float-field float-field--zip" required />
+                        <div class="invalid-feedback">
+                            <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group dr-panel-edit__el">
+                    <div class="float-container float-container--phone">
+                        <label for="phone" class="float-label">
+                            <?php echo __( 'Phone', 'digital-river-global-commerce' ); ?>
+                        </label>
+                        <input id="phone" type="text" name="phoneNumber" value="" class="form-control float-field float-field--phone" />
+                    </div>
+                </div>
+                <div class="invalid-feedback dr-err-field" style="display: none"></div>
+                <div class="row address-buttons">
+                    <div class="col-sm-6">
+                        <input type="submit" class="dr-btn dr-btn-green address-save-btn" value="<?php echo __( 'Add', 'digital-river-global-commerce' );?>" />
+                    </div>
+                    <div class="col-sm-6">
+                        <button type="button" class="dr-btn dr-btn-gray address-cancel-btn"><?php echo __( 'Cancel', 'digital-river-global-commerce' );?></button>
+                    </div>
+                </div>
+            </form>        
+        </div>
+    </div>
+</div>
 
 <div id="dr-deleteAddressConfirm" class="dr-modal" tabindex="-1" role="dialog">
   <div class="dr-modal-dialog dr-modal-dialog-centered">

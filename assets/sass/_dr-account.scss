@@ -505,6 +505,47 @@
                 background: transparent url(../images/garbage.svg) center/contain no-repeat;
             }
 
+            &-add-new {
+                background-color: #f8f9fa;
+                height: 100%;
+                border: 1px solid #e9ecef;
+                transition: border-color 200ms;
+                min-height: 178px;
+
+                &:hover {
+                    cursor: auto;
+                    border-color: #28a745;
+                }
+            }
+
+            &-add-btn {
+                background: transparent url(../images/product-plus.svg) center/contain no-repeat;
+                margin: 0;
+                position: absolute;
+                top: 40%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 45px;
+                height: 45px;
+
+                &:hover {
+                    cursor: pointer;
+                }
+            }
+
+            &-add-text {
+                margin: 0;
+                position: absolute;
+                top: 65%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            &-add-title {
+                font-size: 1.25em;
+                font-weight: bold;
+            }
+
 
             &[data-primary]::after,
             &:not([data-primary])::after {
@@ -529,7 +570,7 @@
                 }
             }
 
-            &:not([data-primary]) {
+            &:not([data-primary]):not(.address-add-new) {
                 transition:border-color 200ms;
                 &::after {
                     transition:background-color 200ms;

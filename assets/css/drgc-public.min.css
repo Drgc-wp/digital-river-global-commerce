@@ -698,13 +698,19 @@ input[type=number]{-webkit-appearance:textfield;-moz-appearance:textfield;appear
 .dr-account-wrapper .addresses .address-edit-btn,.dr-account-wrapper .addresses .address-delete-btn{opacity:0;pointer-events:none;position:absolute;top:50%;right:0;-webkit-transform:translate(0,-50%);transform:translate(0,-50%);-webkit-transition:opacity 200ms,-webkit-transform 200ms;transition:opacity 200ms,-webkit-transform 200ms;transition:transform 200ms,opacity 200ms;transition:transform 200ms,opacity 200ms,-webkit-transform 200ms;height:28px;width:28px;border:0}
 .dr-account-wrapper .addresses .address-edit-btn{background:transparent url(../images/edit-icon.svg) center/contain no-repeat}
 .dr-account-wrapper .addresses .address-delete-btn{background:transparent url(../images/garbage.svg) center/contain no-repeat}
+.dr-account-wrapper .addresses .address-add-new{background-color:#f8f9fa;height:100%;border:1px solid #e9ecef;-webkit-transition:border-color 200ms;transition:border-color 200ms;min-height:178px}
+.dr-account-wrapper .addresses .address-add-new:hover{cursor:auto;border-color:#28a745}
+.dr-account-wrapper .addresses .address-add-btn{background:transparent url(../images/product-plus.svg) center/contain no-repeat;margin:0;position:absolute;top:40%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:45px;height:45px}
+.dr-account-wrapper .addresses .address-add-btn:hover{cursor:pointer}
+.dr-account-wrapper .addresses .address-add-text{margin:0;position:absolute;top:65%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}
+.dr-account-wrapper .addresses .address-add-title{font-size:1.25em;font-weight:bold}
 .dr-account-wrapper .addresses .address[data-primary]::after,.dr-account-wrapper .addresses .address:not([data-primary])::after{position:absolute;font-size:.85em;line-height:1;padding:7px 12px;background-color:#007bff;color:#fff;top:0;right:0}
 .dr-account-wrapper .addresses .address[data-primary]{border-color:#007bff;-webkit-transition:border-color 1000ms;transition:border-color 1000ms}
 .dr-account-wrapper .addresses .address[data-primary]::after{content:attr(data-primary);background-color:#007bff;color:#fff;-webkit-transition:background-color 1000ms,color 1000ms;transition:background-color 1000ms,color 1000ms}
-.dr-account-wrapper .addresses .address:not([data-primary]){-webkit-transition:border-color 200ms;transition:border-color 200ms}
-.dr-account-wrapper .addresses .address:not([data-primary])::after{-webkit-transition:background-color 200ms;transition:background-color 200ms}
-.dr-account-wrapper .addresses .address:not([data-primary]):hover{border-color:#ffc107}
-.dr-account-wrapper .addresses .address:not([data-primary]):hover::after{content:'Make Primary';background-color:#ffc107;color:#495057}
+.dr-account-wrapper .addresses .address:not([data-primary]):not(.address-add-new){-webkit-transition:border-color 200ms;transition:border-color 200ms}
+.dr-account-wrapper .addresses .address:not([data-primary]):not(.address-add-new)::after{-webkit-transition:background-color 200ms;transition:background-color 200ms}
+.dr-account-wrapper .addresses .address:not([data-primary]):not(.address-add-new):hover{border-color:#ffc107}
+.dr-account-wrapper .addresses .address:not([data-primary]):not(.address-add-new):hover::after{content:'Make Primary';background-color:#ffc107;color:#495057}
 .dr-account-wrapper .addresses .address-col{margin:15px 0;-webkit-transition:max-width 200ms,-webkit-flex-basis 200ms;transition:max-width 200ms,-webkit-flex-basis 200ms;transition:max-width 200ms,flex-basis 200ms;transition:max-width 200ms,flex-basis 200ms,-webkit-flex-basis 200ms,-ms-flex-preferred-size 200ms}
 .dr-account-wrapper .addresses .address-col.expand{-webkit-box-flex:0;-ms-flex:0 0 100%;flex:0 0 100%;max-width:100%}
 .dr-account-wrapper .addresses .address-col.expand .address{padding:15px}

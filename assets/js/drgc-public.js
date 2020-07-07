@@ -15505,7 +15505,12 @@ jquery_default()(function () {
   $addresses.on('click', function (e) {
     var $this = jquery_default()(this);
 
-    if (jquery_default()(e.target).is('.address-edit-btn')) {
+    if (jquery_default()(e.target).is('.address-edit-btn') || jquery_default()(e.target).is('.address-add-btn')) {
+      if (jquery_default()(e.target).is('.address-add-btn')) {
+        jquery_default()(e.target).hide();
+        $this.find('.address-add-text').hide();
+      }
+
       $this.parent().addClass('expand');
       setTimeout(function () {
         $this.find('.address-edit').slideDown(200, function () {
@@ -15529,12 +15534,14 @@ jquery_default()(function () {
           jquery_default()('html, body').animate({
             scrollTop: $this.offset().top - 50
           }, 200);
+          $this.find('.address-add-btn').show();
+          $this.find('.address-add-text').show();
         });
       }, 200);
     } else if (jquery_default()(e.target).closest('.address-edit').length) {
       return; // handled by form submit callback
     } else {
-      if ($this.attr('data-primary')) return;
+      if ($this.attr('data-primary') || $this.hasClass('address-add-new')) return;
       $addresses.removeAttr('data-primary');
       $this.attr('data-primary', 'Primary');
       saveAddress($this.find('form.dr-panel-edit'));
@@ -15652,9 +15659,8 @@ jquery_default()(function () {
 
   function saveAddress(form) {
     var $form = jquery_default()(form);
-    var address = {
+    var addressObj = {
       address: {
-        id: $form.find('input[name="id"]').val(),
         nickName: $form.find('input[name="nickname"]').val(),
         firstName: $form.find('input[name="firstName"]').val(),
         lastName: $form.find('input[name="lastName"]').val(),
@@ -15667,33 +15673,38 @@ jquery_default()(function () {
         countryName: $form.find('select[name="country"] :selected').text(),
         country: $form.find('select[name="country"]').val(),
         phoneNumber: $form.find('input[name="phoneNumber"]').val(),
-        isDefault: !!($form.closest('.address').length && $form.closest('.address').attr('data-primary'))
+        isDefault: false
       }
     };
 
-    if ($form.closest('.expand').length) {
-      $form.addClass('dr-loading');
-    } else {
-      $form.closest('.address-col').addClass('dr-loading');
-    }
+    if (!$form.is('#dr-new-address-form')) {
+      addressObj.address.id = $form.find('input[name="id"]').val();
+      addressObj.address.isDefault = !!($form.closest('.address').length && $form.closest('.address').attr('data-primary'));
 
-    commerce_api.updateShopperAddress(address).then(function () {
-      location.reload();
-      $form.closest('.address-edit').slideUp(200, function () {
-        if (!$form.closest('.expand').length) return;
-        $form.closest('.expand').removeClass('expand');
-        setTimeout(function () {
-          jquery_default()('html, body').animate({
-            scrollTop: $form.closest('.address').offset().top - 50
-          }, 200);
-        }, 200);
+      if ($form.closest('.expand').length) {
+        $form.addClass('dr-loading');
+      } else {
+        $form.closest('.address-col').addClass('dr-loading');
+      }
+
+      commerce_api.updateShopperAddress(addressObj).then(function () {
+        location.reload();
+      })["catch"](function (jqXHR) {
+        $form.removeClass('dr-loading');
+        $form.closest('.address-col').removeClass('dr-loading');
+        $form.closest('.address').addClass('ajax-error');
+        checkout_utils.apiErrorHandler(jqXHR);
       });
-    })["catch"](function (jqXHR) {
-      $form.removeClass('dr-loading');
-      $form.closest('.address-col').removeClass('dr-loading');
-      $form.closest('.address').addClass('ajax-error');
-      checkout_utils.apiErrorHandler(jqXHR);
-    });
+    } else {
+      $form.addClass('dr-loading');
+      commerce_api.saveShopperAddress(addressObj).then(function () {
+        location.reload();
+      })["catch"](function (jqXHR) {
+        $form.removeClass('dr-loading');
+        $form.closest('.address').addClass('ajax-error');
+        checkout_utils.apiErrorHandler(jqXHR);
+      });
+    }
   }
 
   $addresses.find('form.dr-panel-edit').on('submit', function (e) {

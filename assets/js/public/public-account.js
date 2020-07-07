@@ -137,7 +137,12 @@ $(() => {
     $addresses.on('click', function(e) {
         var $this = $(this);
 
-        if ($(e.target).is('.address-edit-btn')) {
+        if ($(e.target).is('.address-edit-btn') || $(e.target).is('.address-add-btn')) {
+            if ($(e.target).is('.address-add-btn')) {
+                $(e.target).hide();
+                $this.find('.address-add-text').hide();
+            }
+
             $this.parent().addClass('expand');
             setTimeout(function(){
                 $this.find('.address-edit').slideDown(200, function() {
@@ -161,6 +166,9 @@ $(() => {
                     $('html, body').animate({
                         scrollTop: $this.offset().top - 50
                     }, 200);
+
+                    $this.find('.address-add-btn').show();
+                    $this.find('.address-add-text').show();
                 });
             }, 200);
         } else if ($(e.target).closest('.address-edit').length) {
@@ -168,7 +176,7 @@ $(() => {
             return; // handled by form submit callback
 
         } else {
-            if ($this.attr('data-primary')) return;
+            if ($this.attr('data-primary') || $this.hasClass('address-add-new')) return;
             $addresses.removeAttr('data-primary');
             $this.attr('data-primary', 'Primary');
             saveAddress($this.find('form.dr-panel-edit'));
@@ -299,9 +307,8 @@ $(() => {
 
     function saveAddress(form) {
         var $form = $(form);
-        var address = {
+        const addressObj = {
             address: {
-                id: $form.find('input[name="id"]').val(),
                 nickName: $form.find('input[name="nickname"]').val(),
                 firstName: $form.find('input[name="firstName"]').val(),
                 lastName: $form.find('input[name="lastName"]').val(),
@@ -314,35 +321,42 @@ $(() => {
                 countryName: $form.find('select[name="country"] :selected').text(),
                 country: $form.find('select[name="country"]').val(),
                 phoneNumber: $form.find('input[name="phoneNumber"]').val(),
-                isDefault: !!( $form.closest('.address').length && $form.closest('.address').attr('data-primary') )
+                isDefault: false
             }
         };
 
-        if ($form.closest('.expand').length) {
-            $form.addClass('dr-loading');
-        } else {
-            $form.closest('.address-col').addClass('dr-loading');
-        }
+        if (!$form.is('#dr-new-address-form')) {
+            addressObj.address.id = $form.find('input[name="id"]').val();
+            addressObj.address.isDefault = !!($form.closest('.address').length && $form.closest('.address').attr('data-primary'));
 
-        DRCommerceApi.updateShopperAddress(address)
-            .then(() => {
-                location.reload();
-                $form.closest('.address-edit').slideUp(200, () => {
-                    if (!$form.closest('.expand').length) return;
-                    $form.closest('.expand').removeClass('expand');
-                    setTimeout(() => {
-                        $('html, body').animate({
-                            scrollTop: $form.closest('.address').offset().top - 50
-                        }, 200);
-                    }, 200);
+            if ($form.closest('.expand').length) {
+                $form.addClass('dr-loading');
+            } else {
+                $form.closest('.address-col').addClass('dr-loading');
+            }
+    
+            DRCommerceApi.updateShopperAddress(addressObj)
+                .then(() => {
+                    location.reload();
+                })
+                .catch((jqXHR) => {
+                    $form.removeClass('dr-loading');
+                    $form.closest('.address-col').removeClass('dr-loading');
+                    $form.closest('.address').addClass('ajax-error');
+                    CheckoutUtils.apiErrorHandler(jqXHR);
                 });
-            })
-            .catch((jqXHR) => {
-                $form.removeClass('dr-loading');
-                $form.closest('.address-col').removeClass('dr-loading');
-                $form.closest('.address').addClass('ajax-error');
-                CheckoutUtils.apiErrorHandler(jqXHR);
-            });
+        } else {
+            $form.addClass('dr-loading');
+            DRCommerceApi.saveShopperAddress(addressObj)
+                .then(() => {
+                    location.reload();
+                })
+                .catch((jqXHR) => {
+                    $form.removeClass('dr-loading');
+                    $form.closest('.address').addClass('ajax-error');
+                    CheckoutUtils.apiErrorHandler(jqXHR);
+                });
+        }
     }
 
     $addresses.find('form.dr-panel-edit').on('submit', function(e) {
