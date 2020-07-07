@@ -1,27 +1,22 @@
 <?php
 $current_locale = DRGC()->shopper->get_locale();
-$companyEIN = '';
 $billingAddress = $cart['cart']['billingAddress'];
-// var_dump($cart['cart']);
-// exit;
-if ( $customer_address ) {
-    $billingAddress = $customer_address[0];
-} elseif ( $customer ) {
-    $billingAddress['firstName'] = $billingAddress['firstName'] ?: $customer['firstName'];
-    $billingAddress['lastName'] = $billingAddress['lastName'] ?: $customer['lastName'];
+
+if ( ! ( isset( $billingAddress['firstName'] ) && isset( $billingAddress['lastName'] ) ) ) {
+    $billingAddress = ! $is_logged_in ?: $default_address;
 }
-if ( $cart['cart']['billingAddress']['line1'] != '') {
-    $billingAddress = $cart['cart']['billingAddress'];
-}
-if( isset( $cart['cart']['customAttributes']['attribute'] ) ) {
-    foreach( $cart['cart']['customAttributes']['attribute'] as $attr ) {
-        if ( 'companyEIN' == $attr['name'] ) {
+
+$companyEIN = '';
+$custom_attributes = $cart['cart']['customAttributes']['attribute'] ?? [];
+
+if ( count( $custom_attributes ) > 0 ) {
+    foreach( $custom_attributes as $attr ) {
+        if ( 'companyEIN' === $attr['name'] ) {
             $companyEIN = $attr['value'];
             break;
         }
     }
 }
-
 ?>
 <div class="dr-checkout__billing dr-checkout__el">
     <div class="dr-accordion">

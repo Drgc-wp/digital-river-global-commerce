@@ -1,13 +1,8 @@
 <?php
 $shippingAddress = $cart['cart']['shippingAddress'];
-if ( $customer_address ) {
-    $shippingAddress = $customer_address[0];
-} elseif ( $customer ) {
-    $shippingAddress['firstName'] = $shippingAddress['firstName'] ?: $customer['firstName'];
-    $shippingAddress['lastName'] = $shippingAddress['lastName'] ?: $customer['lastName'];
-}
-if ( $cart['cart']['shippingAddress']['line1'] != '') {
-    $shippingAddress = $cart['cart']['shippingAddress'];
+
+if ( ! ( isset( $shippingAddress['firstName'] ) && isset( $shippingAddress['lastName'] ) ) ) {
+    $shippingAddress = ! $is_logged_in ?: $default_address;
 }
 ?>
 <div class="dr-checkout__shipping dr-checkout__el">
