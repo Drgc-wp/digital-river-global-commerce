@@ -12,7 +12,7 @@
  */
 ?>
 
-<?php foreach ($customer_address as $key => $address): ?>
+<?php foreach ( $customer_address as $key => $address ): ?>
 
     <div class="col-12 col-lg-6 address-col">
         <address class="address" <?php if ($address['isDefault'] === 'true') echo 'data-primary="' . __( 'Primary', 'digital-river-global-commerce' ) . '"';?>>
