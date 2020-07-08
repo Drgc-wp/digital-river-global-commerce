@@ -55,13 +55,14 @@ const CheckoutModule = (($) => {
                 success: (response) => {
                     const addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
-                        const savedCountryCode = $(`#${type}-field-country`).val();
+                        const addressData = drgc_params.cart.cart[`${type}Address`];
+                        const savedCountryCode = addressData.country || '';
                         const $options = $(response).find(`select[name=${type.toUpperCase()}country] option`).not(':first');
                         const optionArr = $.map($options, (option) => { return option.value; });
                         $(`#${type}-field-country option`).not(':first').remove();
                         $(`#${type}-field-country`)
                             .append($options)
-                            .val(savedCountryCode.indexOf(optionArr) > -1 ? savedCountryCode : '');
+                            .val(optionArr.indexOf(savedCountryCode) > -1 ? savedCountryCode : '');
                     });
                     resolve();
                 },
