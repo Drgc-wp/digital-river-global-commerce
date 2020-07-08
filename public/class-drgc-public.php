@@ -614,25 +614,29 @@ class DRGC_Public {
 		}
 	}
 
-	/**
-	 * Redirect on page load.
-	 *
-	 * @since  1.1.0
-	 */
-	public function redirect_on_page_load() {
-		if ( is_page( 'checkout' ) ) {
-			$cart = DRGC()->cart->retrieve_cart();
-			$customer = DRGC()->shopper->retrieve_shopper();
-			$is_logged_in = $customer && 'Anonymous' !== $customer['id'];
-			$is_guest = 'true' === $_COOKIE['drgc_guest_flag'];
-			$has_subs = drgc_is_subs_added_to_cart( $cart );
+  /**
+   * Redirect on page load.
+   *
+   * @since  1.1.0
+   */
+  public function redirect_on_page_load() {
+    if ( is_page( 'checkout' ) ) {
+      $cart = DRGC()->cart->retrieve_cart();
+      $customer = DRGC()->shopper->retrieve_shopper();
+      $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
+      $is_guest = 'true' === $_COOKIE['drgc_guest_flag'];
+      $check_subs = drgc_is_subs_added_to_cart( $cart );
+      $terms_checked = drgc_is_auto_renewal_terms_checked( $cart );
 
-			if ( ! $is_logged_in && ( ! $is_guest || $has_subs ) ) {
-				wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
-				exit;
-			}
-		}
-	}
+      if ( ! $is_logged_in && ( ! $is_guest || $check_subs['has_subs'] ) ) {
+        wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
+        exit;
+      } elseif ( $check_subs['is_auto'] && ! $terms_checked ) {
+        wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
+        exit;
+      }
+    }
+  }
 
 	/**
 	 *  ON/OFF auto renewal AJAX

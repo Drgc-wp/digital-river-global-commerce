@@ -15,28 +15,20 @@ const CartModule = (($) => {
     const $checkoutBtn = $('a.dr-summary__proceed-checkout');
     const $termsCheckbox = $('#autoRenewOptedInOnCheckout');
 
-    if (sessionStorage.getItem('isTermsChecked')) {
-      const isTermsChecked = sessionStorage.getItem('isTermsChecked') === 'true' ? true : false;
-      $termsCheckbox.prop('checked', isTermsChecked);
-    }
-
     $termsCheckbox.change((e) => {
-      if ($(e.target).is(':checked')) {
-        $('#dr-TAndC-err-msg').text('').hide();
-        $checkoutBtn.prop('href', drgc_params.checkoutUrl);
-        sessionStorage.setItem('isTermsChecked', 'true');
-      } else {
-        $checkoutBtn.prop('href', '#dr-autoRenewTermsContainer');
-        sessionStorage.setItem('isTermsChecked', 'false');
-      }
+      const isChecked = $(e.target).is(':checked');
+      const href = isChecked ? drgc_params.checkoutUrl : '#dr-autoRenewTermsContainer';
+
+      $checkoutBtn.prop('href', href);
+      if (isChecked) $('#dr-TAndC-err-msg').text('').hide();
 
       const cartPayload = {
         cart: {
           customAttributes: {
             attribute: [
               {
-                name: "autoRenewOptedInOnCheckout",
-                value: sessionStorage.getItem('isTermsChecked')
+                name: 'autoRenewOptedInOnCheckout',
+                value: isChecked
               }
             ]
           }
@@ -52,8 +44,6 @@ const CartModule = (($) => {
         $(e.target).removeClass('sending');
       }
     });
-
-    $termsCheckbox.trigger('change');
 
     appendAutoRenewalTerms(digitalriverjs, locale);
   };
@@ -373,8 +363,11 @@ const CartModule = (($) => {
       })
       .then(() => {
         if (lineItems && lineItems.length) {
-          if (drgc_params.isLogin !== 'true') {
-            const href = CheckoutUtils.isSubsAddedToCart(lineItems) ? drgc_params.loginPath : drgc_params.checkoutUrl;
+          if (CheckoutUtils.isSubsAddedToCart(lineItems)) {
+            const $termsCheckbox = $('#autoRenewOptedInOnCheckout');
+            const href = (drgc_params.isLogin !== 'true') ? drgc_params.loginPath : 
+              ($termsCheckbox.length && !$termsCheckbox.prop('checked')) ? '#dr-autoRenewTermsContainer' : drgc_params.checkoutUrl;
+
             $('a.dr-summary__proceed-checkout').prop('href', href);
           }
 
@@ -561,6 +554,7 @@ jQuery(document).ready(($) => {
 
     if ($('#dr-autoRenewTermsContainer').length) {
       CartModule.initAutoRenewalTerms(digitalriverjs, drLocale);
+      $('#autoRenewOptedInOnCheckout').prop('checked', false).trigger('change');
     }
   }
 });

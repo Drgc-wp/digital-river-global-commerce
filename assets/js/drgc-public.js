@@ -12613,28 +12613,17 @@ var CartModule = function ($) {
   var initAutoRenewalTerms = function initAutoRenewalTerms(digitalriverjs, locale) {
     var $checkoutBtn = $('a.dr-summary__proceed-checkout');
     var $termsCheckbox = $('#autoRenewOptedInOnCheckout');
-
-    if (sessionStorage.getItem('isTermsChecked')) {
-      var isTermsChecked = sessionStorage.getItem('isTermsChecked') === 'true' ? true : false;
-      $termsCheckbox.prop('checked', isTermsChecked);
-    }
-
     $termsCheckbox.change(function (e) {
-      if ($(e.target).is(':checked')) {
-        $('#dr-TAndC-err-msg').text('').hide();
-        $checkoutBtn.prop('href', drgc_params.checkoutUrl);
-        sessionStorage.setItem('isTermsChecked', 'true');
-      } else {
-        $checkoutBtn.prop('href', '#dr-autoRenewTermsContainer');
-        sessionStorage.setItem('isTermsChecked', 'false');
-      }
-
+      var isChecked = $(e.target).is(':checked');
+      var href = isChecked ? drgc_params.checkoutUrl : '#dr-autoRenewTermsContainer';
+      $checkoutBtn.prop('href', href);
+      if (isChecked) $('#dr-TAndC-err-msg').text('').hide();
       var cartPayload = {
         cart: {
           customAttributes: {
             attribute: [{
-              name: "autoRenewOptedInOnCheckout",
-              value: sessionStorage.getItem('isTermsChecked')
+              name: 'autoRenewOptedInOnCheckout',
+              value: isChecked
             }]
           }
         }
@@ -12649,7 +12638,6 @@ var CartModule = function ($) {
         $(e.target).removeClass('sending');
       }
     });
-    $termsCheckbox.trigger('change');
     appendAutoRenewalTerms(digitalriverjs, locale);
   };
 
@@ -12932,8 +12920,9 @@ var CartModule = function ($) {
       }
     }).then(function () {
       if (lineItems && lineItems.length) {
-        if (drgc_params.isLogin !== 'true') {
-          var href = checkout_utils.isSubsAddedToCart(lineItems) ? drgc_params.loginPath : drgc_params.checkoutUrl;
+        if (checkout_utils.isSubsAddedToCart(lineItems)) {
+          var $termsCheckbox = $('#autoRenewOptedInOnCheckout');
+          var href = drgc_params.isLogin !== 'true' ? drgc_params.loginPath : $termsCheckbox.length && !$termsCheckbox.prop('checked') ? '#dr-autoRenewTermsContainer' : drgc_params.checkoutUrl;
           $('a.dr-summary__proceed-checkout').prop('href', href);
         }
 
@@ -13111,6 +13100,7 @@ jQuery(document).ready(function ($) {
 
     if ($('#dr-autoRenewTermsContainer').length) {
       CartModule.initAutoRenewalTerms(digitalriverjs, drLocale);
+      $('#autoRenewOptedInOnCheckout').prop('checked', false).trigger('change');
     }
   }
 });
@@ -13668,7 +13658,7 @@ var CheckoutModule = function ($) {
               return option.value;
             });
             $("#".concat(type, "-field-country option")).not(':first').remove();
-            $("#".concat(type, "-field-country")).append($options).val(savedCountryCode.indexOf(optionArr) > -1 ? savedCountryCode : '');
+            $("#".concat(type, "-field-country")).append($options).val(optionArr.indexOf(savedCountryCode) > -1 ? savedCountryCode : '');
           });
           resolve();
         },
