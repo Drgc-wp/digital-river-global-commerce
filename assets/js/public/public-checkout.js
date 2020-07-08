@@ -83,6 +83,14 @@ const CheckoutModule = (($) => {
             $nextSection.next().removeClass('small-closed-right');
         }
 
+        if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('closed')) {
+            $('.dr-address-book-btn.shipping').hide();
+        }
+
+        if ($section.hasClass('dr-checkout__billing') && $section.hasClass('closed')) {
+            $('.dr-address-book-btn.billing').hide();
+        }
+
         adjustColumns($section);
         updateSummaryLabels();
 
@@ -145,6 +153,12 @@ const CheckoutModule = (($) => {
 
         if (payload[addressType].country !== 'US') {
             payload[addressType].countrySubdivision = 'NA';
+        }
+
+        if (addressType === 'billing') {
+            delete payload[addressType].business;
+            delete payload[addressType].companyEIN;
+            delete payload[addressType].no;
         }
 
         return payload[addressType];
@@ -268,7 +282,7 @@ jQuery(document).ready(($) => {
         // Globals
         const localizedText = drgc_params.translations;
         const domain = drgc_params.domain;
-        const isLogin = drgc_params.isLogin;
+        const isLoggedIn = drgc_params.isLogin === 'true';
         const drLocale = drgc_params.drLocale || 'en_US';
         const cartData = drgc_params.cart.cart;
         const requestShipping = (cartData.shippingOptions.shippingOption) ? true : false;
@@ -395,8 +409,9 @@ jQuery(document).ready(($) => {
 
             $button.addClass('sending').blur();
 
-            if (isLogin === 'true') {
-                const address = CheckoutModule.getAddress('shipping', true);
+            if (isLoggedIn && $('#checkbox-save-shipping').prop('checked')) {
+                const setAsDefault = $('input:hidden[name="addresses-no-default"]').val() === 'true';
+                const address = CheckoutModule.getAddress('shipping', setAsDefault);
 
                 DRCommerceApi.saveShopperAddress(address).catch((jqXHR) => {
                     CheckoutUtils.apiErrorHandler(jqXHR);
@@ -425,6 +440,34 @@ jQuery(document).ready(($) => {
                 });
         });
 
+        $('#checkbox-billing, #checkbox-business').on('change', (e) => {
+            const id = $(e.target).attr('id');
+
+            switch (id) {
+                case 'checkbox-billing':
+                    if (!$(e.target).is(':checked')) {
+                        $('.dr-address-book-btn.billing').show();
+                        $('.billing-section').slideDown();
+                    } else {
+                        $('.billing-section').slideUp();
+                        $('#checkbox-business').prop('checked', false).change();
+                        $('.dr-address-book-btn.billing').hide();
+                    }
+
+                    break;
+                case 'checkbox-business':
+                    if (!$(e.target).is(':checked')) {
+                        $('#billing-field-company-name, #billing-field-company-ein').val('');
+                        $('.form-group-business').slideUp();
+                    } else {
+                        $('#checkbox-billing').prop('checked', false).change();
+                        $('.form-group-business').slideDown();
+                    }
+
+                    break;
+            }
+        });
+
         $('#checkout-billing-form').on('submit', function(e) {
             e.preventDefault();
 
@@ -436,15 +479,19 @@ jQuery(document).ready(($) => {
             if (!isFormValid) return;
 
             addressPayload.billing = (billingSameAsShipping) ? Object.assign({}, addressPayload.shipping) : CheckoutModule.buildAddressPayload($form);
+
+            if ($('#billing-field-company-name').length) addressPayload.billing.companyName = $('#billing-field-company-name').val();
+
             const cartRequest = {
                 address: addressPayload.billing
             };
 
             $button.addClass('sending').blur();
 
-            if (isLogin === 'true') {
+            if (isLoggedIn && $('#checkbox-save-billing').prop('checked')) {
                 if ((requestShipping && !billingSameAsShipping) || !requestShipping) {
-                    const address = CheckoutModule.getAddress('billing', false);
+                    const setAsDefault = ($('input:hidden[name="addresses-no-default"]').val() === 'true') && !requestShipping;
+                    const address = CheckoutModule.getAddress('billing', setAsDefault);
 
                     DRCommerceApi.saveShopperAddress(address).catch((jqXHR) => {
                         CheckoutUtils.apiErrorHandler(jqXHR);
@@ -496,10 +543,6 @@ jQuery(document).ready(($) => {
                     $button.removeClass('sending').blur();
                     CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
                 });
-        });
-
-        $("#checkbox-business").on("change", function(){
-          $(".form-group-business").toggle("hide");
         });
 
         // Submit delivery form
@@ -633,17 +676,6 @@ jQuery(document).ready(($) => {
             }
         });
 
-        // check billing info
-        $('[name="checkbox-billing"]').on('click', function (ev) {
-            const $this = $(this);
-
-            if (!$this.is(':checked')) {
-                $('.billing-section').css('display', 'block');
-            } else {
-                $('.billing-section').css('display', 'none');
-            }
-        });
-
         // show and hide sections
         $('.dr-accordion__edit').on('click', function(e) {
             e.preventDefault();
@@ -660,6 +692,14 @@ jQuery(document).ready(($) => {
             $finishedSections.addClass('closed');
             $activeSection.removeClass('active');
             $section.removeClass('closed').addClass('active');
+
+            if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('active')) {
+                $('.dr-address-book-btn.shipping').show();
+            }
+    
+            if ($section.hasClass('dr-checkout__billing') && $section.hasClass('active')) {
+                $('.dr-address-book-btn.billing').show();
+            }
 
             CheckoutModule.adjustColumns($section);
             CheckoutModule.updateSummaryLabels();
@@ -699,8 +739,46 @@ jQuery(document).ready(($) => {
             }
         });
 
+        $('.dr-address-book-btn').on('click', (e) => {
+            const addressType = $(e.target).hasClass('shipping') ? 'shipping' : 'billing';
+            const $addressBook = $('.dr-address-book.' + addressType);
+
+            if ($addressBook.is(':hidden')) {
+                $(e.target).addClass('active');
+                $addressBook.slideDown();
+            } else {
+                $(e.target).removeClass('active');
+                $addressBook.slideUp();
+            }
+        });
+
+        $(document).on('click', '.address', (e) => {
+            const addressType = $('.dr-address-book-btn.shipping').hasClass('active') ? 'shipping' : 'billing';
+            const $address = $(e.target).closest('.address');
+
+            $('#' + addressType + '-field-first-name').val($address.data('firstName'));
+            $('#' + addressType + '-field-last-name').val($address.data('lastName'));
+            $('#' + addressType + '-field-address1').val($address.data('lineOne'));
+            $('#' + addressType + '-field-address2').val($address.data('lineTwo'));
+            $('#' + addressType + '-field-city').val($address.data('city'));
+            $('#' + addressType + '-field-state').val($address.data('state'));
+            $('#' + addressType + '-field-zip').val($address.data('postalCode'));
+            $('#' + addressType + '-field-country').val($address.data('country')).change();
+            $('#' + addressType + '-field-phone').val($address.data('phoneNumber'));
+
+            $('.dr-address-book-btn.' + addressType).removeClass('active');
+            $('.dr-address-book.' + addressType).slideUp();
+            $('#checkbox-save-' + addressType).prop('checked', false);
+        });
+
         //floating labels
         FloatLabel.init();
+
+        if (isLoggedIn && requestShipping) {
+            $('.dr-address-book.billing > .overflowContainer').clone().appendTo('.dr-address-book.shipping');
+        }
+
+        if (!$('#checkbox-billing').prop('checked')) $('#checkbox-billing').prop('checked', false).change();
 
         $('#checkout-email-form button[type=submit]').prop('disabled', false);
 

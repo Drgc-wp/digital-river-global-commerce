@@ -1937,6 +1937,32 @@ input[type=number] { -webkit-appearance: textfield; -moz-appearance: textfield; 
 
 .dr-checkout .small-closed-left .dr-accordion__title-short, .dr-checkout .small-closed-right .dr-accordion__title-short { display: block; }
 
+.dr-checkout .dr-address-book { margin-top: 15px; }
+
+.dr-checkout .addresses { margin-top: 15px; }
+
+.dr-checkout .addresses .address { background-color: #f8f9fa; height: 100%; padding: 15px 45px 15px 15px; margin: 0; font-size: 14px; position: relative; border: 1px solid #e9ecef; -webkit-transform: border-color 200ms, background-color 200ms, padding 200ms; transform: border-color 200ms, background-color 200ms, padding 200ms; }
+
+.dr-checkout .addresses .address:hover { cursor: pointer; border-color: #007bff; -webkit-transition: border-color 1000ms; transition: border-color 1000ms; }
+
+.dr-checkout .addresses .address-col { margin: 15px 0; -webkit-transition: max-width 200ms, -webkit-flex-basis 200ms; transition: max-width 200ms, -webkit-flex-basis 200ms; transition: max-width 200ms, flex-basis 200ms; transition: max-width 200ms, flex-basis 200ms, -webkit-flex-basis 200ms, -ms-flex-preferred-size 200ms; }
+
+.dr-checkout .addresses .address-col.expand { -webkit-box-flex: 0; -ms-flex: 0 0 100%; flex: 0 0 100%; max-width: 100%; }
+
+.dr-checkout .addresses .address-col.expand .address { padding: 15px; }
+
+.dr-checkout .addresses .address-name, .dr-checkout .addresses .address-nickname { font-weight: bold; }
+
+.dr-checkout .addresses .address-nickname { font-size: 1.25em; margin-bottom: 15px; }
+
+.dr-checkout .dr-address-book-btn { margin-bottom: 15px; }
+
+.dr-checkout .dr-address-book-btn:focus { outline: none; }
+
+.dr-checkout .dr-address-book-btn:after { content: '\002B'; font-weight: bold; color: white; margin-left: 5px; }
+
+.dr-checkout .dr-address-book-btn.active:after { content: "\2212"; }
+
 .dr-accordion { width: 100%; height: 60px; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; font-family: Open Sans; font-size: 16px; font-weight: 600; line-height: 16px; text-transform: uppercase; color: #333333; background-color: #ffffff; background-size: cover; border: none; outline: none; }
 
 .dr-accordion:focus { background: transparent; outline: none; }
