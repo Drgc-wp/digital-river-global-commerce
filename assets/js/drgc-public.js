@@ -13652,8 +13652,7 @@ var CheckoutModule = function ($) {
         success: function success(response) {
           var addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
-            var addressData = drgc_params.cart.cart["".concat(type, "Address")];
-            var savedCountryCode = addressData.country || '';
+            var savedCountryCode = $("#".concat(type, "-field-country")).val();
             var $options = $(response).find("select[name=".concat(type.toUpperCase(), "country] option")).not(':first');
             var optionArr = $.map($options, function (option) {
               return option.value;
