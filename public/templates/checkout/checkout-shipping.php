@@ -1,8 +1,8 @@
 <?php
 $shippingAddress = $cart['cart']['shippingAddress'];
 
-if ( ! ( isset( $shippingAddress['firstName'] ) && isset( $shippingAddress['lastName'] ) ) ) {
-    $shippingAddress = ! $is_logged_in ?: $default_address;
+if ( ! ( isset( $shippingAddress['firstName'] ) && isset( $shippingAddress['lastName'] ) ) && $is_logged_in ) {
+    $shippingAddress = $default_address;
 }
 ?>
 <div class="dr-checkout__shipping dr-checkout__el">

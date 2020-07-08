@@ -2,8 +2,8 @@
 $current_locale = DRGC()->shopper->get_locale();
 $billingAddress = $cart['cart']['billingAddress'];
 
-if ( ! ( isset( $billingAddress['firstName'] ) && isset( $billingAddress['lastName'] ) ) ) {
-    $billingAddress = ! $is_logged_in ?: $default_address;
+if ( ! ( isset( $billingAddress['firstName'] ) && isset( $billingAddress['lastName'] ) ) && $is_logged_in ) {
+    $billingAddress = $default_address;
 }
 
 $companyEIN = '';
