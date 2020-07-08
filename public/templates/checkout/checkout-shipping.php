@@ -157,17 +157,16 @@ if ( ! ( isset( $shippingAddress['firstName'] ) && isset( $shippingAddress['last
                     <?php echo __( 'Select Country', 'digital-river-global-commerce' ); ?> *
                 </option>
 
-                <?php foreach ( $locales['locales'] as $locale => $currency ): ?>
-                    <?php
-                        $country = drgc_code_to_counry($locale);
-                        $abrvCountyName = drgc_code_to_counry($locale, true);
+                <?php
+                    $all_countries = drgc_list_countries();
 
+                    foreach ( $all_countries as $country_code => $country_name ):
                         $output = "<option ";
-                        $output .= ($shippingAddress['country'] === $abrvCountyName ? 'selected ' : '');
-                        $output .= "value=\"{$abrvCountyName}\">{$country}</option>";
+                        $output .= $shippingAddress['country'] === $country_code ? 'selected ' : '';
+                        $output .= "value=\"{$country_code}\">{$country_name}</option>";
                         echo $output;
-                    ?>
-                <?php endforeach; ?>
+                    endforeach;
+                ?>
             </select>
 
             <div class="invalid-feedback">

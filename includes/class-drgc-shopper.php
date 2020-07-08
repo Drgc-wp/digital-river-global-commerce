@@ -230,28 +230,35 @@ class DRGC_Shopper extends AbstractHttpService {
 		}
 	}
 
-	public function retrieve_shopper_address( $params = array() ) {
-		$default = array(
-			'expand'            => 'all'
-		);
+  /**
+   * Retrieve all addresses configured for a shopper
+   *
+   * @param array $params
+   * @return array|bool
+   */
+  public function retrieve_all_addresses( $params = array() ) {
+    $default = array(
+      'expand'            => 'all'
+    );
 
-		$params = array_merge(
-			$default,
-			array_intersect_key( $params, $default )
-		);
+    $params = array_merge(
+      $default,
+      array_intersect_key( $params, $default )
+    );
 
-		$url = "/v1/shoppers/me?".http_build_query( $params );
-		try {
-			$res = $this->get($url);
+    $url = "/v1/shoppers/me/addresses?".http_build_query( $params );
 
-			if ( isset($res['shopper']['addresses']['address']) && !empty($res['shopper']['addresses']['address']) ) {
-				return $res['shopper']['addresses']['address'];
-			} else {
-				return false;
-			}
-		} catch (\Exception $e) {
-			return false;
-		}
+    try {
+      $res = $this->get($url);
+
+      if ( isset( $res['addresses']['address'] ) && ! empty( $res['addresses']['address'] ) ) {
+        return $res['addresses']['address'];
+      } else {
+        return false;
+      }
+    } catch (\Exception $e) {
+      return false;
+    }
 	}
 
 	/**

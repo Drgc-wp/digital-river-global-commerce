@@ -61,7 +61,7 @@ const CheckoutModule = (($) => {
                         $(`#${type}-field-country option`).not(':first').remove();
                         $(`#${type}-field-country`)
                             .append($options)
-                            .val(savedCountryCode.indexOf(optionArr) > -1 ? savedCountryCode : '');
+                            .val(optionArr.indexOf(savedCountryCode) > -1 ? savedCountryCode : '');
                     });
                     resolve();
                 },
