@@ -27,7 +27,7 @@ class DR_Shortcode_Account {
    */
   public static function output( $atts ) {
     $customer = DRGC()->shopper->retrieve_shopper();
-    $customer_address = DRGC()->shopper->retrieve_shopper_address();
+    $customer_address = DRGC()->shopper->retrieve_all_addresses();
     $orders = DRGC()->shopper->retrieve_orders();
     $subscriptions = DRGC()->shopper->retrieve_subscriptions();
     $payments = DRGC()->shopper->retrieve_shopper_payments();

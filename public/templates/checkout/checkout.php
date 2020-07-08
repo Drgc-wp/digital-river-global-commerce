@@ -11,22 +11,38 @@
  * @subpackage Digital_River_Global_Commerce/public/templates/parts
  */
 
-$display = '';
-if ($cart['cart']['totalItemsInCart'] == 0 ) {
-    echo __( 'Your cart is empty!', 'digital-river-global-commerce' );
-    $display = 'style="display:none;"';
+if ( $cart['cart']['totalItemsInCart'] === 0 ) {
+?>
+    <p class="dr-checkout__empty-cart"><?php echo __( 'Your cart is empty!', 'digital-river-global-commerce' ); ?></p>
+    <div class="dr-checkout__actions-top">
+        <a href="<?php echo get_post_type_archive_link( 'dr_product' ); ?>" class="continue-shopping"><?php echo __( 'Continue Shopping', 'digital-river-global-commerce' ); ?></a>
+    </div>
+<?php
+    return;
 }
 
-$customerEmail = '';
-if ( $customer && $customer['id'] != 'Anonymous' ) {
-    $customerEmail = $customer['emailAddress'];
+$is_logged_in = $customer && ( $customer['id'] !== 'Anonymous' );
+$customerEmail = $is_logged_in ? $customer['emailAddress'] : '';
+$default_address = $cart['cart']['billingAddress'];
+
+if ( $is_logged_in ) {
+    $addresses = $customer['addresses']['address'] ?? [];
+
+    if ( count( $addresses ) > 0 ) {
+        foreach( $addresses as $addr ) {
+            if ( $addr['isDefault'] === 'true' ) {
+                $default_address = $addr;
+                break;
+            }
+        }
+    }
 }
 
 $has_subs = drgc_is_subs_added_to_cart( $cart );
 ?>
 
 <div class="dr-checkout-wrapper" id="dr-checkout-page-wrapper">
-    <div class="dr-checkout-wrapper__actions" <?php echo $display; ?>>
+    <div class="dr-checkout-wrapper__actions">
         <div class="back-link">
 
             <a href="" onclick="history.back(); return false;">&#60; Back</a>
@@ -35,7 +51,7 @@ $has_subs = drgc_is_subs_added_to_cart( $cart );
 
     </div>
 
-    <div class="dr-checkout-wrapper__content" <?php echo $display; ?>>
+    <div class="dr-checkout-wrapper__content">
 
         <div class="dr-checkout">
 
