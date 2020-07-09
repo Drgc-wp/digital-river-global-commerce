@@ -38,7 +38,7 @@ if ( $is_logged_in ) {
     }
 }
 
-$has_subs = drgc_is_subs_added_to_cart( $cart );
+$check_subs = drgc_is_subs_added_to_cart( $cart );
 ?>
 
 <div class="dr-checkout-wrapper" id="dr-checkout-page-wrapper">
@@ -59,7 +59,7 @@ $has_subs = drgc_is_subs_added_to_cart( $cart );
 
                 <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-pretandc.php'; ?>
 
-                <?php if ( ! $has_subs ) : ?>
+                <?php if ( ! $check_subs['has_subs'] ) : ?>
 
                     <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-googlepay.php'; ?>
 
