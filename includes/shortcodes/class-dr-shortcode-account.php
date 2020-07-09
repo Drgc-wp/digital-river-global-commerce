@@ -36,7 +36,7 @@ class DR_Shortcode_Account {
 
     drgc_get_template(
       'account/account.php',
-      compact( 'cart', 'customer', 'usa_states', 'orders', 'subscriptions', 'payments', 'locales')
+      compact( 'customer', 'usa_states', 'orders', 'subscriptions', 'payments', 'locales')
     );
   }
 }
