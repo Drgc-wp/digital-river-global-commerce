@@ -12,9 +12,10 @@
  */
 
 
-$first_name = isset($customer['firstName']) ? $customer['firstName'] : '' ;
-$last_name = isset($customer['lastName']) ? $customer['lastName'] : '';
+$first_name = isset( $customer['firstName'] ) ? $customer['firstName'] : '';
+$last_name = isset( $customer['lastName'] ) ? $customer['lastName'] : '';
 $subs_count = is_array( $subscriptions['subscriptions']['subscription'] ) ? count( $subscriptions['subscriptions']['subscription'] ) : 0;
+$customer_address = $customer['addresses']['address'];
 $addr_count = is_array( $customer_address ) ? count( $customer_address ) : 0;
 
 if($first_name !== '' && $last_name !== '') {

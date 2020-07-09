@@ -23,6 +23,72 @@ const DRCommerceApi = (($, params) => {
     });
   };
 
+  const saveShopperAddress = (address) => {
+    if (!address) return;
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/addresses`,
+        data: JSON.stringify(address),
+        success: () => {
+          resolve();
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const updateShopperAddress = (requestPayload = {}, queryStrings = {}) => {
+    const queryStr = $.param(queryStrings);
+
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/addresses/${requestPayload.address.id}?${queryStr}`,
+        data: !$.isEmptyObject(requestPayload) ? JSON.stringify(requestPayload) : null,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const deleteShopperAddress = (addressId) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'DELETE',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/addresses/${addressId}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
   const getCart = (queryStrings = {}) => {
     const queryStr = $.param(queryStrings);
 
@@ -335,29 +401,6 @@ const DRCommerceApi = (($, params) => {
     });
   };
 
-  const updateShopperAddress = (address) => {
-    if (!address) return;
-
-    return new Promise((resolve, reject) => {
-      $.ajax({
-        type: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${params.accessToken}`
-        },
-        url: `${apiBaseUrl}/me/addresses`,
-        data: JSON.stringify(address),
-        success: () => {
-          resolve();
-        },
-        error: (jqXHR) => {
-          reject(jqXHR);
-        }
-      });
-    });
-  };
-
   const submitCart = (queryStrings = {}) => {
     const queryStr = $.param(queryStrings);
 
@@ -398,7 +441,9 @@ const DRCommerceApi = (($, params) => {
     postByUrl,
     updateCartShippingAddress,
     updateCartBillingAddress,
+    saveShopperAddress,
     updateShopperAddress,
+    deleteShopperAddress,
     submitCart
   };
 

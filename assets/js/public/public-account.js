@@ -123,21 +123,25 @@ $(() => {
         $('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
     }
     $('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function(e) {
-        //console.log('shown');
       sessionStorage.drAccountTab = $(e.target).attr('href');
     });
 
     // Address
     var $addresses = $('#dr-account-page-wrapper .address');
+    const $deleteAddressModal = $('#dr-deleteAddressConfirm');
+    const $deleteAcceptBtn = $deleteAddressModal.find('.dr-delete-confirm');
+
+    $body.append($deleteAddressModal);
+
     // change primary address
     $addresses.on('click', function(e) {
-
-        //console.log('address click');
-
         var $this = $(this);
-        if ($(e.target).is('.address-edit-btn')) {
 
-            //console.log('address edit btn');
+        if ($(e.target).is('.address-edit-btn') || $(e.target).is('.address-add-btn')) {
+            if ($(e.target).is('.address-add-btn')) {
+                $(e.target).hide();
+                $this.find('.address-add-text').hide();
+            }
 
             $this.parent().addClass('expand');
             setTimeout(function(){
@@ -147,16 +151,48 @@ $(() => {
                     }, 200);
                 });
             }, 200);
+        } else if ($(e.target).is('.address-delete-btn')) {
+            $deleteAddressModal.find('.dr-delete-confirm').data('id' , $(e.target).data('id'));
+            $deleteAddressModal.find('p > strong').text($(e.target).data('nickname'));
+            $deleteAddressModal.drModal({
+                backdrop: 'static',
+                keyboard: false
+            });
+        } else if ($(e.target).is('.address-cancel-btn')) {
+            $this.parent().removeClass('expand');
+            $this.removeClass('ajax-error');
+            setTimeout(function() {
+                $this.find('.address-edit').slideUp(200, function() {
+                    $('html, body').animate({
+                        scrollTop: $this.offset().top - 50
+                    }, 200);
+
+                    $this.find('.address-add-btn').show();
+                    $this.find('.address-add-text').show();
+                });
+            }, 200);
         } else if ($(e.target).closest('.address-edit').length) {
 
             return; // handled by form submit callback
 
         } else {
-            if ($this.attr('data-primary')) return;
+            if ($this.attr('data-primary') || $this.hasClass('address-add-new')) return;
             $addresses.removeAttr('data-primary');
             $this.attr('data-primary', 'Primary');
             saveAddress($this.find('form.dr-panel-edit'));
         }
+    });
+
+    $deleteAcceptBtn.on('click', (e) => {
+        $('body').addClass('dr-loading');
+        DRCommerceApi.deleteShopperAddress($(e.target).data('id'))
+            .then(() => {
+                location.reload();
+            })
+            .catch((jqXHR) => {
+                $('body').removeClass('dr-loading');
+                CheckoutUtils.apiErrorHandler(jqXHR);
+            });
     });
 
     // Payment
@@ -271,10 +307,9 @@ $(() => {
 
     function saveAddress(form) {
         var $form = $(form);
-        var address = {
+        const addressObj = {
             address: {
-                id: $form.find('input[name="id"]').val(),
-                nickName: $form.find('input[name="line1"]').val(),
+                nickName: $form.find('input[name="nickname"]').val(),
                 firstName: $form.find('input[name="firstName"]').val(),
                 lastName: $form.find('input[name="lastName"]').val(),
                 companyName: $form.find('input[name="companyName"]').val(),
@@ -286,40 +321,42 @@ $(() => {
                 countryName: $form.find('select[name="country"] :selected').text(),
                 country: $form.find('select[name="country"]').val(),
                 phoneNumber: $form.find('input[name="phoneNumber"]').val(),
-                isDefault: !!( $form.closest('.address').length && $form.closest('.address').attr('data-primary') )
+                isDefault: false
             }
         };
-        // console.log(address);
-        saveShopperAddress(address, $form);
-    }
 
-    function saveShopperAddress(address, $selector) {
-        $.ajax({
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${drgc_params.accessToken}`
-            },
-            data: JSON.stringify(address),
-            url: 'https://' + drgc_params.domain + '/v1/shoppers/me/addresses/' + address.address.id,
-            success: () => {
-                console.log('%c%s', 'color:#155724; background:#d4edda; padding:2px; border:1px solid #155724; display: block;', 'address update success.');
-                $selector.closest('.address-edit').slideUp(200, function(){
-                    if ($selector.closest('.expand').length < 1) return;
-                    $selector.closest('.expand').removeClass('expand');
-                    setTimeout(function(){
-                        $('html, body').animate({
-                            scrollTop: $selector.closest('.address').offset().top - 50
-                        }, 200);
-                    }, 200);
-                });
-            },
-            error: (jqXHR) => {
-                console.error(jqXHR);
-                $selector.closest('.address').css('border', '2px solid red');
-                location.reload();
+        if (!$form.is('#dr-new-address-form')) {
+            addressObj.address.id = $form.find('input[name="id"]').val();
+            addressObj.address.isDefault = !!($form.closest('.address').length && $form.closest('.address').attr('data-primary'));
+
+            if ($form.closest('.expand').length) {
+                $form.addClass('dr-loading');
+            } else {
+                $form.closest('.address-col').addClass('dr-loading');
             }
-        });
+    
+            DRCommerceApi.updateShopperAddress(addressObj)
+                .then(() => {
+                    location.reload();
+                })
+                .catch((jqXHR) => {
+                    $form.removeClass('dr-loading');
+                    $form.closest('.address-col').removeClass('dr-loading');
+                    $form.closest('.address').addClass('ajax-error');
+                    CheckoutUtils.apiErrorHandler(jqXHR);
+                });
+        } else {
+            $form.addClass('dr-loading');
+            DRCommerceApi.saveShopperAddress(addressObj)
+                .then(() => {
+                    location.reload();
+                })
+                .catch((jqXHR) => {
+                    $form.removeClass('dr-loading');
+                    $form.closest('.address').addClass('ajax-error');
+                    CheckoutUtils.apiErrorHandler(jqXHR);
+                });
+        }
     }
 
     $addresses.find('form.dr-panel-edit').on('submit', function(e) {

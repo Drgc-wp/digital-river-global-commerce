@@ -27,7 +27,6 @@ class DR_Shortcode_Account {
    */
   public static function output( $atts ) {
     $customer = DRGC()->shopper->retrieve_shopper();
-    $customer_address = DRGC()->shopper->retrieve_all_addresses();
     $orders = DRGC()->shopper->retrieve_orders();
     $subscriptions = DRGC()->shopper->retrieve_subscriptions();
     $payments = DRGC()->shopper->retrieve_shopper_payments();
@@ -37,7 +36,7 @@ class DR_Shortcode_Account {
 
     drgc_get_template(
       'account/account.php',
-      compact( 'cart', 'customer', 'customer_address', 'usa_states', 'orders', 'subscriptions', 'payments', 'locales')
+      compact( 'cart', 'customer', 'usa_states', 'orders', 'subscriptions', 'payments', 'locales')
     );
   }
 }
