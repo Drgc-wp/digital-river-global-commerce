@@ -764,7 +764,7 @@ jQuery(document).ready(($) => {
             $('#' + addressType + '-field-state').val($address.data('state')).change();
             $('#' + addressType + '-field-zip').val($address.data('postalCode')).focus();
             $('#' + addressType + '-field-country').val($address.data('country')).change();
-            $('#' + addressType + '-field-phone').val($address.data('phoneNumber')).focus();
+            $('#' + addressType + '-field-phone').val($address.data('phoneNumber')).focus().blur();
 
             $('.dr-address-book-btn.' + addressType).removeClass('active');
             $('.dr-address-book.' + addressType).slideUp();
