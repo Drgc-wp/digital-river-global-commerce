@@ -14384,15 +14384,15 @@ jQuery(document).ready(function ($) {
     $(document).on('click', '.address', function (e) {
       var addressType = $('.dr-address-book-btn.shipping').hasClass('active') ? 'shipping' : 'billing';
       var $address = $(e.target).closest('.address');
-      $('#' + addressType + '-field-first-name').val($address.data('firstName')).change();
-      $('#' + addressType + '-field-last-name').val($address.data('lastName')).change();
-      $('#' + addressType + '-field-address1').val($address.data('lineOne')).change();
-      $('#' + addressType + '-field-address2').val($address.data('lineTwo')).change();
-      $('#' + addressType + '-field-city').val($address.data('city')).change();
+      $('#' + addressType + '-field-first-name').val($address.data('firstName')).focus();
+      $('#' + addressType + '-field-last-name').val($address.data('lastName')).focus();
+      $('#' + addressType + '-field-address1').val($address.data('lineOne')).focus();
+      $('#' + addressType + '-field-address2').val($address.data('lineTwo')).focus();
+      $('#' + addressType + '-field-city').val($address.data('city')).focus();
       $('#' + addressType + '-field-state').val($address.data('state')).change();
-      $('#' + addressType + '-field-zip').val($address.data('postalCode')).change();
+      $('#' + addressType + '-field-zip').val($address.data('postalCode')).focus();
       $('#' + addressType + '-field-country').val($address.data('country')).change();
-      $('#' + addressType + '-field-phone').val($address.data('phoneNumber')).change();
+      $('#' + addressType + '-field-phone').val($address.data('phoneNumber')).focus();
       $('.dr-address-book-btn.' + addressType).removeClass('active');
       $('.dr-address-book.' + addressType).slideUp();
       $('#checkbox-save-' + addressType).prop('checked', false);
