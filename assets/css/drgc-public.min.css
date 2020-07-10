@@ -700,7 +700,7 @@ input[type=number]{-webkit-appearance:textfield;-moz-appearance:textfield;appear
 .dr-account-wrapper .addresses .address-delete-btn{background:transparent url(../images/garbage.svg) center/contain no-repeat}
 .dr-account-wrapper .addresses .address-add-new{background-color:#f8f9fa;height:100%;border:1px solid #e9ecef;-webkit-transition:border-color 200ms;transition:border-color 200ms;min-height:178px}
 .dr-account-wrapper .addresses .address-add-new:hover{cursor:auto;border-color:#28a745}
-.dr-account-wrapper .addresses .address-add-btn{background:transparent url(../images/product-plus.svg) center/contain no-repeat;margin:0;position:absolute;top:40%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:45px;height:45px}
+.dr-account-wrapper .addresses .address-add-btn{background:transparent url(../images/product-plus.svg) center/contain no-repeat;margin:0;position:absolute;top:40%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);width:45px;height:45px;border:0}
 .dr-account-wrapper .addresses .address-add-btn:hover{cursor:pointer}
 .dr-account-wrapper .addresses .address-add-text{margin:0;position:absolute;top:65%;left:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}
 .dr-account-wrapper .addresses .address-add-title{font-size:1.25em;font-weight:bold}
