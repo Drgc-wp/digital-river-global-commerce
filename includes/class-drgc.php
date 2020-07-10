@@ -293,6 +293,9 @@ class DRGC {
 	private function define_public_hooks() {
 		$plugin_public = new DRGC_Public( $this->get_drgc(), $this->get_version() );
 
+		$this->loader->add_action( 'wp', $plugin_public, 'prevent_browser_caching' );
+		$this->loader->add_filter( 'nocache_headers', $plugin_public, 'overwrite_nocache_headers' );
+
 		$this->loader->add_action( 'template_redirect', $plugin_public, 'redirect_on_page_load' );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );

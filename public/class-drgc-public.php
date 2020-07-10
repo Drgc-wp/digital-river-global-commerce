@@ -615,6 +615,24 @@ class DRGC_Public {
 	}
 
   /**
+   * Prevent browser caching.
+   *
+   * @since  1.3.0
+   */
+  public function prevent_browser_caching() {
+    if ( is_page( 'cart' ) || is_page( 'checkout' ) || is_page( 'thank-you' ) ||
+         is_page( 'login' ) || is_page( 'account' ) ) {
+      nocache_headers();
+    }
+  }
+
+  public function overwrite_nocache_headers( $headers ) {
+    $headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0';
+    $headers['Pragma'] = 'no-cache';
+    return $headers;
+  }
+
+  /**
    * Redirect on page load.
    *
    * @since  1.1.0
