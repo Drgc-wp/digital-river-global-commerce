@@ -24,6 +24,7 @@ if ( $cart['cart']['totalItemsInCart'] === 0 ) {
 $is_logged_in = $customer && ( $customer['id'] !== 'Anonymous' );
 $customerEmail = $is_logged_in ? $customer['emailAddress'] : '';
 $default_address = $cart['cart']['billingAddress'];
+$addresses = [];
 
 if ( $is_logged_in ) {
     $addresses = $customer['addresses']['address'] ?? [];

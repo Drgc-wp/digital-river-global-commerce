@@ -53,7 +53,7 @@ if ( count( $custom_attributes ) > 0 ) {
 
             <div class="field-checkbox">
 
-                <input type="checkbox" name="checkbox-billing" id="checkbox-billing" checked="checked">
+                <input type="checkbox" name="checkbox-billing" id="checkbox-billing" <?php echo ( $companyEIN === '' ) ? 'checked="checked"' : '' ?>>
 
                 <label for="checkbox-billing" class="checkbox-label">
 
@@ -65,25 +65,43 @@ if ( count( $custom_attributes ) > 0 ) {
 
         </div>
 
-        <div class="billing-section" <?php echo !$cart['cart']['hasPhysicalProduct'] ? 'style="display: block;"' : '' ?>>
+        <?php if ( 'en_US' === $current_locale ) : ?>
 
-          <?php if ( 'en_US' === $current_locale ) : ?>
-          <div class="form-group dr-panel-edit__el">
+            <div class="form-group dr-panel-edit__el">
 
-              <div class="field-checkbox">
+                <div class="field-checkbox">
 
-                  <input type="checkbox" name="checkbox-business" id="checkbox-business" <?php echo $billingAddress['companyName'] ? 'checked="checked"' : '' ?> value="on">
+                    <input type="checkbox" name="checkbox-business" id="checkbox-business" <?php echo ( $companyEIN !== '' ) ? 'checked="checked"' : '' ?>>
 
-                  <label for="checkbox-business" class="checkbox-label">
+                    <label for="checkbox-business" class="checkbox-label">
 
-                      <?php echo __( 'Business Checkout' ); ?>
+                        <?php echo __( 'Business Checkout', 'digital-river-global-commerce' ); ?>
 
-                  </label>
+                    </label>
 
-              </div>
+                </div>
 
-          </div>
-          <div class="form-group dr-panel-edit__el form-group-business<?php echo !$billingAddress['companyName'] ? ' hide' : '' ?>">
+            </div>
+
+        <?php endif; ?>
+
+        <?php if ( $is_logged_in ): ?>
+
+            <button class="dr-btn dr-btn-black dr-address-book-btn billing" type="button" style="display: none;"><?php echo __( 'My Address Book', 'digital-river-global-commerce' ); ?></button>
+
+            <div class="dr-address-book billing" style="display: none;">
+
+                <h4><?php echo __( 'Choose billing address', 'digital-river-global-commerce' ); ?></h4>
+
+                <?php include_once DRGC_PLUGIN_DIR . 'public/templates/checkout/checkout-address-book.php'; ?>
+
+            </div>
+
+        <?php endif; ?>
+
+        <?php if ( 'en_US' === $current_locale ) : ?>
+
+            <div class="form-group dr-panel-edit__el form-group-business<?php echo ( $companyEIN === '' ) ? ' hide' : '' ?>">
 
                 <div class="float-container float-container--company-name">
 
@@ -93,12 +111,13 @@ if ( count( $custom_attributes ) > 0 ) {
 
                     </label>
 
-                    <input id="billing-field-company-name" type="text" name="billing-companyName" value="<?php echo $billingAddress['companyName'] ?>" class="form-control float-field float-field--company-name" >
+                    <input id="billing-field-company-name" type="text" name="billing-companyName" value="<?php echo $billingAddress['companyName'] ?>" class="form-control float-field float-field--company-name">
 
                 </div>
 
             </div>
-            <div class="form-group dr-panel-edit__el form-group-business <?php echo !$billingAddress['companyName'] ? ' hide' : '' ?>">
+
+            <div class="form-group dr-panel-edit__el form-group-business <?php echo ( $companyEIN === '' ) ? ' hide' : '' ?>">
 
                 <div class="float-container float-container--company-ein">
 
@@ -108,12 +127,15 @@ if ( count( $custom_attributes ) > 0 ) {
 
                     </label>
 
-                    <input id="billing-field-company-ein" type="text" name="billing-companyEIN" value="<?php echo $companyEIN; ?>" class="form-control float-field float-field--company-ein" >
+                    <input id="billing-field-company-ein" type="text" name="billing-companyEIN" value="<?php echo $companyEIN; ?>" class="form-control float-field float-field--company-ein">
 
                 </div>
 
             </div>
-            <?php endif; ?>
+
+        <?php endif; ?>
+
+        <div class="billing-section" <?php echo !$cart['cart']['hasPhysicalProduct'] ? 'style="display: block;"' : '' ?>>
 
             <div class="form-group dr-panel-edit__el">
 
@@ -187,7 +209,7 @@ if ( count( $custom_attributes ) > 0 ) {
 
                     <label for="billing-field-address2" class="float-label">
 
-                        <?php echo __( 'Address line 2/Company', 'digital-river-global-commerce' ); ?>
+                        <?php echo __( 'Address line 2', 'digital-river-global-commerce' ); ?>
 
                     </label>
 
@@ -274,7 +296,7 @@ if ( count( $custom_attributes ) > 0 ) {
 
             </div>
 
-            <div class="dr-panel-edit__el">
+            <div class="form-group dr-panel-edit__el">
 
                 <div class="float-container float-container--zip">
 
@@ -312,6 +334,24 @@ if ( count( $custom_attributes ) > 0 ) {
 
             </div>
 
+            <?php if ( $is_logged_in ): ?>
+            
+                <div class="field-checkbox">
+                    
+                    <input type="hidden" name="addresses-no-default" value="<?php echo $no_default ?>">
+
+                    <input type="checkbox" name="checkbox-save-billing" id="checkbox-save-billing">
+
+                    <label for="checkbox-save-billing" class="checkbox-label">
+
+                        <?php echo __( 'Save this address for future purchases', 'digital-river-global-commerce' ); ?>
+
+                    </label>
+
+                </div>
+
+            <?php endif; ?>
+
         </div>
 
         <div class="invalid-feedback dr-err-field" style="display: none"></div>
@@ -331,3 +371,4 @@ if ( count( $custom_attributes ) > 0 ) {
     </div>
 
 </div>
+
