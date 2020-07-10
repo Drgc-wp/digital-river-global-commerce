@@ -501,6 +501,18 @@ jQuery(document).ready(($) => {
 
             DRCommerceApi.updateCartBillingAddress({expand: 'all'}, cartRequest)
                 .then(() => {
+                    // Digital product still need to update some of shippingAddress attributes for tax calculating
+                    if (drgc_params.cart.cart.hasPhysicalProduct) return new Promise(resolve => resolve());
+                    const patchCartRequest = {
+                        address: {
+                            country: cartRequest.address.country,
+                            countrySubdivision: cartRequest.address.countrySubdivision,
+                            postalCode: cartRequest.address.postalCode
+                        }
+                    };
+                    return DRCommerceApi.updateCartShippingAddress({expand: 'all'}, patchCartRequest);
+                })
+                .then(() => {
                     const $companyEin = $('#billing-field-company-ein');
 
                     if (!$companyEin.length) return new Promise(resolve => resolve());
