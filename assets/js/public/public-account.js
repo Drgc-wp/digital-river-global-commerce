@@ -503,10 +503,7 @@ $(() => {
             DRCommerceApi.getSubsDetails(subsId)
                 .then((data) => {
                     const orderId = data.subscription.orders.order[0].uri.split('orders/')[1];
-                    return DRCommerceApi.getOrderDetails(orderId);
-                })
-                .then((data) => {
-                    entityCode = data.order.businessEntityCode;
+                    entityCode = drOrders[orderId].entityCode;
                     AccountModule.appendAutoRenewalTerms(digitalriverjs, entityCode, locale);
                 })
                 .catch((jqXHR) => {

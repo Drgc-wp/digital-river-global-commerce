@@ -15979,9 +15979,7 @@ jquery_default()(function () {
       var subsId = jquery_default()('#list-subscriptions .subscription').first().data('id');
       commerce_api.getSubsDetails(subsId).then(function (data) {
         var orderId = data.subscription.orders.order[0].uri.split('orders/')[1];
-        return commerce_api.getOrderDetails(orderId);
-      }).then(function (data) {
-        entityCode = data.order.businessEntityCode;
+        entityCode = drOrders[orderId].entityCode;
         AccountModule.appendAutoRenewalTerms(digitalriverjs, entityCode, locale);
       })["catch"](function (jqXHR) {
         checkout_utils.apiErrorHandler(jqXHR);
