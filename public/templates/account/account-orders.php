@@ -46,7 +46,7 @@
 </div>
 
 
-<?php foreach ($orders['orders']['order'] as $order): ?>
+<?php foreach ( $orders['orders']['order'] as $order ): ?>
 
     <div class="order">
 
@@ -68,7 +68,7 @@
 
         <div class="order-details">
             <button type="button" class="btn btn-transparent" data-order="<?php echo $order['id']; ?>">
-                Order Details
+                <?php _e( 'Order Details', 'digital-river-global-commerce' ) ?>
             </button>
         </div>
 
@@ -83,6 +83,8 @@
             formattedTax: '<?php echo $order['pricing']['formattedTax']; ?>',
             orderState: '<?php echo $order['orderState']; ?>',
             orderDate: <?php echo date_format(date_create($order['submissionDate']),"m/d/Y"); ?>,
+            shippingMethod: '<?php echo $order['shippingMethod']['description'] ?? ''; ?>',
+            shippingMethodCode: '<?php echo $order['shippingMethod']['code'] ?? ''; ?>',
             billingAddress: {
                 firstName: '<?php echo $order['billingAddress']['firstName']; ?>',
                 lastName: '<?php echo $order['billingAddress']['lastName']; ?>',
@@ -127,7 +129,7 @@
     <div class="dr-modal-dialog dr-modal-xl">
         <div class="dr-modal-content">
             <div class="dr-modal-header">
-                <div class="dr-modal-title dr-h5" id="dr-modalLabel">Order Details</div>
+                <div class="dr-modal-title dr-h5" id="dr-modalLabel"><?php _e( 'Order Details', 'digital-river-global-commerce' ) ?></div>
                 <button type="button" class="close" data-dismiss="dr-modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -137,11 +139,11 @@
                 <div class="dr-thank-you-wrapper" id="dr-thank-you-page-wrapper">
                     <div class="dr-thank-you-wrapper__info">
                         <div class="order-number">
-                            <span><?php echo __('Order number: ') ?></span>
+                            <span><?php echo __( 'Order number: ', 'digital-river-global-commerce' ) ?></span>
                             <span class="dr-modal-orderNumber"></span>
                         </div>
                         <div class="order-info">
-                            <button id="print-button" class="print-button"><?php echo __('Print Receipt') ?></button>
+                            <button id="print-button" class="print-button"><?php echo __( 'Print Receipt', 'digital-river-global-commerce' ) ?></button>
                         </div>
                     </div>
                     <div class="dr-thank-you-wrapper__products dr-summary dr-summary--thank-you">
@@ -155,7 +157,7 @@
                         <div class="dr-order-address">
                             <!-- if hasPhysicalProduct -->
                             <div class="dr-order-address__shipping">
-                                <div class="address-title"><?php echo __('Shipping Address') ?></div>
+                                <div class="address-title"><?php echo __( 'Shipping Address', 'digital-river-global-commerce' ) ?></div>
                                 <div class="address-info">
                                     <p class="dr-modal-shippingName"></p>
                                     <p class="dr-modal-shippingAddress1"></p>
@@ -165,7 +167,7 @@
                             </div>
                             <!-- end if -->
                             <div class="dr-order-address__billing">
-                                <div class="address-title"><?php echo __('Billing Address') ?></div>
+                                <div class="address-title"><?php echo __( 'Billing Address', 'digital-river-global-commerce' ) ?></div>
                                 <div class="address-info">
                                     <p class="dr-modal-billingName"></p>
                                     <p class="dr-modal-billingAddress1"></p>
@@ -176,25 +178,25 @@
                         </div>
                         <div class="dr-summary dr-summary--thank-you order-summary">
                             <div class="dr-summary__subtotal">
-                                <p class="subtotal-label"><?php echo __('Subtotal') ?></p>
+                                <p class="subtotal-label"><?php echo __( 'Subtotal', 'digital-river-global-commerce' ) ?></p>
                                 <p class="subtotal-value dr-modal-subtotal"></p>
                             </div>
                             <div class="dr-summary__tax">
-                                <p class="item-label"><?php echo __('Tax') ?></p>
+                                <p class="item-label"><?php echo __( 'Tax', 'digital-river-global-commerce' ) ?></p>
                                 <p class="item-value dr-modal-tax"></p>
                             </div>
                             <!-- if shipping -->
                             <div class="dr-summary__shipping">
-                                <p class="item-label"><?php echo __('Shipping') ?></p>
+                                <p class="item-label"><?php echo __( 'Shipping', 'digital-river-global-commerce' ) ?></p>
                                 <p class="item-value dr-modal-shipping"></p>
                             </div>
                             <!-- end if -->
                             <div class="dr-summary__discount">
-                                <p class="discount-label"><?php echo __('Discount') ?></p>
+                                <p class="discount-label"><?php echo __( 'Discount', 'digital-river-global-commerce' ) ?></p>
                                 <p class="discount-value">-<span class="dr-modal-discount"></span></p>
                             </div>
                             <div class="dr-summary__total">
-                                <p class="total-label"><?php echo __('Total') ?></p>
+                                <p class="total-label"><?php echo __( 'Total', 'digital-river-global-commerce' ) ?></p>
                                 <p class="total-value dr-modal-total"></p>
                             </div>
                         </div>
@@ -203,8 +205,8 @@
 
             </div>
             <div class="dr-modal-footer">
-                <button type="button" class="dr-btn dr-btn-black" data-dismiss="dr-modal">Close</button>
-                <button type="button" class="dr-btn print-button">Print</button>
+                <button type="button" class="dr-btn dr-btn-black" data-dismiss="dr-modal"><?php _e( 'Close', 'digital-river-global-commerce' ) ?></button>
+                <button type="button" class="dr-btn print-button"><?php _e( 'Print', 'digital-river-global-commerce' ) ?></button>
             </div>
         </div>
     </div>
