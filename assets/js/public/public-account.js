@@ -3,7 +3,19 @@ import $ from 'jquery';
 import DRCommerceApi from './commerce-api';
 import CheckoutUtils from './checkout-utils';
 
-const AccountModule = {};
+const AccountModule = (($) => {
+    const appendAutoRenewalTerms = (digitalriverjs, entityCode, locale) => {
+        const terms = CheckoutUtils.getLocalizedAutoRenewalTerms(digitalriverjs, entityCode, locale);
+
+        if (terms) {
+            $('#dr-autoRenewalPlanTerms').find('.dr-modal-body > p').append(terms);
+        }
+    };
+
+    return {
+        appendAutoRenewalTerms
+    };
+})(jQuery);
 
 $(() => {
 
@@ -481,9 +493,26 @@ $(() => {
         const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
             'locale': locale.split('_').join('-')
         });
-        const terms = CheckoutUtils.getLocalizedAutoRenewalTerms(digitalriverjs, locale);
+        let entityCode = CheckoutUtils.getEntityCode();
 
-        $autoRenewalPlanTerms.find('.dr-modal-body > p').append(terms);
+        if (entityCode) {
+            AccountModule.appendAutoRenewalTerms(digitalriverjs, entityCode, locale);
+        } else {
+            const subsId = $('#list-subscriptions .subscription').first().data('id');
+
+            DRCommerceApi.getSubsDetails(subsId)
+                .then((data) => {
+                    const orderId = data.subscription.orders.order[0].uri.split('orders/')[1];
+                    return DRCommerceApi.getOrderDetails(orderId);
+                })
+                .then((data) => {
+                    entityCode = data.order.businessEntityCode;
+                    AccountModule.appendAutoRenewalTerms(digitalriverjs, entityCode, locale);
+                })
+                .catch((jqXHR) => {
+                    CheckoutUtils.apiErrorHandler(jqXHR);
+                });
+        }
     }
 
     // mobile back button

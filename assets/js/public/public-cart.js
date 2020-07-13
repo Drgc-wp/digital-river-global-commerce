@@ -49,7 +49,8 @@ const CartModule = (($) => {
   };
 
   const appendAutoRenewalTerms = (digitalriverjs, locale) => {
-    const terms = CheckoutUtils.getLocalizedAutoRenewalTerms(digitalriverjs, locale);
+    const entityCode = CheckoutUtils.getEntityCode();
+    const terms = CheckoutUtils.getLocalizedAutoRenewalTerms(digitalriverjs, entityCode, locale);
 
     if (terms) {
       $('#dr-optInAutoRenew > .dr-optInAutoRenewTerms > p').append(terms);
