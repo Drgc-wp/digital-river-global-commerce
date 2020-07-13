@@ -37,7 +37,8 @@ global.drgc_params = {
   cart: {
     cart: {
       hasPhysicalProduct: true,
-      businessEntityCode: 'DR_INC-ENTITY'
+      businessEntityCode: 'DR_INC-ENTITY',
+      shippingOptions: {}
     }
   }
 };
