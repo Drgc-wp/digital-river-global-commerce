@@ -371,9 +371,7 @@ $(() => {
     var $subs = $('#dr-account-page-wrapper .subscription');
     var $subscriptionError = $('#subscriptionError');
     var $subscriptionConfirm = $('#subscriptionConfirm');
-    var $subscriptionConfirmAccept = $subscriptionConfirm.find('.dr-confirm-ar-off');
-    var $subscriptionConfirmCancel = $subscriptionConfirm.find('.dr-confirm-cancel');
-
+    const $autoRenewalPlanTerms = $('#dr-autoRenewalPlanTerms');
 
     function updateSubscription(data = {}, $toggle) {
         $('body').addClass('dr-loading');
@@ -398,6 +396,10 @@ $(() => {
         var $this = $(this);
         var subID = ($this.closest('.subscription').length && $this.closest('.subscription').attr('data-id')) ? $this.closest('.subscription').attr('data-id') : '';
         var ar = $this.is(':checked') ? 'Auto' : 'Manual';
+        const modalId = {
+            Auto: '#dr-autoRenewalPlanTerms',
+            Manual: '#subscriptionConfirm'
+        } 
 
         $body.data({
             currentToggle: {
@@ -407,25 +409,13 @@ $(() => {
             }
         });
 
-        var data = {
-            action         : 'drgc_toggle_auto_renewal_ajax',
-            nonce          : drgc_params.ajaxNonce,
-            subscriptionId : subID,
-            renewalType    : ar
-        };
-
-        if (ar === 'Manual') {
-            $subscriptionConfirm.drModal({
-                backdrop: 'static',
-                keyboard: false
-            });
-        } else {
-            updateSubscription(data, $this);
-        }
-
+        $(modalId[ar]).drModal({
+            backdrop: 'static',
+            keyboard: false
+        });
     });
     // subscription confirm click events
-    $subscriptionConfirmAccept.on('click', function() {
+    $('button.dr-confirm-ar-off, button.dr-confirm-ar-on').on('click', function() {
         var toggle = $body.data('currentToggle');
         var data = {
             action         : 'drgc_toggle_auto_renewal_ajax',
@@ -436,7 +426,7 @@ $(() => {
         updateSubscription(data, toggle.selector);
     });
     // reset toggle if event is canceled
-    $subscriptionConfirmCancel.on('click', function() {
+    $('button.dr-confirm-cancel').on('click', function() {
         var toggle = $body.data('currentToggle');
         toggle.selector.prop('checked', !(toggle.ar === 'Auto'));
     });
@@ -476,16 +466,23 @@ $(() => {
             });
     });
 
-    $body.append($subscriptionError).append($subscriptionConfirm);
+    $body.append($subscriptionError).append($subscriptionConfirm).append($autoRenewalPlanTerms);
+
+    if ($('#list-subscriptions .subscription').length && $autoRenewalPlanTerms.length) {
+        const locale = drgc_params.drLocale || 'en_US';
+        const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
+            'locale': locale.split('_').join('-')
+        });
+        const terms = CheckoutUtils.getLocalizedAutoRenewalTerms(digitalriverjs, locale);
+
+        $autoRenewalPlanTerms.find('.dr-modal-body > p').append(terms);
+    }
 
     // mobile back button
     $('#dr-account-page-wrapper .back').on('click', function() {
         $('.dr-tab-pane').removeClass('active show');
         $('.dr-list-group-item').removeClass('active').attr('aria-selected', 'false');
     });
-
-
-
 });
 
 export default AccountModule;

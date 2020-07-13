@@ -12153,6 +12153,12 @@ var CheckoutUtils = function ($, params) {
     return false;
   };
 
+  var getLocalizedAutoRenewalTerms = function getLocalizedAutoRenewalTerms(digitalriverjs, locale) {
+    var entityCode = getEntityCode();
+    var compliance = getCompliance(digitalriverjs, entityCode, locale);
+    return Object.keys(compliance).length ? compliance.autorenewalPlanTerms.localizedText : '';
+  };
+
   return {
     createDisplayItems: createDisplayItems,
     createShippingOptions: createShippingOptions,
@@ -12174,7 +12180,8 @@ var CheckoutUtils = function ($, params) {
     setShippingOption: setShippingOption,
     getSupportedCountries: getSupportedCountries,
     createCartRequest: createCartRequest,
-    isSubsAddedToCart: isSubsAddedToCart
+    isSubsAddedToCart: isSubsAddedToCart,
+    getLocalizedAutoRenewalTerms: getLocalizedAutoRenewalTerms
   };
 }(jQuery, drgc_params);
 
@@ -12692,11 +12699,9 @@ var CartModule = function ($) {
   };
 
   var appendAutoRenewalTerms = function appendAutoRenewalTerms(digitalriverjs, locale) {
-    var entityCode = checkout_utils.getEntityCode();
-    var compliance = checkout_utils.getCompliance(digitalriverjs, entityCode, locale);
+    var terms = checkout_utils.getLocalizedAutoRenewalTerms(digitalriverjs, locale);
 
-    if (Object.keys(compliance).length) {
-      var terms = compliance.autorenewalPlanTerms.localizedText;
+    if (terms) {
       $('#dr-optInAutoRenew > .dr-optInAutoRenewTerms > p').append(terms);
       $('#dr-autoRenewTermsContainer').show();
     }
@@ -15785,8 +15790,7 @@ jquery_default()(function () {
   var $subs = jquery_default()('#dr-account-page-wrapper .subscription');
   var $subscriptionError = jquery_default()('#subscriptionError');
   var $subscriptionConfirm = jquery_default()('#subscriptionConfirm');
-  var $subscriptionConfirmAccept = $subscriptionConfirm.find('.dr-confirm-ar-off');
-  var $subscriptionConfirmCancel = $subscriptionConfirm.find('.dr-confirm-cancel');
+  var $autoRenewalPlanTerms = jquery_default()('#dr-autoRenewalPlanTerms');
 
   function updateSubscription() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -15813,6 +15817,10 @@ jquery_default()(function () {
     var $this = jquery_default()(this);
     var subID = $this.closest('.subscription').length && $this.closest('.subscription').attr('data-id') ? $this.closest('.subscription').attr('data-id') : '';
     var ar = $this.is(':checked') ? 'Auto' : 'Manual';
+    var modalId = {
+      Auto: '#dr-autoRenewalPlanTerms',
+      Manual: '#subscriptionConfirm'
+    };
     $body.data({
       currentToggle: {
         selector: $this,
@@ -15820,24 +15828,13 @@ jquery_default()(function () {
         ar: ar
       }
     });
-    var data = {
-      action: 'drgc_toggle_auto_renewal_ajax',
-      nonce: drgc_params.ajaxNonce,
-      subscriptionId: subID,
-      renewalType: ar
-    };
-
-    if (ar === 'Manual') {
-      $subscriptionConfirm.drModal({
-        backdrop: 'static',
-        keyboard: false
-      });
-    } else {
-      updateSubscription(data, $this);
-    }
+    jquery_default()(modalId[ar]).drModal({
+      backdrop: 'static',
+      keyboard: false
+    });
   }); // subscription confirm click events
 
-  $subscriptionConfirmAccept.on('click', function () {
+  jquery_default()('button.dr-confirm-ar-off, button.dr-confirm-ar-on').on('click', function () {
     var toggle = $body.data('currentToggle');
     var data = {
       action: 'drgc_toggle_auto_renewal_ajax',
@@ -15848,7 +15845,7 @@ jquery_default()(function () {
     updateSubscription(data, toggle.selector);
   }); // reset toggle if event is canceled
 
-  $subscriptionConfirmCancel.on('click', function () {
+  jquery_default()('button.dr-confirm-cancel').on('click', function () {
     var toggle = $body.data('currentToggle');
     toggle.selector.prop('checked', !(toggle.ar === 'Auto'));
   });
@@ -15881,7 +15878,17 @@ jquery_default()(function () {
       jquery_default()('body').removeClass('dr-loading');
     });
   });
-  $body.append($subscriptionError).append($subscriptionConfirm); // mobile back button
+  $body.append($subscriptionError).append($subscriptionConfirm).append($autoRenewalPlanTerms);
+
+  if (jquery_default()('#list-subscriptions .subscription').length && $autoRenewalPlanTerms.length) {
+    var locale = drgc_params.drLocale || 'en_US';
+    var digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
+      'locale': locale.split('_').join('-')
+    });
+    var terms = checkout_utils.getLocalizedAutoRenewalTerms(digitalriverjs, locale);
+    $autoRenewalPlanTerms.find('.dr-modal-body > p').append(terms);
+  } // mobile back button
+
 
   jquery_default()('#dr-account-page-wrapper .back').on('click', function () {
     jquery_default()('.dr-tab-pane').removeClass('active show');
