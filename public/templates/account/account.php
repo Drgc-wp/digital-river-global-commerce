@@ -55,7 +55,7 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
                     <span class="side-nav-chev">&#8250;</span>
                 </a>
             </li>
-            <li>
+            <li style="display: none;">
                 <a class="dr-list-group-item dr-list-group-item-action" id="list-password-list" data-toggle="dr-list" href="#list-password" role="tab" aria-controls="password">
                     <div class="side-nav-icon"><img src="<?php echo DRGC_PLUGIN_URL . 'assets/images/password-icon.svg' ?>" alt="password icon"></div>
                     <span class="side-nav-label"><?php echo __( 'Change Password', 'digital-river-global-commerce' ); ?></span>

@@ -1795,7 +1795,7 @@ input[type=number] { -webkit-appearance: textfield; -moz-appearance: textfield; 
 
 .dr-account-wrapper .addresses .address-add-new:hover { cursor: auto; border-color: #28a745; }
 
-.dr-account-wrapper .addresses .address-add-btn { background: transparent url(../images/product-plus.svg) center/contain no-repeat; margin: 0; position: absolute; top: 40%; left: 50%; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%); width: 45px; height: 45px; }
+.dr-account-wrapper .addresses .address-add-btn { background: transparent url(../images/product-plus.svg) center/contain no-repeat; margin: 0; position: absolute; top: 40%; left: 50%; -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%); width: 45px; height: 45px; border: none; }
 
 .dr-account-wrapper .addresses .address-add-btn:hover { cursor: pointer; }
 

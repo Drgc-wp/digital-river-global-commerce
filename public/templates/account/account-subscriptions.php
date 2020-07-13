@@ -21,6 +21,7 @@
   $product_image = $sub['products']['product']['full']['product']['productImage'] ?? '';
   $is_auto = false;
   $custom_attributes = $sub['products']['product']['customAttributes']['attribute'] ?? [];
+  $status = $sub['status'];
 
   if ( $custom_attributes ) {
     foreach ( $custom_attributes as $att ) { 
@@ -82,16 +83,22 @@
 
   <div class="subscription-status">
     <div class="subscription-title"><?php echo __( 'Status', 'digital-river-global-commerce' ); ?></div>
-    <div class="subscription-content <?php echo  str_replace(' ', '', strtolower($sub['status'])); ?>"><?php echo $sub['status'] ?></div>
+    <div class="subscription-content <?php echo  str_replace(' ', '', strtolower( $status )); ?>"><?php echo $status ?></div>
   </div>
 
   <div class="subscription-ar">
-    <?php if ( $is_auto ) : ?>  
+    <?php if ( $is_auto ): ?>
       <div class="subscription-title"><?php echo __( 'Auto Renewal', 'digital-river-global-commerce' ); ?></div>
-      <label class="switch" for="ar-switch-<?php echo $key ?>">
+      <?php if ( $status === 'Active' ): ?>
+        <label class="switch" for="ar-switch-<?php echo $key ?>">
           <input type="checkbox" id="ar-switch-<?php echo $key ?>" <?php if ($sub['autoRenewal'] === 'enabled') echo ' checked'; ?>>
           <div class="slider" data-on="<?php echo __( 'on', 'digital-river-global-commerce' ); ?>" data-off="<?php echo __( 'off', 'digital-river-global-commerce' ); ?>"></div>
-      </label>
+        </label>
+      <?php else: ?>
+        <div class="subscription-content">
+          <button type="button" class="dr-btn dr-renew-btn" data-subs-id="<?php echo $subs_id ?>" data-product-id="<?php echo $product_id ?>" data-renewal-qty="<?php echo $sub['nextRenewalQuantity'] ?>"><?php echo __( 'Renew Now', 'digital-river-global-commerce' ); ?></button>
+        </div>
+      <?php endif; ?>
     <?php else : ?>
       <div class="subscription-title"><?php echo __( 'Manual Renewal', 'digital-river-global-commerce' ); ?></div>
       <div class="subscription-content">
