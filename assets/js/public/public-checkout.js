@@ -53,7 +53,7 @@ const CheckoutModule = (($) => {
                 type: 'GET',
                 url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage?ESICaching=off`,
                 success: (response) => {
-                    const addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
+                    const addressTypes = requestShipping ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
                         const savedCountryCode = $(`#${type}-field-country`).val();
                         const $options = $(response).find(`select[name=${type.toUpperCase()}country] option`).not(':first');
@@ -501,6 +501,18 @@ jQuery(document).ready(($) => {
 
             DRCommerceApi.updateCartBillingAddress({expand: 'all'}, cartRequest)
                 .then(() => {
+                    // Digital product still need to update some of shippingAddress attributes for tax calculating
+                    if (requestShipping) return new Promise(resolve => resolve());
+                    const patchCartRequest = {
+                        address: {
+                            country: cartRequest.address.country,
+                            countrySubdivision: cartRequest.address.countrySubdivision,
+                            postalCode: cartRequest.address.postalCode
+                        }
+                    };
+                    return DRCommerceApi.updateCartShippingAddress({expand: 'all'}, patchCartRequest);
+                })
+                .then(() => {
                     const $companyEin = $('#billing-field-company-ein');
 
                     if (!$companyEin.length) return new Promise(resolve => resolve());
@@ -521,7 +533,7 @@ jQuery(document).ready(($) => {
                 .then(() => DRCommerceApi.getCart({expand: 'all'}))
                 // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
                 .then((data) => {
-                    return drgc_params.cart.cart.hasPhysicalProduct ?
+                    return requestShipping ?
                         CheckoutModule.preselectShippingOption(data) :
                         new Promise(resolve => resolve(data));
                 })

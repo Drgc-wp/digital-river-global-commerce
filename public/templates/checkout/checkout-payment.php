@@ -86,7 +86,7 @@
 
     </div>
 
-    <?php if ( ! $has_subs ) : ?>
+    <?php if ( ! $check_subs['has_subs'] ) : ?>
 
         <div class="dr-panel-edit__el">
 

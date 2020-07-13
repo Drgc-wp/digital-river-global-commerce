@@ -23,6 +23,8 @@ $(() => {
 
         if (!drOrders[orderID]) alert('order details not available');
 
+        const requestShipping = drOrders[orderID].shippingMethodCode !== '';
+
         if (orderID === drActiveOrderId) {
             $ordersModal.drModal('show');
         } else {
@@ -100,6 +102,12 @@ $(() => {
             }
 
             $('.dr-summary__products').html(html);
+
+            if (!requestShipping) {
+                $('.dr-order-address__shipping, .dr-summary__shipping').hide();
+            } else {
+                $('.dr-order-address__shipping, .dr-summary__shipping').show();
+            }
 
             // set this last
             drActiveOrderId = orderID;

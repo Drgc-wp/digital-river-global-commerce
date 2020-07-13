@@ -13688,7 +13688,7 @@ var CheckoutModule = function ($) {
         type: 'GET',
         url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage?ESICaching=off"),
         success: function success(response) {
-          var addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
+          var addressTypes = requestShipping ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
             var savedCountryCode = $("#".concat(type, "-field-country")).val();
             var $options = $(response).find("select[name=".concat(type.toUpperCase(), "country] option")).not(':first');
@@ -13958,7 +13958,9 @@ jQuery(document).ready(function ($) {
     var isLoggedIn = drgc_params.isLogin === 'true';
     var drLocale = drgc_params.drLocale || 'en_US';
     var cartData = drgc_params.cart.cart;
-    var requestShipping = cartData.shippingOptions.shippingOption ? true : false;
+
+    var _requestShipping = cartData.shippingOptions.shippingOption ? true : false;
+
     var isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
     var isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
     var digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
@@ -14151,8 +14153,8 @@ jQuery(document).ready(function ($) {
       $button.addClass('sending').blur();
 
       if (isLoggedIn && $('#checkbox-save-billing').prop('checked')) {
-        if (requestShipping && !billingSameAsShipping || !requestShipping) {
-          var setAsDefault = $('input:hidden[name="addresses-no-default"]').val() === 'true' && !requestShipping;
+        if (_requestShipping && !billingSameAsShipping || !_requestShipping) {
+          var setAsDefault = $('input:hidden[name="addresses-no-default"]').val() === 'true' && !_requestShipping;
           var address = CheckoutModule.getAddress('billing', setAsDefault);
           commerce_api.saveShopperAddress(address)["catch"](function (jqXHR) {
             checkout_utils.apiErrorHandler(jqXHR);
@@ -14163,6 +14165,21 @@ jQuery(document).ready(function ($) {
       commerce_api.updateCartBillingAddress({
         expand: 'all'
       }, cartRequest).then(function () {
+        // Digital product still need to update some of shippingAddress attributes for tax calculating
+        if (_requestShipping) return new Promise(function (resolve) {
+          return resolve();
+        });
+        var patchCartRequest = {
+          address: {
+            country: cartRequest.address.country,
+            countrySubdivision: cartRequest.address.countrySubdivision,
+            postalCode: cartRequest.address.postalCode
+          }
+        };
+        return commerce_api.updateCartShippingAddress({
+          expand: 'all'
+        }, patchCartRequest);
+      }).then(function () {
         var $companyEin = $('#billing-field-company-ein');
         if (!$companyEin.length) return new Promise(function (resolve) {
           return resolve();
@@ -14184,7 +14201,7 @@ jQuery(document).ready(function ($) {
         });
       }) // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
       .then(function (data) {
-        return drgc_params.cart.cart.hasPhysicalProduct ? CheckoutModule.preselectShippingOption(data) : new Promise(function (resolve) {
+        return _requestShipping ? CheckoutModule.preselectShippingOption(data) : new Promise(function (resolve) {
           return resolve(data);
         });
       }).then(function (data) {
@@ -14405,7 +14422,7 @@ jQuery(document).ready(function ($) {
 
     float_label.init();
 
-    if (isLoggedIn && requestShipping) {
+    if (isLoggedIn && _requestShipping) {
       $('.dr-address-book.billing > .overflowContainer').clone().appendTo('.dr-address-book.shipping');
     }
 
@@ -14484,11 +14501,11 @@ jQuery(document).ready(function ($) {
               'taxAmount': cart.pricing.tax.value,
               'shippingAmount': cart.pricing.shippingAndHandling.value,
               'amountsEstimated': true,
-              'requestShipping': requestShipping
+              'requestShipping': _requestShipping
             }
           };
 
-          if (requestShipping) {
+          if (_requestShipping) {
             payPalPayload['shipping'] = {
               'recipient': "".concat(addressPayload.shipping.firstName, " ").concat(addressPayload.shipping.lastName),
               'phoneNumber': addressPayload.shipping.phoneNumber,
@@ -14534,12 +14551,12 @@ jQuery(document).ready(function ($) {
         buttonColor: drgc_params.googlePayButtonColor,
         buttonLanguage: drLocale.split('_')[0]
       };
-      var googlePayBaseRequest = checkout_utils.getBaseRequestData(cartData, requestShipping, googlePaybuttonStyle);
+      var googlePayBaseRequest = checkout_utils.getBaseRequestData(cartData, _requestShipping, googlePaybuttonStyle);
       var googlePayPaymentDataRequest = digitalriverjs.paymentRequest(googlePayBaseRequest);
       payment_googlepay.init({
         digitalriverJs: digitalriverjs,
         paymentDataRequest: googlePayPaymentDataRequest,
-        requestShipping: requestShipping
+        requestShipping: _requestShipping
       });
     }
 
@@ -14549,12 +14566,12 @@ jQuery(document).ready(function ($) {
         buttonColor: drgc_params.applePayButtonColor,
         buttonLanguage: drLocale.split('_')[0]
       };
-      var applePayBaseRequest = checkout_utils.getBaseRequestData(cartData, requestShipping, applePaybuttonStyle);
+      var applePayBaseRequest = checkout_utils.getBaseRequestData(cartData, _requestShipping, applePaybuttonStyle);
       var applePayPaymentDataRequest = digitalriverjs.paymentRequest(applePayBaseRequest);
       payment_applepay.init({
         digitalriverJs: digitalriverjs,
         paymentDataRequest: applePayPaymentDataRequest,
-        requestShipping: requestShipping
+        requestShipping: _requestShipping
       });
     }
   }
@@ -15496,6 +15513,7 @@ jquery_default()(function () {
   function fillOrderModal(e) {
     var orderID = jquery_default()(this).attr('data-order');
     if (!drOrders[orderID]) alert('order details not available');
+    var requestShipping = drOrders[orderID].shippingMethodCode !== '';
 
     if (orderID === drActiveOrderId) {
       $ordersModal.drModal('show');
@@ -15544,7 +15562,14 @@ jquery_default()(function () {
         html += "<div class=\"dr-product\">\n                <div class=\"dr-product-content\">\n                    <div class=\"dr-product__img dr-modal-productImgBG\" style=\"background-image:url(".concat(prod.image, ");\"></div>\n                    <div class=\"dr-product__info\">\n                        <a class=\"product-name dr-modal-productName\">").concat(prod.name, "</a>\n                        <div class=\"product-sku\">\n                            <span>Product </span>\n                            <span class=\"dr-modal-productSku\">").concat(prod.sku, "</span>\n                        </div>\n                        <div class=\"product-qty\">\n                            <span class=\"qty-text\">Qty <span class=\"dr-modal-productQty\">").concat(prod.qty, "</span></span>\n                            <span class=\"dr-pd-cart-qty-minus value-button-decrease\"></span>\n                            <input\n                                type=\"number\"\n                                class=\"product-qty-number\"\n                                step=\"1\"\n                                min=\"1\"\n                                max=\"999\"\n                                value=\"").concat(prod.qty, "\"\n                                maxlength=\"5\"\n                                size=\"2\"\n                                pattern=\"[0-9]*\"\n                                inputmode=\"numeric\"\n                                readonly=\"true\"/>\n                            <span class=\"dr-pd-cart-qty-plus value-button-increase\"></span>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"dr-product__price\">\n                    <span class=\"sale-price dr-modal-salePrice\">").concat(prod.salePrice, "</span>\n                    <span class=\"regular-price dr-modal-strikePrice\" ").concat(prod.salePrice === prod.strikePrice ? 'style="display:none"' : '', ">").concat(prod.strikePrice, "</span>\n                </div>\n            </div>");
       }
 
-      jquery_default()('.dr-summary__products').html(html); // set this last
+      jquery_default()('.dr-summary__products').html(html);
+
+      if (!requestShipping) {
+        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping').hide();
+      } else {
+        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping').show();
+      } // set this last
+
 
       drActiveOrderId = orderID;
       $ordersModal.drModal('show');
