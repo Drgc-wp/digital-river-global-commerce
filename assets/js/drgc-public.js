@@ -15491,6 +15491,7 @@ jquery_default()(function () {
   function fillOrderModal(e) {
     var orderID = jquery_default()(this).attr('data-order');
     if (!drOrders[orderID]) alert('order details not available');
+    var requestShipping = drOrders[orderID].shippingMethodCode !== '';
 
     if (orderID === drActiveOrderId) {
       $ordersModal.drModal('show');
@@ -15539,7 +15540,14 @@ jquery_default()(function () {
         html += "<div class=\"dr-product\">\n                <div class=\"dr-product-content\">\n                    <div class=\"dr-product__img dr-modal-productImgBG\" style=\"background-image:url(".concat(prod.image, ");\"></div>\n                    <div class=\"dr-product__info\">\n                        <a class=\"product-name dr-modal-productName\">").concat(prod.name, "</a>\n                        <div class=\"product-sku\">\n                            <span>Product </span>\n                            <span class=\"dr-modal-productSku\">").concat(prod.sku, "</span>\n                        </div>\n                        <div class=\"product-qty\">\n                            <span class=\"qty-text\">Qty <span class=\"dr-modal-productQty\">").concat(prod.qty, "</span></span>\n                            <span class=\"dr-pd-cart-qty-minus value-button-decrease\"></span>\n                            <input\n                                type=\"number\"\n                                class=\"product-qty-number\"\n                                step=\"1\"\n                                min=\"1\"\n                                max=\"999\"\n                                value=\"").concat(prod.qty, "\"\n                                maxlength=\"5\"\n                                size=\"2\"\n                                pattern=\"[0-9]*\"\n                                inputmode=\"numeric\"\n                                readonly=\"true\"/>\n                            <span class=\"dr-pd-cart-qty-plus value-button-increase\"></span>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"dr-product__price\">\n                    <span class=\"sale-price dr-modal-salePrice\">").concat(prod.salePrice, "</span>\n                    <span class=\"regular-price dr-modal-strikePrice\" ").concat(prod.salePrice === prod.strikePrice ? 'style="display:none"' : '', ">").concat(prod.strikePrice, "</span>\n                </div>\n            </div>");
       }
 
-      jquery_default()('.dr-summary__products').html(html); // set this last
+      jquery_default()('.dr-summary__products').html(html);
+
+      if (!requestShipping) {
+        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping').hide();
+      } else {
+        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping').show();
+      } // set this last
+
 
       drActiveOrderId = orderID;
       $ordersModal.drModal('show');
