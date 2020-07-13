@@ -148,15 +148,3 @@
     </div>
   </div>
 </div>
-
-<div id="dr-autoRenewalPlanTerms" class="dr-modal" tabindex="-1" role="dialog">
-  <div class="dr-modal-dialog dr-modal-dialog-centered">
-    <div class="dr-modal-content">
-      <div class="dr-modal-body"><p></p></div>
-      <div class="dr-modal-footer">
-        <button type="button" class="dr-btn dr-btn-blue dr-confirm-ar-on" data-dismiss="dr-modal"><?php echo __( 'Accept', 'digital-river-global-commerce' ); ?></button>
-        <button type="button" class="dr-btn dr-btn-black dr-confirm-cancel" data-dismiss="dr-modal"><?php echo __( 'Cancel', 'digital-river-global-commerce' ); ?></button>
-      </div>
-    </div>
-  </div>
-</div>
