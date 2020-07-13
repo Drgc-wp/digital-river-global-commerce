@@ -6,6 +6,7 @@ import DRApplePay from './payment-applepay';
 
 const CheckoutModule = (($) => {
     const localizedText = drgc_params.translations;
+    const requestShipping = (drgc_params.cart.cart.shippingOptions.shippingOption) ? true : false;
     const initPreTAndC = () => {
         $('#dr-preTAndC').change((e) => {
             if ($(e.target).is(':checked')) {
