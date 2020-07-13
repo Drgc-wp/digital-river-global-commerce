@@ -285,6 +285,13 @@ const CheckoutUtils = (($, params) => {
     return false;
   };
 
+  const getLocalizedAutoRenewalTerms = (digitalriverjs, locale) => {
+    const entityCode = getEntityCode();
+    const compliance = getCompliance(digitalriverjs, entityCode, locale);
+
+    return (Object.keys(compliance).length) ? compliance.autorenewalPlanTerms.localizedText : '';
+  };
+
   return {
     createDisplayItems,
     createShippingOptions,
@@ -306,7 +313,8 @@ const CheckoutUtils = (($, params) => {
     setShippingOption,
     getSupportedCountries,
     createCartRequest,
-    isSubsAddedToCart
+    isSubsAddedToCart,
+    getLocalizedAutoRenewalTerms
   };
 })(jQuery, drgc_params);
 

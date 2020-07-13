@@ -49,12 +49,9 @@ const CartModule = (($) => {
   };
 
   const appendAutoRenewalTerms = (digitalriverjs, locale) => {
-    const entityCode = CheckoutUtils.getEntityCode();
-    const compliance = CheckoutUtils.getCompliance(digitalriverjs, entityCode, locale);
+    const terms = CheckoutUtils.getLocalizedAutoRenewalTerms(digitalriverjs, locale);
 
-    if (Object.keys(compliance).length) {
-      const terms = compliance.autorenewalPlanTerms.localizedText;
-
+    if (terms) {
       $('#dr-optInAutoRenew > .dr-optInAutoRenewTerms > p').append(terms);
       $('#dr-autoRenewTermsContainer').show();
     }
