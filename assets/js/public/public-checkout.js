@@ -85,10 +85,14 @@ const CheckoutModule = (($) => {
 
         if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('closed')) {
             $('.dr-address-book-btn.shipping').hide();
+        } else if ($nextSection.hasClass('dr-checkout__shipping') && $nextSection.hasClass('active')) {
+            $('.dr-address-book-btn.shipping').show();
         }
 
         if ($section.hasClass('dr-checkout__billing') && $section.hasClass('closed')) {
             $('.dr-address-book-btn.billing').hide();
+        } else if ($nextSection.hasClass('dr-checkout__billing') && $nextSection.hasClass('active')) {
+            $('.dr-address-book-btn.billing').show();
         }
 
         adjustColumns($section);
