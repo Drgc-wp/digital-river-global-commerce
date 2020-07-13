@@ -13696,7 +13696,7 @@ var CheckoutModule = function ($) {
         type: 'GET',
         url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage?ESICaching=off"),
         success: function success(response) {
-          var addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
+          var addressTypes = requestShipping ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
             var savedCountryCode = $("#".concat(type, "-field-country")).val();
             var $options = $(response).find("select[name=".concat(type.toUpperCase(), "country] option")).not(':first');
@@ -13970,7 +13970,9 @@ jQuery(document).ready(function ($) {
     var isLoggedIn = drgc_params.isLogin === 'true';
     var drLocale = drgc_params.drLocale || 'en_US';
     var cartData = drgc_params.cart.cart;
-    var requestShipping = cartData.shippingOptions.shippingOption ? true : false;
+
+    var _requestShipping = cartData.shippingOptions.shippingOption ? true : false;
+
     var isGooglePayEnabled = drgc_params.isGooglePayEnabled === 'true';
     var isApplePayEnabled = drgc_params.isApplePayEnabled === 'true';
     var digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey, {
@@ -14163,8 +14165,8 @@ jQuery(document).ready(function ($) {
       $button.addClass('sending').blur();
 
       if (isLoggedIn && $('#checkbox-save-billing').prop('checked')) {
-        if (requestShipping && !billingSameAsShipping || !requestShipping) {
-          var setAsDefault = $('input:hidden[name="addresses-no-default"]').val() === 'true' && !requestShipping;
+        if (_requestShipping && !billingSameAsShipping || !_requestShipping) {
+          var setAsDefault = $('input:hidden[name="addresses-no-default"]').val() === 'true' && !_requestShipping;
           var address = CheckoutModule.getAddress('billing', setAsDefault);
           commerce_api.saveShopperAddress(address)["catch"](function (jqXHR) {
             checkout_utils.apiErrorHandler(jqXHR);
@@ -14176,7 +14178,7 @@ jQuery(document).ready(function ($) {
         expand: 'all'
       }, cartRequest).then(function () {
         // Digital product still need to update some of shippingAddress attributes for tax calculating
-        if (drgc_params.cart.cart.hasPhysicalProduct) return new Promise(function (resolve) {
+        if (_requestShipping) return new Promise(function (resolve) {
           return resolve();
         });
         var patchCartRequest = {
@@ -14211,7 +14213,7 @@ jQuery(document).ready(function ($) {
         });
       }) // Still needs to apply shipping option once again or the value will be rolled back after updateCart (API's bug)
       .then(function (data) {
-        return drgc_params.cart.cart.hasPhysicalProduct ? CheckoutModule.preselectShippingOption(data) : new Promise(function (resolve) {
+        return _requestShipping ? CheckoutModule.preselectShippingOption(data) : new Promise(function (resolve) {
           return resolve(data);
         });
       }).then(function (data) {
@@ -14432,7 +14434,7 @@ jQuery(document).ready(function ($) {
 
     float_label.init();
 
-    if (isLoggedIn && requestShipping) {
+    if (isLoggedIn && _requestShipping) {
       $('.dr-address-book.billing > .overflowContainer').clone().appendTo('.dr-address-book.shipping');
     }
 
@@ -14511,11 +14513,11 @@ jQuery(document).ready(function ($) {
               'taxAmount': cart.pricing.tax.value,
               'shippingAmount': cart.pricing.shippingAndHandling.value,
               'amountsEstimated': true,
-              'requestShipping': requestShipping
+              'requestShipping': _requestShipping
             }
           };
 
-          if (requestShipping) {
+          if (_requestShipping) {
             payPalPayload['shipping'] = {
               'recipient': "".concat(addressPayload.shipping.firstName, " ").concat(addressPayload.shipping.lastName),
               'phoneNumber': addressPayload.shipping.phoneNumber,
@@ -14561,12 +14563,12 @@ jQuery(document).ready(function ($) {
         buttonColor: drgc_params.googlePayButtonColor,
         buttonLanguage: drLocale.split('_')[0]
       };
-      var googlePayBaseRequest = checkout_utils.getBaseRequestData(cartData, requestShipping, googlePaybuttonStyle);
+      var googlePayBaseRequest = checkout_utils.getBaseRequestData(cartData, _requestShipping, googlePaybuttonStyle);
       var googlePayPaymentDataRequest = digitalriverjs.paymentRequest(googlePayBaseRequest);
       payment_googlepay.init({
         digitalriverJs: digitalriverjs,
         paymentDataRequest: googlePayPaymentDataRequest,
-        requestShipping: requestShipping
+        requestShipping: _requestShipping
       });
     }
 
@@ -14576,12 +14578,12 @@ jQuery(document).ready(function ($) {
         buttonColor: drgc_params.applePayButtonColor,
         buttonLanguage: drLocale.split('_')[0]
       };
-      var applePayBaseRequest = checkout_utils.getBaseRequestData(cartData, requestShipping, applePaybuttonStyle);
+      var applePayBaseRequest = checkout_utils.getBaseRequestData(cartData, _requestShipping, applePaybuttonStyle);
       var applePayPaymentDataRequest = digitalriverjs.paymentRequest(applePayBaseRequest);
       payment_applepay.init({
         digitalriverJs: digitalriverjs,
         paymentDataRequest: applePayPaymentDataRequest,
-        requestShipping: requestShipping
+        requestShipping: _requestShipping
       });
     }
   }
