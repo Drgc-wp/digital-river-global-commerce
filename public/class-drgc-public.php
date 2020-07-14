@@ -653,6 +653,14 @@ class DRGC_Public {
         wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
         exit;
       }
+    } elseif ( is_page( 'account' ) ) {
+      $customer = DRGC()->shopper->retrieve_shopper();
+      $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
+
+      if ( ! $is_logged_in ) {
+        wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
+        exit;
+      }
     }
   }
 
