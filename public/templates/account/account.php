@@ -16,7 +16,7 @@ $first_name = isset( $customer['firstName'] ) ? $customer['firstName'] : '';
 $last_name = isset( $customer['lastName'] ) ? $customer['lastName'] : '';
 $subs_count = isset( $subscriptions['subscriptions']['subscription'] ) && is_array( $subscriptions['subscriptions']['subscription'] ) ?
   count( $subscriptions['subscriptions']['subscription'] ) : 0;
-$customer_address = $customer['addresses']['address'];
+$customer_address = $customer['addresses']['address'] ?? '';
 $addr_count = is_array( $customer_address ) ? count( $customer_address ) : 0;
 
 if($first_name !== '' && $last_name !== '') {
@@ -24,8 +24,6 @@ if($first_name !== '' && $last_name !== '') {
 } else {
     $full_name = $first_name . $last_name;
 }
-
-if ( $customer && 'Anonymous' !== $customer['id'] ) :
 ?>
 
 <div class="dr-account-wrapper container" id="dr-account-page-wrapper">
@@ -148,17 +146,3 @@ if ( $customer && 'Anonymous' !== $customer['id'] ) :
     </div>
 
 </div>
-
-
-
-<?php else: ?>
-
-    <?php
-        //wp_safe_redirect( esc_url( drgc_get_page_link( 'login' ) ) );
-        //exit();
-    ?>
-
-    <!-- temporary redirect until I get WP redirect working above -->
-    <script>location.replace('<?php echo esc_url( drgc_get_page_link( 'login' ) ) ?>')</script>
-
-<?php endif; ?>

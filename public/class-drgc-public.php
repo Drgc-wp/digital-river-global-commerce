@@ -176,6 +176,7 @@ class DRGC_Public {
 			'homeUrl'           =>  get_home_url(),
 			'cartUrl'           =>  drgc_get_page_link( 'cart' ),
 			'checkoutUrl'       =>  drgc_get_page_link( 'checkout' ),
+			'accountUrl'        =>  drgc_get_page_link( 'account' ),
 			'mySubsUrl'         =>  drgc_get_page_link( 'my-subscriptions' ),
 			'loginPath'         =>  parse_url( drgc_get_page_link( 'login' ) )['path'],
 			'siteID'            =>  get_option( 'drgc_site_id' ),
@@ -651,6 +652,14 @@ class DRGC_Public {
         exit;
       } elseif ( $check_subs['is_auto'] && ! $terms_checked ) {
         wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
+        exit;
+      }
+    } elseif ( is_page( 'account' ) ) {
+      $customer = DRGC()->shopper->retrieve_shopper();
+      $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
+
+      if ( ! $is_logged_in ) {
+        wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
         exit;
       }
     }
