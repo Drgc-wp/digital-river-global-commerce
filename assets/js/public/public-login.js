@@ -54,7 +54,7 @@ const LoginModule = (($) => {
             url: drgc_params.ajaxUrl,
             data,
             success: () => {
-                LoginModule.redirectAfterAuth();
+                LoginModule.redirectAfterAuth(false);
             }
         });
     };
@@ -76,11 +76,13 @@ const LoginModule = (($) => {
         });
     };
 
-    const redirectAfterAuth = () => {
-        if (!document.referrer) {
-            window.location.href = drgc_params.homeUrl;
-        } else if (document.referrer === drgc_params.cartUrl) {
+    const redirectAfterAuth = (isLoggedIn) => {
+        if (document.referrer === drgc_params.cartUrl || document.referrer === drgc_params.checkoutUrl) {
             window.location.href = drgc_params.checkoutUrl;
+        } else if (isLoggedIn) {
+            window.location.href = drgc_params.accountUrl;
+        } else if (!document.referrer) {
+            window.location.href = drgc_params.homeUrl;
         } else {
             window.location.href = document.referrer;
         }
@@ -150,7 +152,7 @@ jQuery(document).ready(($) => {
 
         $.post(ajaxUrl, data, function(response) {
             if ( response.success ) {
-                LoginModule.redirectAfterAuth();
+                LoginModule.redirectAfterAuth(true);
             } else {
                 $form.data('processing', false);
                 but.removeClass('sending').blur();
@@ -235,7 +237,7 @@ jQuery(document).ready(($) => {
 
         $.post(ajaxUrl, data, function(response) {
             if (response.success) {
-                LoginModule.redirectAfterAuth();
+                LoginModule.redirectAfterAuth(true);
             } else {
                 $form.data('processing', false);
                 $button.removeClass('sending').blur();

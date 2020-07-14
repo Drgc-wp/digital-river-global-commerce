@@ -24,14 +24,14 @@ abstract class AbstractHttpService {
 
     /**
      * Token type
-     * 
+     *
      * @var string
      */
     public $tokenType = 'Bearer';
 
     /**
      * Default configuration
-     * 
+     *
      * @var array
      */
     protected $config = array(
@@ -47,14 +47,14 @@ abstract class AbstractHttpService {
 
     /**
      * Most recent status
-     * 
+     *
      * @var string
      */
     protected $status = '';
 
     /**
      * Env
-     * 
+     *
      * @var string
      */
     public $env;
@@ -82,7 +82,7 @@ abstract class AbstractHttpService {
 
     /**
      * Validate status code
-     * 
+     *
      * @param \Psr\Http\Message\ResponseInterface $response
      */
     private function validateStatusCode( ResponseInterface $response ) {
@@ -96,7 +96,7 @@ abstract class AbstractHttpService {
 
     /**
      * Get response data from the body
-     * 
+     *
      * @param \Psr\Http\Message\ResponseInterface $response
      *
      * @return array
@@ -108,7 +108,7 @@ abstract class AbstractHttpService {
 
     /**
      * Prepare params for "form-urlencoded" content type
-     * 
+     *
      * @param array $requestParams
      *
      * @return array
@@ -119,19 +119,20 @@ abstract class AbstractHttpService {
 
     /**
      * Initialize new client
-     * 
-     * @param boolean $force_basic_auth
+     *
+     * @param boolean $force_bearer_token
      * @param boolean $is_user_management
-     * 
+     *
      * @return \GuzzleHttp\Client
      */
-    private function createClient( $force_basic_auth = false, $is_user_management = false ): Client {
-        if ( $this->token && ! $force_basic_auth ) {
+    private function createClient( $force_bearer_token = true, $is_user_management = false ): Client {
+        if ( $this->token && $force_bearer_token ) {
             $this->config['headers']['Authorization'] = trim( ucfirst( $this->tokenType ) . ' ' . $this->token );
         } else {
             if ( $is_user_management ) {
-                $auth = base64_encode( get_option( 'drgc_big_blue_username' ) . '@Admin' . ':' . get_option( 'drgc_big_blue_password' ) );
+                $auth = base64_encode( get_option( 'drgc_big_blue_username' ) . '@' . get_option( 'drgc_site_id' ) . ':' . get_option( 'drgc_big_blue_password' ) );
                 $this->config['headers']['Content-Type'] = 'text/xml; charset=UTF8';
+                $this->config['headers']['Accept'] = 'text/xml; charset=UTF8';
             } else {
                 $auth = base64_encode( get_option( 'drgc_api_key' ) . ':' . get_option( 'drgc_api_secret' ) );
             }
@@ -141,10 +142,10 @@ abstract class AbstractHttpService {
 
         return new Client($this->config);
     }
-    
+
     /**
      * Set current response status
-     * 
+     *
      * @param string $status
      */
     private function setStatus( string $status ) {
@@ -153,7 +154,7 @@ abstract class AbstractHttpService {
 
     /**
      * Get most recent response status
-     * 
+     *
      * @return string
      */
     public function getStatus(): string {
@@ -162,7 +163,7 @@ abstract class AbstractHttpService {
 
     /**
      * Get the domain uri
-     * 
+     *
      * @return string
      */
     protected function normalizeUri($uri): string {
@@ -218,12 +219,12 @@ abstract class AbstractHttpService {
 
     /**
      * Get the URL for the sessionToken site action
-     * 
+     *
      * @return string
      */
     protected function authUrl(): string {
         $gc_domain = ( ( $this->env === 'test' ) ? 'drhadmin-sys-drx.drextenv.net' : 'store.digitalriver.com' );
-        
+
         return "https://{$gc_domain}/store/{$this->site_id}/SessionToken";
     }
 
@@ -246,7 +247,7 @@ abstract class AbstractHttpService {
 
         $client = new Client( $config );
         $response = $client->get( $url, $data );
-        
+
         $this->validateStatusCode( $response );
 
         return $this->getResponseData( $response );
@@ -255,15 +256,15 @@ abstract class AbstractHttpService {
     /**
      * @param string $uri
      * @param array  $data
-     * @param boolean $force_basic_auth
+     * @param boolean $force_bearer_token
      *
      * @return array
      */
-    protected function get( string $uri = '', array $data = array(), $force_basic_auth = false ): array {
-        $client = $this->createClient( $force_basic_auth );
+    protected function get( string $uri = '', array $data = array(), $force_bearer_token = true ): array {
+        $client = $this->createClient( $force_bearer_token );
         $uri = $this->normalizeUri($uri);
         $response = $client->get( $uri, $data );
-        
+
         $this->validateStatusCode( $response );
 
         return $this->getResponseData( $response );
@@ -316,29 +317,40 @@ abstract class AbstractHttpService {
         $uri = $this->normalizeUri($uri);
 
         $response = $client->post( $uri, $data );
-        
+
         return $this->getResponseData( $response );
     }
 
     /**
      * @param string $uri
-     * @param string $data
+     * @param array  $data
+     *
+     * @return array
+     */
+    protected function delete( string $uri = '', array $data = array() ) {
+      if ( $this->config['headers']['Content-Type'] === 'application/json' ) {
+          $data = array( GuzzleHttp\RequestOptions::JSON => $data );
+      }
+
+      $client = $this->createClient();
+
+      $uri = $this->normalizeUri($uri);
+
+      $response = $client->delete( $uri, $data );
+
+      return $this->getResponseData( $response );
+    }
+
+    /**
+     * @param string $uri
+     * @param string $xml
      *
      * @return string
      */
-    protected function postXml( string $uri = '', string $data = '' ) {
-        $client = $this->createClient( true, true );
+    protected function postXml( string $uri = '', string $xml = '' ) {
+        $client = $this->createClient( false, true );
+        $response =  $client->post( $uri, array( 'body' => $xml ) );
 
-        try {
-            $response = $client->post( $uri, ['body' => $data] );
-
-            return $response->getBody();
-        } catch ( RequestException $e ) {
-            if ( $e->hasResponse() ) {
-                return $e->getResponse();
-            }
-        } catch ( \Exception $e ) {
-            return $e->getMessage();
-        }
+        return $response->getBody();
     }
 }

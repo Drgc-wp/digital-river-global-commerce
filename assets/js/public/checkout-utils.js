@@ -1,4 +1,5 @@
 const CheckoutUtils = (($, params) => {
+  const localizedText = drgc_params.translations;
   const createDisplayItems = (cartData) => {
     const displayItems = [{
       label: params.translations.subtotal_label,
@@ -113,6 +114,7 @@ const CheckoutUtils = (($, params) => {
 
     $('div.dr-summary__tax > .item-value').text(formattedTax);
     $('div.dr-summary__total > .total-value').text(formattedOrderTotal);
+    $('.dr-summary').removeClass('dr-loading');
   };
 
   const getEntityCode = () => {
@@ -151,10 +153,7 @@ const CheckoutUtils = (($, params) => {
   };
 
   const apiErrorHandler = (jqXHR) => {
-    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) {
-      const currentError = jqXHR.responseJSON.errors.error[0];
-      drToast.displayMessage(currentError.description, 'error');
-    }
+    drToast.displayMessage(getAjaxErrorMessage(jqXHR), 'error');
   };
 
   const resetBodyOpacity = () => {
@@ -185,7 +184,111 @@ const CheckoutUtils = (($, params) => {
   };
 
   const getAjaxErrorMessage = (jqXHR) => {
-    return (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) ? jqXHR.responseJSON.errors.error[0].description : '';
+    let errMsg = localizedText.undefined_error_msg;
+
+    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.errors) {
+      const err = jqXHR.responseJSON.errors.error[0];
+      switch (err.code) {
+        case 'restricted-bill-to-country':
+        case 'restricted-ship-to-country':
+          errMsg = localizedText.address_error_msg;
+          break;
+
+        case 'cart-fraud-failure':
+        case 'order-fraud-failure':
+          errMsg = localizedText.unable_place_order_msg;
+          break;
+
+        default:
+          errMsg = err.description;
+      }
+    }
+    return errMsg;
+  };
+
+  const setShippingOption = (option, freeShipping) => {
+    const html = `
+      <div class="field-radio">
+        <input type="radio"
+          name="selector"
+          id="shipping-option-${option.id}"
+          data-cost="${option.formattedCost}"
+          data-id="${option.id}"
+          data-desc="${option.description}"
+        >
+        <label for="shipping-option-${option.id}">
+          <span>${option.description}</span>
+          <span class="black">${freeShipping ? localizedText.free_label : option.formattedCost}</span>
+        </label>
+      </div>
+    `;
+
+    $('#checkout-delivery-form .dr-panel-edit__el').append(html);
+  };
+
+  const getSupportedCountries = (addressType) => {
+    const countryCodes = $('#' + addressType + '-field-country > option').map((index, element) => element.value).get();
+    countryCodes.shift();
+
+    return countryCodes;
+  };
+
+  const createCartRequest = (event, requestShipping) => {
+    const cartRequest = {cart: {}};
+    const billingAddressObj = {
+      id: 'billingAddress',
+      firstName: event.billingAddress.firstName,
+      lastName: event.billingAddress.lastName,
+      line1: event.billingAddress.address.line1,
+      line2: event.billingAddress.address.line2,
+      city: event.billingAddress.address.city,
+      countrySubdivision: event.billingAddress.address.state || 'NA',
+      postalCode: event.billingAddress.address.postalCode,
+      country: event.billingAddress.address.country,
+      phoneNumber: event.billingAddress.phone,
+      emailAddress: event.billingAddress.email
+    };
+
+    cartRequest.cart.billingAddress = billingAddressObj;
+
+    if (requestShipping) {
+      const shippingAddressObj = {
+        id: 'shippingAddress',
+        firstName: event.shippingAddress.firstName,
+        lastName: event.shippingAddress.lastName,
+        line1: event.shippingAddress.address.line1,
+        line2: event.shippingAddress.address.line2,
+        city: event.shippingAddress.address.city,
+        countrySubdivision: event.shippingAddress.address.state || 'NA',
+        postalCode: event.shippingAddress.address.postalCode,
+        country: event.shippingAddress.address.country,
+        phoneNumber: event.shippingAddress.phone,
+        emailAddress: event.shippingAddress.email
+      };
+
+      cartRequest.cart.shippingAddress = shippingAddressObj;
+    }
+
+    return cartRequest;
+  };
+
+  const isSubsAddedToCart = (lineItems) => {
+    if (!lineItems.length) return false;
+
+    for (let i = 0; i < lineItems.length; i++) {
+      const lineItem = lineItems[i];
+      const customAttributes = lineItem.product.customAttributes.attribute || [];
+
+      if (customAttributes.some(attr => attr.name === 'subscriptionType')) return true;
+    }
+
+    return false;
+  };
+
+  const getLocalizedAutoRenewalTerms = (digitalriverjs, entityCode, locale) => {
+    const compliance = getCompliance(digitalriverjs, entityCode, locale);
+
+    return (Object.keys(compliance).length) ? compliance.autorenewalPlanTerms.localizedText : '';
   };
 
   return {
@@ -205,7 +308,12 @@ const CheckoutUtils = (($, params) => {
     getEntityCode,
     getCompliance,
     resetFormSubmitButton,
-    getAjaxErrorMessage
+    getAjaxErrorMessage,
+    setShippingOption,
+    getSupportedCountries,
+    createCartRequest,
+    isSubsAddedToCart,
+    getLocalizedAutoRenewalTerms
   };
 })(jQuery, drgc_params);
 

@@ -77,6 +77,13 @@ No, you are responsible for hosting your own site.
 
 
 == Changelog ==
+= [1.3] - 2020-07-14 =
+* Added subscription features
+* Added my account page for managing and viewing subscription, addresses and orders
+* Added business checkout
+* Enhanced upsell promotion feature
+* Bug fixes for checkout flows
+
 = [1.2.1] - 2020-05-21 =
 * Updated Shopper Security Features
 * Verified Support of WordPress V5.4
