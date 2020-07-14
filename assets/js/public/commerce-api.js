@@ -423,6 +423,46 @@ const DRCommerceApi = (($, params) => {
     });
   };
 
+  const getSubsDetails = (subsId, queryObj = {}) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/subscriptions/${subsId}?${$.param(queryObj)}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
+  const getOrderDetails = (orderId, queryObj = {}) => {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        type: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${params.accessToken}`
+        },
+        url: `${apiBaseUrl}/me/orders/${orderId}?${$.param(queryObj)}`,
+        success: (data) => {
+          resolve(data);
+        },
+        error: (jqXHR) => {
+          reject(jqXHR);
+        }
+      });
+    });
+  };
+
   return {
     apiBaseUrl,
     updateShopper,
@@ -444,7 +484,9 @@ const DRCommerceApi = (($, params) => {
     saveShopperAddress,
     updateShopperAddress,
     deleteShopperAddress,
-    submitCart
+    submitCart,
+    getSubsDetails,
+    getOrderDetails
   };
 
 })(jQuery, drgc_params);

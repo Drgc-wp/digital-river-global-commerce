@@ -285,8 +285,7 @@ const CheckoutUtils = (($, params) => {
     return false;
   };
 
-  const getLocalizedAutoRenewalTerms = (digitalriverjs, locale) => {
-    const entityCode = getEntityCode();
+  const getLocalizedAutoRenewalTerms = (digitalriverjs, entityCode, locale) => {
     const compliance = getCompliance(digitalriverjs, entityCode, locale);
 
     return (Object.keys(compliance).length) ? compliance.autorenewalPlanTerms.localizedText : '';

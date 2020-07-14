@@ -85,6 +85,7 @@
             orderDate: <?php echo date_format(date_create($order['submissionDate']),"m/d/Y"); ?>,
             shippingMethod: '<?php echo $order['shippingMethod']['description'] ?? ''; ?>',
             shippingMethodCode: '<?php echo $order['shippingMethod']['code'] ?? ''; ?>',
+            entityCode: '<?php echo $order['businessEntityCode']; ?>',
             billingAddress: {
                 firstName: '<?php echo $order['billingAddress']['firstName']; ?>',
                 lastName: '<?php echo $order['billingAddress']['lastName']; ?>',
