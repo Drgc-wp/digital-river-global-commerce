@@ -1,7 +1,7 @@
 <form class="dr-panel-edit needs-validation" novalidate>
 
     <div class="required-text">
-        <?php echo __( 'Fields marked with * are mandatory' ); ?>
+        <?php echo __( 'Fields marked with * are mandatory', 'digital-river-global-commerce' ); ?>
     </div>
 
     <div class="form-group dr-panel-edit__el">
@@ -10,7 +10,7 @@
 
             <label for="pw-current" class="float-label ">
 
-                <?php echo __( 'Current Password *' ); ?>
+                <?php echo __( 'Current Password *', 'digital-river-global-commerce' ); ?>
 
             </label>
 
@@ -18,7 +18,7 @@
 
             <div class="invalid-feedback">
 
-                <?php echo __( 'This field is required.' ); ?>
+                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
             </div>
 
@@ -32,7 +32,7 @@
 
             <label for="pw-new" class="float-label ">
 
-                <?php echo __( 'New Password *' ); ?>
+                <?php echo __( 'New Password *', 'digital-river-global-commerce' ); ?>
 
             </label>
 
@@ -40,7 +40,7 @@
 
             <div class="invalid-feedback">
 
-                <?php echo __( 'This field is required.' ); ?>
+                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
             </div>
 
@@ -54,7 +54,7 @@
 
             <label for="pw-confirm" class="float-label ">
 
-                <?php echo __( 'Confirm New Password *' ); ?>
+                <?php echo __( 'Confirm New Password *', 'digital-river-global-commerce' ); ?>
 
             </label>
 
@@ -62,7 +62,7 @@
 
             <div class="invalid-feedback">
 
-                <?php echo __( 'This field is required.' ); ?>
+                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
 
             </div>
 
