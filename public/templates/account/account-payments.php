@@ -24,37 +24,37 @@
                 <div class="brand"><?php echo $payment['creditCard']['brand']; ?></div>
                 <div class="number">**** <?php echo $payment['creditCard']['lastFourDigits']; ?></div>
             </div>
-            
+
             <div class="payment-edit" style="display:none;">
-                
+
                 <form class="dr-panel-edit">
                     <input type="hidden" name="sourceId" value="<?php echo $payment['sourceId'] ?>">
                     <input type="hidden" name="id" value="<?php echo $payment['id'] ?>">
-                    
+
                     <div class="required-text">
-                        <?php echo __( 'Fields marked with * are mandatory' ); ?>
+                        <?php echo __( 'Fields marked with * are mandatory', 'digital-river-global-commerce' ); ?>
                     </div>
-                    
+
                     <div class="form-group dr-panel-edit__el">
-                        
+
                         <div class="float-container float-container--first-name">
-                            
+
                             <label for="first-name-<?php echo $key ?>" class="float-label ">
-                                
-                                <?php echo __( 'Card Name *' ); ?>
-                                
+
+                                <?php echo __( 'Card Name *', 'digital-river-global-commerce' ); ?>
+
                             </label>
-                            
+
                             <input id="card-name-<?php echo $key ?>" type="text" value="<?php echo $payment['nickName'] ?>" name="nickName" class="form-control float-field float-field--first-name" required>
-                            
+
                             <div class="invalid-feedback">
-                                
-                                <?php echo __( 'This field is required.' ); ?>
-                                
+
+                                <?php echo __( 'This field is required.', 'digital-river-global-commerce' ); ?>
+
                             </div>
-                            
+
                         </div>
-                        
+
                     </div>
                     <div class="invalid-feedback dr-err-field" style="display: none"></div>
 
