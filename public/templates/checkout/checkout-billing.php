@@ -53,7 +53,7 @@ if ( count( $custom_attributes ) > 0 ) {
 
             <div class="field-checkbox">
 
-                <input type="checkbox" name="checkbox-billing" id="checkbox-billing" <?php echo ( $companyEIN === '' ) ? 'checked="checked"' : '' ?>>
+                <input type="checkbox" name="checkbox-billing" id="checkbox-billing" <?php echo ( $companyEIN === '' ) && $cart['cart']['hasPhysicalProduct'] ? 'checked="checked"' : '' ?>>
 
                 <label for="checkbox-billing" class="checkbox-label">
 

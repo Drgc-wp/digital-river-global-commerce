@@ -92,7 +92,7 @@ const CheckoutModule = (($) => {
 
         if ($section.hasClass('dr-checkout__billing') && $section.hasClass('closed')) {
             $('.dr-address-book-btn.billing').hide();
-        } else if ($nextSection.hasClass('dr-checkout__billing') && $nextSection.hasClass('active')) {
+        } else if ($nextSection.hasClass('dr-checkout__billing') && $nextSection.hasClass('active') && !$('#checkbox-billing').prop('checked')) {
             $('.dr-address-book-btn.billing').show();
         }
 
