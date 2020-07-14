@@ -77,7 +77,7 @@ const LoginModule = (($) => {
     };
 
     const redirectAfterAuth = (isLoggedIn) => {
-        if (document.referrer === drgc_params.cartUrl) {
+        if (document.referrer === drgc_params.cartUrl || document.referrer === drgc_params.checkoutUrl) {
             window.location.href = drgc_params.checkoutUrl;
         } else if (isLoggedIn) {
             window.location.href = drgc_params.accountUrl;
