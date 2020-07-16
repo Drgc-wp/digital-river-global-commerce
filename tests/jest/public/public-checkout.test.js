@@ -80,6 +80,7 @@ describe('Test updateSummaryLabels', () => {
   test('It should display "Estimated" at tax/shipping label when the section is unfinished', () => {
     deliverySection.classList.add('active');
     paymentSection.classList.remove('active');
+    $('.dr-currency-select').val('USD');
     CheckoutModule.updateSummaryLabels();
     expect(taxLabel.innerHTML).toEqual('Estimated Tax');
     expect(shippingLabel.innerHTML).toEqual('Estimated Shipping');
@@ -88,25 +89,26 @@ describe('Test updateSummaryLabels', () => {
   test('It should NOT display "Estimated" at tax/shipping label when the section is finished', () => {
     deliverySection.classList.remove('active');
     paymentSection.classList.add('active');
+    $('.dr-currency-select').val('USD');
     CheckoutModule.updateSummaryLabels();
     expect(taxLabel.innerHTML).toEqual('Tax');
     expect(shippingLabel.innerHTML).toEqual('Shipping');
   });
 
-  test('It should display "Estimated VAT" when currency is GBP/EUR and the section is unfinished', () => {
+  test('It should display "Estimated VAT Included" when currency is GBP/EUR and the section is unfinished', () => {
     deliverySection.classList.add('active');
     paymentSection.classList.remove('active');
     $('.dr-currency-select').val('GBP');
     CheckoutModule.updateSummaryLabels();
-    expect(taxLabel.innerHTML).toEqual('Estimated VAT');
+    expect(taxLabel.innerHTML).toEqual('Estimated VAT Included');
   });
 
-  test('It should display "VAT" when currency is GBP/EUR and the section is finished', () => {
+  test('It should display "VAT Included" when currency is GBP/EUR and the section is finished', () => {
     deliverySection.classList.remove('active');
     paymentSection.classList.add('active');
     $('.dr-currency-select').val('GBP');
     CheckoutModule.updateSummaryLabels();
-    expect(taxLabel.innerHTML).toEqual('VAT');
+    expect(taxLabel.innerHTML).toEqual('VAT Included');
   });
 
 });

@@ -103,16 +103,19 @@ const CheckoutUtils = (($, params) => {
   };
 
   const updateSummaryPricing = (cart) => {
-    const {formattedOrderTotal, formattedTax} = cart.pricing;
+    const lineItems = cart.lineItems.lineItem;
+    const pricing = cart.pricing;
+    const taxData = getSeparatedTax(lineItems, pricing);
 
     if (Object.keys(cart.shippingMethod).length) {
-      const formattedShippingAndHandling = (cart.pricing.shippingAndHandling.value === 0) ? params.translations.free_label : cart.pricing.formattedShippingAndHandling;
+      const formattedShippingAndHandling = (pricing.shippingAndHandling.value === 0) ? params.translations.free_label : pricing.formattedShippingAndHandling;
 
       $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
     }
 
-    $('div.dr-summary__tax > .item-value').text(formattedTax);
-    $('div.dr-summary__total > .total-value').text(formattedOrderTotal);
+    $('div.dr-summary__tax > .item-value').text(taxData.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(taxData.formattedShippingTax);
+    $('div.dr-summary__total > .total-value').text(pricing.formattedOrderTotal);
     $('.dr-summary').removeClass('dr-loading');
   };
 
@@ -216,6 +219,50 @@ const CheckoutUtils = (($, params) => {
     return countryCodes;
   };
 
+  const formatPrice = (val, pricing) => {
+    const localeCode = ($('.dr-currency-select').find('option:selected').data('locale') || drgc_params.drLocale).replace('_', '-');
+    const currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
+    const symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
+    const formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
+    const decimalSymbol = (0).toLocaleString(localeCode, { minimumFractionDigits: 1 })[1];
+    const digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ?
+      formattedPriceWithoutSymbol.split(decimalSymbol).pop().length :
+      0;
+    val = val.toLocaleString(localeCode, { minimumFractionDigits: digits });
+    val = symbolAsPrefix ? (currencySymbol + val) : (val + currencySymbol);
+    return val;
+  };
+
+  const getCorrectSubtotalWithDiscount = (pricing) => {
+    const val = pricing.subtotal.value - pricing.discount.value;
+    return formatPrice(val, pricing);
+  };
+
+  const getSeparatedTax = (lineItems, pricing) => {
+    let productTax = 0;
+    let shippingTax = 0;
+
+    lineItems.forEach((lineItem) => {
+      productTax += lineItem.pricing.productTax.value;
+      shippingTax += lineItem.pricing.shippingTax.value;
+    });
+
+    return {
+      formattedProductTax: formatPrice(productTax, pricing),
+      formattedShippingTax: formatPrice(shippingTax, pricing)
+    };
+  };
+
+  const shouldDisplayVat = () => {
+    const currency = $('.dr-currency-select').val();
+    return (currency === 'GBP' || currency === 'EUR');
+  };
+
+  const isTaxInclusive = () => {
+    const locale = $('.dr-currency-select option:selected').data('locale') || drgc_params.drLocale;
+    return locale !== 'en_US';
+  }
+
   return {
     createDisplayItems,
     createShippingOptions,
@@ -235,7 +282,12 @@ const CheckoutUtils = (($, params) => {
     resetFormSubmitButton,
     getAjaxErrorMessage,
     setShippingOption,
-    getSupportedCountries
+    getSupportedCountries,
+    formatPrice,
+    getCorrectSubtotalWithDiscount,
+    getSeparatedTax,
+    shouldDisplayVat,
+    isTaxInclusive
   };
 })(jQuery, drgc_params);
 

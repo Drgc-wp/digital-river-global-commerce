@@ -88,16 +88,16 @@
 /* 0 */
 /***/ (function(module, exports) {
 
-function _typeof(obj) {
-  "@babel/helpers - typeof";
+function _typeof2(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+function _typeof(obj) {
+  if (typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol") {
     module.exports = _typeof = function _typeof(obj) {
-      return typeof obj;
+      return _typeof2(obj);
     };
   } else {
     module.exports = _typeof = function _typeof(obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof2(obj);
     };
   }
 
@@ -179,7 +179,7 @@ module.exports = _defineProperty;
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+/* WEBPACK VAR INJECTION */(function(module) {function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
@@ -315,7 +315,7 @@ var runtime = function (exports) {
     };
   };
 
-  function AsyncIterator(generator, PromiseImpl) {
+  function AsyncIterator(generator) {
     function invoke(method, arg, resolve, reject) {
       var record = tryCatch(generator[method], generator, arg);
 
@@ -326,14 +326,14 @@ var runtime = function (exports) {
         var value = result.value;
 
         if (value && _typeof(value) === "object" && hasOwn.call(value, "__await")) {
-          return PromiseImpl.resolve(value.__await).then(function (value) {
+          return Promise.resolve(value.__await).then(function (value) {
             invoke("next", value, resolve, reject);
           }, function (err) {
             invoke("throw", err, resolve, reject);
           });
         }
 
-        return PromiseImpl.resolve(value).then(function (unwrapped) {
+        return Promise.resolve(value).then(function (unwrapped) {
           // When a yielded Promise is resolved, its final value becomes
           // the .value of the Promise<{value,done}> result for the
           // current iteration.
@@ -351,7 +351,7 @@ var runtime = function (exports) {
 
     function enqueue(method, arg) {
       function callInvokeWithMethodAndArg() {
-        return new PromiseImpl(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           invoke(method, arg, resolve, reject);
         });
       }
@@ -388,9 +388,8 @@ var runtime = function (exports) {
   // AsyncIterator objects; they just return a Promise for the value of
   // the final result produced by the iterator.
 
-  exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) {
-    if (PromiseImpl === void 0) PromiseImpl = Promise;
-    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);
+  exports.async = function (innerFn, outerFn, self, tryLocsList) {
+    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList));
     return exports.isGeneratorFunction(outerFn) ? iter // If outerFn is a generator, return the full iterator.
     : iter.next().then(function (result) {
       return result.done ? result.value : iter.next();
@@ -923,7 +922,6 @@ module.exports = function (module) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/helpers/typeof.js
@@ -1260,17 +1258,18 @@ var CheckoutUtils = function ($, params) {
   };
 
   var updateSummaryPricing = function updateSummaryPricing(cart) {
-    var _cart$pricing = cart.pricing,
-        formattedOrderTotal = _cart$pricing.formattedOrderTotal,
-        formattedTax = _cart$pricing.formattedTax;
+    var lineItems = cart.lineItems.lineItem;
+    var pricing = cart.pricing;
+    var taxData = getSeparatedTax(lineItems, pricing);
 
     if (Object.keys(cart.shippingMethod).length) {
-      var formattedShippingAndHandling = cart.pricing.shippingAndHandling.value === 0 ? params.translations.free_label : cart.pricing.formattedShippingAndHandling;
+      var formattedShippingAndHandling = pricing.shippingAndHandling.value === 0 ? params.translations.free_label : pricing.formattedShippingAndHandling;
       $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
     }
 
-    $('div.dr-summary__tax > .item-value').text(formattedTax);
-    $('div.dr-summary__total > .total-value').text(formattedOrderTotal);
+    $('div.dr-summary__tax > .item-value').text(taxData.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(taxData.formattedShippingTax);
+    $('div.dr-summary__total > .total-value').text(pricing.formattedOrderTotal);
     $('.dr-summary').removeClass('dr-loading');
   };
 
@@ -1361,6 +1360,50 @@ var CheckoutUtils = function ($, params) {
     return countryCodes;
   };
 
+  var formatPrice = function formatPrice(val, pricing) {
+    var localeCode = ($('.dr-currency-select').find('option:selected').data('locale') || drgc_params.drLocale).replace('_', '-');
+    var currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
+    var symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
+    var formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
+    var decimalSymbol = 0 .toLocaleString(localeCode, {
+      minimumFractionDigits: 1
+    })[1];
+    var digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ? formattedPriceWithoutSymbol.split(decimalSymbol).pop().length : 0;
+    val = val.toLocaleString(localeCode, {
+      minimumFractionDigits: digits
+    });
+    val = symbolAsPrefix ? currencySymbol + val : val + currencySymbol;
+    return val;
+  };
+
+  var getCorrectSubtotalWithDiscount = function getCorrectSubtotalWithDiscount(pricing) {
+    var val = pricing.subtotal.value - pricing.discount.value;
+    return formatPrice(val, pricing);
+  };
+
+  var getSeparatedTax = function getSeparatedTax(lineItems, pricing) {
+    var productTax = 0;
+    var shippingTax = 0;
+    lineItems.forEach(function (lineItem) {
+      productTax += lineItem.pricing.productTax.value;
+      shippingTax += lineItem.pricing.shippingTax.value;
+    });
+    return {
+      formattedProductTax: formatPrice(productTax, pricing),
+      formattedShippingTax: formatPrice(shippingTax, pricing)
+    };
+  };
+
+  var shouldDisplayVat = function shouldDisplayVat() {
+    var currency = $('.dr-currency-select').val();
+    return currency === 'GBP' || currency === 'EUR';
+  };
+
+  var isTaxInclusive = function isTaxInclusive() {
+    var locale = $('.dr-currency-select option:selected').data('locale') || drgc_params.drLocale;
+    return locale !== 'en_US';
+  };
+
   return {
     createDisplayItems: createDisplayItems,
     createShippingOptions: createShippingOptions,
@@ -1380,7 +1423,12 @@ var CheckoutUtils = function ($, params) {
     resetFormSubmitButton: resetFormSubmitButton,
     getAjaxErrorMessage: getAjaxErrorMessage,
     setShippingOption: setShippingOption,
-    getSupportedCountries: getSupportedCountries
+    getSupportedCountries: getSupportedCountries,
+    formatPrice: formatPrice,
+    getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
+    getSeparatedTax: getSeparatedTax,
+    shouldDisplayVat: shouldDisplayVat,
+    isTaxInclusive: isTaxInclusive
   };
 }(jQuery, drgc_params);
 
@@ -2001,32 +2049,32 @@ var CartModule = function ($) {
     });
   };
 
-  var getCorrectSubtotalWithDiscount = function getCorrectSubtotalWithDiscount(pricing) {
-    var localeCode = $('.dr-currency-select').find('option:selected').data('locale').replace('_', '-');
-    var currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
-    var symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
-    var formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
-    var decimalSymbol = 0 .toLocaleString(localeCode, {
-      minimumFractionDigits: 1
-    })[1];
-    var digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ? formattedPriceWithoutSymbol.split(decimalSymbol).pop().length : 0;
-    var val = pricing.subtotal.value - pricing.discount.value;
-    val = val.toLocaleString(localeCode, {
-      minimumFractionDigits: digits
-    });
-    val = symbolAsPrefix ? currencySymbol + val : val + currencySymbol;
-    return val;
-  };
-
-  var renderSummary = function renderSummary(pricing, hasPhysicalProduct) {
+  var renderSummary = function renderSummary(cart, hasPhysicalProduct) {
+    var lineItems = cart.lineItems.lineItem;
+    var pricing = cart.pricing;
+    var $taxRow = $('.dr-summary__tax');
+    var $shippingTaxRow = $('.dr-summary__shipping-tax');
     var $discountRow = $('.dr-summary__discount');
     var $shippingRow = $('.dr-summary__shipping');
     var $subtotalRow = $('.dr-summary__discounted-subtotal');
+    var $totalRow = $('.dr-summary__total');
+    var taxData = checkout_utils.getSeparatedTax(lineItems, pricing);
     $discountRow.find('.discount-value').text("-".concat(pricing.formattedDiscount));
+    $taxRow.find('.tax-value').text(taxData.formattedProductTax);
+    $shippingTaxRow.find('.shipping-tax-value').text(taxData.formattedShippingTax);
     $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? drgc_params.translations.free_label : pricing.formattedShippingAndHandling);
-    $subtotalRow.find('.discounted-subtotal-value').text(pricing.subtotalWithDiscount.value > pricing.subtotal.value ? getCorrectSubtotalWithDiscount(pricing) : pricing.formattedSubtotalWithDiscount);
+    $subtotalRow.find('.discounted-subtotal-value').text(pricing.subtotalWithDiscount.value > pricing.subtotal.value ? checkout_utils.getCorrectSubtotalWithDiscount(pricing) : pricing.formattedSubtotalWithDiscount);
+    $totalRow.find('.total-value').text(pricing.formattedOrderTotal);
     if (pricing.discount.value) $discountRow.show();else $discountRow.hide();
-    if (hasPhysicalProduct) $shippingRow.show();else $shippingRow.hide();
+
+    if (hasPhysicalProduct) {
+      $shippingRow.show();
+      $shippingTaxRow.show();
+    } else {
+      $shippingRow.hide();
+      $shippingTaxRow.hide();
+    }
+
     return new Promise(function (resolve) {
       return resolve();
     });
@@ -2042,7 +2090,7 @@ var CartModule = function ($) {
 
       if (lineItems && lineItems.length) {
         hasPhysicalProduct = hasPhysicalProductInLineItems(lineItems);
-        return Promise.all([renderLineItems(lineItems), renderSummary(res.cart.pricing, hasPhysicalProduct)]);
+        return Promise.all([renderLineItems(lineItems), renderSummary(res.cart, hasPhysicalProduct)]);
       } else {
         $('.dr-cart__products').text(drgc_params.translations.empty_cart_msg);
         $('#cart-estimate').remove();
@@ -2071,7 +2119,6 @@ var CartModule = function ($) {
     disableEditBtnsForBundle: disableEditBtnsForBundle,
     renderSingleLineItem: renderSingleLineItem,
     renderLineItems: renderLineItems,
-    getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
     renderSummary: renderSummary,
     fetchFreshCart: fetchFreshCart
   };
@@ -2254,8 +2301,12 @@ var FloatLabel = function () {
 
 
 var DRGooglePay = function ($, translations) {
-  var isConnectionSecure = /*#__PURE__*/function () {
-    var _ref = asyncToGenerator_default()( /*#__PURE__*/regenerator_default.a.mark(function _callee() {
+  var isConnectionSecure =
+  /*#__PURE__*/
+  function () {
+    var _ref = asyncToGenerator_default()(
+    /*#__PURE__*/
+    regenerator_default.a.mark(function _callee() {
       var canPay, details;
       return regenerator_default.a.wrap(function _callee$(_context) {
         while (1) {
@@ -2727,18 +2778,17 @@ var CheckoutModule = function ($) {
     $('#dr-preTAndC').trigger('change');
   };
 
-  var shouldDisplayVat = function shouldDisplayVat() {
-    var currency = $('.dr-currency-select').val();
-    return currency === 'GBP' || currency === 'EUR';
-  };
-
   var updateSummaryLabels = function updateSummaryLabels() {
+    var includedLabel = checkout_utils.isTaxInclusive() ? ' ' + drgc_params.translations.included_label : '';
+
     if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-      $('.dr-summary__tax .item-label').text(shouldDisplayVat() ? drgc_params.translations.vat_label : drgc_params.translations.tax_label);
+      $('.dr-summary__tax .item-label').text(checkout_utils.shouldDisplayVat() ? drgc_params.translations.vat_label + includedLabel : drgc_params.translations.tax_label + includedLabel);
       $('.dr-summary__shipping .item-label').text(drgc_params.translations.shipping_label);
+      $('.dr-summary__shipping-tax .item-label').text(checkout_utils.shouldDisplayVat() ? drgc_params.translations.shipping_vat_label : drgc_params.translations.shipping_tax_label);
     } else {
-      $('.dr-summary__tax .item-label').text(shouldDisplayVat() ? drgc_params.translations.estimated_vat_label : drgc_params.translations.estimated_tax_label);
+      $('.dr-summary__tax .item-label').text(checkout_utils.shouldDisplayVat() ? drgc_params.translations.estimated_vat_label + includedLabel : drgc_params.translations.estimated_tax_label + includedLabel);
       $('.dr-summary__shipping .item-label').text(drgc_params.translations.estimated_shipping_label);
+      $('.dr-summary__shipping-tax .item-label').text(checkout_utils.shouldDisplayVat() ? drgc_params.translations.estimated_shipping_vat_label : drgc_params.translations.estimated_shipping_tax_label);
     }
   };
 
@@ -2747,7 +2797,7 @@ var CheckoutModule = function ($) {
     return new Promise(function (resolve, reject) {
       $.ajax({
         type: 'GET',
-        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage?ESICaching=off"),
+        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage"),
         success: function success(response) {
           var addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
@@ -2891,8 +2941,12 @@ var CheckoutModule = function ($) {
     $target.text(addressArr.join(', '));
   };
 
-  var preselectShippingOption = /*#__PURE__*/function () {
-    var _ref = asyncToGenerator_default()( /*#__PURE__*/regenerator_default.a.mark(function _callee(data) {
+  var preselectShippingOption =
+  /*#__PURE__*/
+  function () {
+    var _ref = asyncToGenerator_default()(
+    /*#__PURE__*/
+    regenerator_default.a.mark(function _callee(data) {
       var $errorMsgElem, defaultShippingOption, shippingOptions, defaultExists, index, option, res, freeShipping;
       return regenerator_default.a.wrap(function _callee$(_context) {
         while (1) {
@@ -3028,7 +3082,9 @@ jQuery(document).ready(function ($) {
     };
     var paymentSourceId = null; // Section progress
 
-    var finishedSectionIdx = -1; // Create elements through DR.js
+    var finishedSectionIdx = -1; // Break down tax and update summary on page load
+
+    checkout_utils.updateSummaryPricing(cartData); // Create elements through DR.js
 
     if ($('.credit-card-section').length) {
       var getStyleOptionsFromClass = function getStyleOptionsFromClass(className) {

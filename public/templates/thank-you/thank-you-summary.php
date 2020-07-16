@@ -30,7 +30,8 @@ $shipping_price_value = ($order['order']['pricing']['shipping']['value'] ?? '') 
 $discount = $order['order']['pricing']['incentive']['value'];
 $formatted_discount = $order['order']['pricing']['formattedIncentive'];
 $total_value = $order['order']['pricing']['formattedTotal'] ?? '';
-// $delivery_info = 'Delivery in 2-5 working days and extended 30 days return period';
+$should_display_vat = drgc_should_display_vat( $customer['currency'] );
+$is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
 ?>
 
 
@@ -40,9 +41,9 @@ $total_value = $order['order']['pricing']['formattedTotal'] ?? '';
     <p class="subtotal-value"><?php echo $subtotal_value; ?></p>
 </div>
 
-<div class="dr-summary__tax">
+<div class="dr-summary__tax <?php echo $is_tax_inclusive ? 'tree-sub-item' : '' ?>">
 
-    <p class="item-label"><?php echo __( 'Tax', 'digital-river-global-commerce' ) ?></p>
+    <p class="item-label"><?php echo $should_display_vat ? __( 'VAT', 'digital-river-global-commerce' ) : __( 'Tax', 'digital-river-global-commerce' ) ?></p>
 
     <p class="item-value"><?php echo $tax_value; ?></p>
 

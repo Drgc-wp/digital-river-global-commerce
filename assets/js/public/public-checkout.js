@@ -24,24 +24,28 @@ const CheckoutModule = (($) => {
         $('#dr-preTAndC').trigger('change');
     };
 
-    const shouldDisplayVat = () => {
-        const currency = $('.dr-currency-select').val();
-        return (currency === 'GBP' || currency === 'EUR');
-    };
-
     const updateSummaryLabels = () => {
+        const includedLabel = CheckoutUtils.isTaxInclusive() ? ' ' + drgc_params.translations.included_label : '';
         if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-            $('.dr-summary__tax .item-label').text(shouldDisplayVat() ?
-                drgc_params.translations.vat_label :
-                drgc_params.translations.tax_label
+            $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+                drgc_params.translations.vat_label + includedLabel :
+                drgc_params.translations.tax_label + includedLabel
             );
             $('.dr-summary__shipping .item-label').text(drgc_params.translations.shipping_label);
+            $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+                drgc_params.translations.shipping_vat_label :
+                drgc_params.translations.shipping_tax_label
+            );
         } else {
-            $('.dr-summary__tax .item-label').text(shouldDisplayVat() ?
-                drgc_params.translations.estimated_vat_label :
-                drgc_params.translations.estimated_tax_label
+            $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+                drgc_params.translations.estimated_vat_label + includedLabel :
+                drgc_params.translations.estimated_tax_label + includedLabel
             );
             $('.dr-summary__shipping .item-label').text(drgc_params.translations.estimated_shipping_label);
+            $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+                drgc_params.translations.estimated_shipping_vat_label :
+                drgc_params.translations.estimated_shipping_tax_label
+            );
         }
     };
 
@@ -50,7 +54,7 @@ const CheckoutModule = (($) => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'GET',
-                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage?ESICaching=off`,
+                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage`,
                 success: (response) => {
                     const addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
@@ -291,6 +295,9 @@ jQuery(document).ready(($) => {
         let paymentSourceId = null;
         // Section progress
         let finishedSectionIdx = -1;
+
+        // Break down tax and update summary on page load
+        CheckoutUtils.updateSummaryPricing(cartData);
 
         // Create elements through DR.js
         if ($('.credit-card-section').length) {

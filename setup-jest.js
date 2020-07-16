@@ -11,6 +11,7 @@ global.drgc_params = {
   loginPath: null,
   translations: {
     subtotal_label: 'Sub-total',
+    included_label: 'Included',
     vat_label: 'VAT',
     estimated_vat_label: 'Estimated VAT',
     tax_label: 'Tax',
