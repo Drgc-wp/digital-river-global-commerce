@@ -254,8 +254,8 @@ const CheckoutUtils = (($, params) => {
     return {
       formattedProductTax: formatPrice(productTax, pricing),
       formattedShippingTax: formatPrice(shippingTax, pricing),
-      formattedSubtotal: forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
-      formattedShippingAndHandling: forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
+      formattedSubtotal: (isTaxInclusive() && forceExclTax) ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: (isTaxInclusive() && forceExclTax) ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
     };
   };
 
