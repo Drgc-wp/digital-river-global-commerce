@@ -99,7 +99,10 @@ class DRGC_Public {
 
     //test Order Handler
     $testOrder_option = get_option( 'drgc_testOrder_handler' );
-		$testOrder_enable = ( is_array( $testOrder_option ) && '1' == $testOrder_option['checkbox'] )  ? "true" : "false";
+    $testOrder_enable = ( is_array( $testOrder_option ) && '1' == $testOrder_option['checkbox'] )  ? "true" : "false";
+
+    $force_excl_tax_option = get_option( 'drgc_force_excl_tax_handler' );
+		$force_excl_tax_enable = ( is_array( $force_excl_tax_option ) && '1' == $force_excl_tax_option['checkbox'] )  ? "true" : "false";
 
 		$applepay_option = get_option( 'drgc_applepay_handler' );
 		$applepay_enabled = ( is_array( $applepay_option ) && '1' == $applepay_option['checkbox'] )  ? 'true' : 'false';
@@ -111,7 +114,8 @@ class DRGC_Public {
 			'upgrade_label'               => __('Upgrade', 'digital-river-global-commerce'),
 			'add_label'                   => __('Add', 'digital-river-global-commerce'),
 			'free_label'                  => __('FREE', 'digital-river-global-commerce'),
-			'included_label'              => __('Included', 'digital-river-global-commerce'),
+      // 'included_label'              => __('Included', 'digital-river-global-commerce'),
+      'incl_vat_label'              => __('Incl. VAT', 'digital-river-global-commerce'),
 			'vat_label'                   => __('VAT', 'digital-river-global-commerce'),
 			'estimated_vat_label'         => __('Estimated VAT', 'digital-river-global-commerce'),
 			'shipping_vat_label'          => __('Shipping VAT', 'digital-river-global-commerce'),
@@ -187,7 +191,8 @@ class DRGC_Public {
 				'failure'  => isset( $_GET['ppcancel'] ) ? $_GET['ppcancel'] : false,
 				'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
       ),
-			'testOrder'          => $testOrder_enable,
+      'testOrder'          => $testOrder_enable,
+      'forceExclTax'       => $force_excl_tax_enable,
 			'translations'       => $translation_array,
 			'isApplePayEnabled'  => $applepay_enabled,
 			'isGooglePayEnabled' => $googlepay_enabled,

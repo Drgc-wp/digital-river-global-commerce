@@ -105,16 +105,16 @@ const CheckoutUtils = (($, params) => {
   const updateSummaryPricing = (cart) => {
     const lineItems = cart.lineItems.lineItem;
     const pricing = cart.pricing;
-    const taxData = getSeparatedTax(lineItems, pricing);
+    const newPricing = getSeparatedPricing(lineItems, pricing);
 
-    if (Object.keys(cart.shippingMethod).length) {
-      const formattedShippingAndHandling = (pricing.shippingAndHandling.value === 0) ? params.translations.free_label : pricing.formattedShippingAndHandling;
-
-      $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
-    }
-
-    $('div.dr-summary__tax > .item-value').text(taxData.formattedProductTax);
-    $('div.dr-summary__shipping-tax > .item-value').text(taxData.formattedShippingTax);
+    $('div.dr-summary__shipping > .item-value').text(
+      pricing.shippingAndHandling.value === 0 ?
+      params.translations.free_label :
+      newPricing.formattedShippingAndHandling
+    );
+    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
+    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
     $('div.dr-summary__total > .total-value').text(pricing.formattedOrderTotal);
     $('.dr-summary').removeClass('dr-loading');
   };
@@ -238,9 +238,13 @@ const CheckoutUtils = (($, params) => {
     return formatPrice(val, pricing);
   };
 
-  const getSeparatedTax = (lineItems, pricing) => {
+  const getSeparatedPricing = (lineItems, pricing) => {
     let productTax = 0;
     let shippingTax = 0;
+    const forceExclTax = drgc_params.forceExclTax === 'true';
+    const shippingVal = pricing.shippingAndHandling ?
+      pricing.shippingAndHandling.value :
+      pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
 
     lineItems.forEach((lineItem) => {
       productTax += lineItem.pricing.productTax.value;
@@ -249,7 +253,9 @@ const CheckoutUtils = (($, params) => {
 
     return {
       formattedProductTax: formatPrice(productTax, pricing),
-      formattedShippingTax: formatPrice(shippingTax, pricing)
+      formattedShippingTax: formatPrice(shippingTax, pricing),
+      formattedSubtotal: forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
     };
   };
 
@@ -285,7 +291,7 @@ const CheckoutUtils = (($, params) => {
     getSupportedCountries,
     formatPrice,
     getCorrectSubtotalWithDiscount,
-    getSeparatedTax,
+    getSeparatedPricing,
     shouldDisplayVat,
     isTaxInclusive
   };

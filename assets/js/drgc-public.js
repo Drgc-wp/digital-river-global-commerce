@@ -1260,15 +1260,11 @@ var CheckoutUtils = function ($, params) {
   var updateSummaryPricing = function updateSummaryPricing(cart) {
     var lineItems = cart.lineItems.lineItem;
     var pricing = cart.pricing;
-    var taxData = getSeparatedTax(lineItems, pricing);
-
-    if (Object.keys(cart.shippingMethod).length) {
-      var formattedShippingAndHandling = pricing.shippingAndHandling.value === 0 ? params.translations.free_label : pricing.formattedShippingAndHandling;
-      $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
-    }
-
-    $('div.dr-summary__tax > .item-value').text(taxData.formattedProductTax);
-    $('div.dr-summary__shipping-tax > .item-value').text(taxData.formattedShippingTax);
+    var newPricing = getSeparatedPricing(lineItems, pricing);
+    $('div.dr-summary__shipping > .item-value').text(pricing.shippingAndHandling.value === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
+    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
     $('div.dr-summary__total > .total-value').text(pricing.formattedOrderTotal);
     $('.dr-summary').removeClass('dr-loading');
   };
@@ -1381,16 +1377,21 @@ var CheckoutUtils = function ($, params) {
     return formatPrice(val, pricing);
   };
 
-  var getSeparatedTax = function getSeparatedTax(lineItems, pricing) {
+  var getSeparatedPricing = function getSeparatedPricing(lineItems, pricing) {
     var productTax = 0;
     var shippingTax = 0;
+    var forceExclTax = drgc_params.forceExclTax === 'true';
+    var shippingVal = pricing.shippingAndHandling ? pricing.shippingAndHandling.value : pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
+
     lineItems.forEach(function (lineItem) {
       productTax += lineItem.pricing.productTax.value;
       shippingTax += lineItem.pricing.shippingTax.value;
     });
     return {
       formattedProductTax: formatPrice(productTax, pricing),
-      formattedShippingTax: formatPrice(shippingTax, pricing)
+      formattedShippingTax: formatPrice(shippingTax, pricing),
+      formattedSubtotal: forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : pricing.formattedShippingAndHandling || pricing.formattedShipping
     };
   };
 
@@ -1426,7 +1427,7 @@ var CheckoutUtils = function ($, params) {
     getSupportedCountries: getSupportedCountries,
     formatPrice: formatPrice,
     getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
-    getSeparatedTax: getSeparatedTax,
+    getSeparatedPricing: getSeparatedPricing,
     shouldDisplayVat: shouldDisplayVat,
     isTaxInclusive: isTaxInclusive
   };
@@ -2056,14 +2057,14 @@ var CartModule = function ($) {
     var $shippingTaxRow = $('.dr-summary__shipping-tax');
     var $discountRow = $('.dr-summary__discount');
     var $shippingRow = $('.dr-summary__shipping');
-    var $subtotalRow = $('.dr-summary__discounted-subtotal');
+    var $subtotalRow = $('.dr-summary__subtotal');
     var $totalRow = $('.dr-summary__total');
-    var taxData = checkout_utils.getSeparatedTax(lineItems, pricing);
+    var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing);
     $discountRow.find('.discount-value').text("-".concat(pricing.formattedDiscount));
-    $taxRow.find('.tax-value').text(taxData.formattedProductTax);
-    $shippingTaxRow.find('.shipping-tax-value').text(taxData.formattedShippingTax);
-    $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? drgc_params.translations.free_label : pricing.formattedShippingAndHandling);
-    $subtotalRow.find('.discounted-subtotal-value').text(pricing.subtotalWithDiscount.value > pricing.subtotal.value ? checkout_utils.getCorrectSubtotalWithDiscount(pricing) : pricing.formattedSubtotalWithDiscount);
+    $taxRow.find('.tax-value').text(newPricing.formattedProductTax);
+    $shippingTaxRow.find('.shipping-tax-value').text(newPricing.formattedShippingTax);
+    $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? drgc_params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $subtotalRow.find('.subtotal-value').text(newPricing.formattedSubtotal);
     $totalRow.find('.total-value').text(pricing.formattedOrderTotal);
     if (pricing.discount.value) $discountRow.show();else $discountRow.hide();
 
@@ -4311,9 +4312,26 @@ jQuery(document).ready(function ($) {
 /* harmony default export */ var public_pdp = (PdpModule);
 // CONCATENATED MODULE: ./assets/js/public/public-thank-you.js
 
-var ThankYouModule = {};
+
+var ThankYouModule = function ($) {
+  var updateSummaryPricing = function updateSummaryPricing(order) {
+    var lineItems = order.lineItems.lineItem;
+    var pricing = order.pricing;
+    var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing);
+    $('div.dr-summary__shipping > .item-value').text(pricing.shipping.value === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
+    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
+  };
+
+  return {
+    updateSummaryPricing: updateSummaryPricing
+  };
+}(jQuery);
+
 jQuery(document).ready(function ($) {
   if ($('.dr-thank-you-wrapper').length) {
+    if (drgc_params.order && drgc_params.order.order) ThankYouModule.updateSummaryPricing(drgc_params.order.order);
     $(document).on('click', '#print-button', function () {
       var printContents = $('.dr-thank-you-wrapper').html();
       var originalContents = document.body.innerHTML;

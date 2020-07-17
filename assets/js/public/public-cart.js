@@ -252,23 +252,19 @@ const CartModule = (($) => {
     const $shippingTaxRow = $('.dr-summary__shipping-tax');
     const $discountRow = $('.dr-summary__discount');
     const $shippingRow = $('.dr-summary__shipping');
-    const $subtotalRow = $('.dr-summary__discounted-subtotal');
+    const $subtotalRow = $('.dr-summary__subtotal');
     const $totalRow = $('.dr-summary__total');
-    const taxData = CheckoutUtils.getSeparatedTax(lineItems, pricing);
+    const newPricing = CheckoutUtils.getSeparatedPricing(lineItems, pricing);
 
     $discountRow.find('.discount-value').text(`-${pricing.formattedDiscount}`);
-    $taxRow.find('.tax-value').text(taxData.formattedProductTax);
-    $shippingTaxRow.find('.shipping-tax-value').text(taxData.formattedShippingTax);
+    $taxRow.find('.tax-value').text(newPricing.formattedProductTax);
+    $shippingTaxRow.find('.shipping-tax-value').text(newPricing.formattedShippingTax);
     $shippingRow.find('.shipping-value').text(
       pricing.shippingAndHandling.value === 0 ?
       drgc_params.translations.free_label :
-      pricing.formattedShippingAndHandling
+      newPricing.formattedShippingAndHandling
     );
-    $subtotalRow.find('.discounted-subtotal-value').text(
-      pricing.subtotalWithDiscount.value > pricing.subtotal.value ?
-      CheckoutUtils.getCorrectSubtotalWithDiscount(pricing) :
-      pricing.formattedSubtotalWithDiscount
-    );
+    $subtotalRow.find('.subtotal-value').text(newPricing.formattedSubtotal);
     $totalRow.find('.total-value').text(pricing.formattedOrderTotal);
 
     if (pricing.discount.value) $discountRow.show();

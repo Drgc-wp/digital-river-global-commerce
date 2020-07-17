@@ -23,6 +23,10 @@ $tax = $cart['cart']['pricing']['formattedTax'];
 $order_total = $cart['cart']['pricing']['formattedOrderTotal'];
 $should_display_vat = drgc_should_display_vat( $customer['currency'] );
 $is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
+$force_excl_tax = drgc_force_excl_tax();
+$tax_suffix_label = $is_tax_inclusive ?
+  $force_excl_tax ? ' ' . __( 'Excl. VAT', 'digital-river-global-commerce' ) : ' ' . __( 'Incl. VAT', 'digital-river-global-commerce' )
+  : '';
 ?>
 
 
@@ -31,7 +35,7 @@ $is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
 
     <div class="dr-summary__subtotal">
 
-        <p class="subtotal-label"><?php echo __( 'Subtotal', 'digital-river-global-commerce' ) ?></p>
+        <p class="subtotal-label"><?php echo __( 'Subtotal', 'digital-river-global-commerce' ) . $tax_suffix_label ?></p>
 
         <p class="subtotal-value"><?php echo $subtotal_value; ?></p>
 
@@ -45,13 +49,9 @@ $is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
 
     </div>
 
-    <div class="dr-summary__tax <?php echo $is_tax_inclusive ? 'tree-sub-item' : '' ?>">
+    <div class="dr-summary__tax <?php echo ( $is_tax_inclusive && ! $force_excl_tax ) ? 'tree-sub-item' : '' ?>">
 
-        <?php
-          $tax_label = $should_display_vat ? __( 'Estimated VAT', 'digital-river-global-commerce' ) : __( 'Estimated Tax', 'digital-river-global-commerce' );
-          $included_label = $is_tax_inclusive ? ' ' . __( 'Included', 'digital-river-global-commerce' ) : '';
-        ?>
-        <p class="tax-label"><?php echo $tax_label . $included_label ?></p>
+        <p class="tax-label"><?php echo $should_display_vat ? __( 'Estimated VAT', 'digital-river-global-commerce' ) : __( 'Estimated Tax', 'digital-river-global-commerce' ) ?></p>
 
         <p class="tax-value">--</p>
 
@@ -59,13 +59,13 @@ $is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
 
     <div class="dr-summary__shipping">
 
-        <p class="shipping-label"><?php echo __( 'Estimated Shipping', 'digital-river-global-commerce' ) ?></p>
+        <p class="shipping-label"><?php echo __( 'Estimated Shipping', 'digital-river-global-commerce' ) . $tax_suffix_label ?></p>
 
         <p class="shipping-value"><?php echo $shipping_price; ?></p>
 
     </div>
 
-    <div class="dr-summary__shipping-tax <?php echo $is_tax_inclusive ? 'tree-sub-item' : '' ?>">
+    <div class="dr-summary__shipping-tax <?php echo ( $is_tax_inclusive && ! $force_excl_tax ) ? 'tree-sub-item' : '' ?>">
 
         <p class="shipping-tax-label"><?php echo $should_display_vat ? __( 'Estimated Shipping VAT', 'digital-river-global-commerce' ) : __( 'Estimated Shipping Tax', 'digital-river-global-commerce' ) ?></p>
 
