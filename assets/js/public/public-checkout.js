@@ -25,23 +25,25 @@ const CheckoutModule = (($) => {
     };
 
     const updateSummaryLabels = () => {
-        const includedLabel = CheckoutUtils.isTaxInclusive() ? ' ' + drgc_params.translations.included_label : '';
+        const taxSuffixLabel = CheckoutUtils.isTaxInclusive() ?
+          drgc_params.forceExclTax === 'true' ? ' ' + drgc_params.translations.excl_vat_label : ' ' + drgc_params.translations.incl_vat_label
+          : '';
         if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
             $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
-                drgc_params.translations.vat_label + includedLabel :
-                drgc_params.translations.tax_label + includedLabel
+                drgc_params.translations.vat_label :
+                drgc_params.translations.tax_label
             );
-            $('.dr-summary__shipping .item-label').text(drgc_params.translations.shipping_label);
+            $('.dr-summary__shipping .item-label').text(drgc_params.translations.shipping_label + taxSuffixLabel);
             $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
                 drgc_params.translations.shipping_vat_label :
                 drgc_params.translations.shipping_tax_label
             );
         } else {
             $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
-                drgc_params.translations.estimated_vat_label + includedLabel :
-                drgc_params.translations.estimated_tax_label + includedLabel
+                drgc_params.translations.estimated_vat_label :
+                drgc_params.translations.estimated_tax_label
             );
-            $('.dr-summary__shipping .item-label').text(drgc_params.translations.estimated_shipping_label);
+            $('.dr-summary__shipping .item-label').text(drgc_params.translations.estimated_shipping_label + taxSuffixLabel);
             $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
                 drgc_params.translations.estimated_shipping_vat_label :
                 drgc_params.translations.estimated_shipping_tax_label

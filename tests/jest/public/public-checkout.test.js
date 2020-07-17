@@ -95,20 +95,20 @@ describe('Test updateSummaryLabels', () => {
     expect(shippingLabel.innerHTML).toEqual('Shipping');
   });
 
-  test('It should display "Estimated VAT Included" when currency is GBP/EUR and the section is unfinished', () => {
+  test('It should display "Estimated VAT" when currency is GBP/EUR and the section is unfinished', () => {
     deliverySection.classList.add('active');
     paymentSection.classList.remove('active');
     $('.dr-currency-select').val('GBP');
     CheckoutModule.updateSummaryLabels();
-    expect(taxLabel.innerHTML).toEqual('Estimated VAT Included');
+    expect(taxLabel.innerHTML).toEqual('Estimated VAT');
   });
 
-  test('It should display "VAT Included" when currency is GBP/EUR and the section is finished', () => {
+  test('It should display "VAT" when currency is GBP/EUR and the section is finished', () => {
     deliverySection.classList.remove('active');
     paymentSection.classList.add('active');
     $('.dr-currency-select').val('GBP');
     CheckoutModule.updateSummaryLabels();
-    expect(taxLabel.innerHTML).toEqual('VAT Included');
+    expect(taxLabel.innerHTML).toEqual('VAT');
   });
 
 });
@@ -131,7 +131,7 @@ describe('Test getCountryOptionsFromGC', () => {
     CheckoutModule.getCountryOptionsFromGC();
     expect($.ajax).toBeCalledWith({
       type: 'GET',
-      url:  'https://drh-fonts.img.digitalrivercontent.net/store/drdod15/en_GB/DisplayPage/id.SimpleRegistrationPage',
+      url:  'https://drh-fonts.img.digitalrivercontent.net/store/drdod15/en_GB/DisplayPage/id.SimpleRegistrationPage?clearTemplatesCache=true',
       success: expect.any(Function),
       error: expect.any(Function)
     });
