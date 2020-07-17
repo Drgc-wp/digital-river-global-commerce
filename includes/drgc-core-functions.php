@@ -420,7 +420,7 @@ function drgc_should_display_vat( $currency = '' ) {
 /**
  * Displaying tax inclusive label depends on locale (temp solution)
  *
- * @param string $currency
+ * @param string $locale
  * @return bool
  */
 function drgc_is_tax_inclusive( $locale = '' ) {

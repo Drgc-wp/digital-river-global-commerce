@@ -17,6 +17,7 @@ $shipping_price = $cart['cart']['pricing']['formattedShippingAndHandling'];
 $discount       = $cart['cart']['pricing']['discount']['value'];
 $formatted_discount = $cart['cart']['pricing']['formattedDiscount'];
 $subtotal_items = $cart['cart']['totalItemsInCart'];
+$subtotal_value = $cart['cart']['pricing']['formattedSubtotal'];
 $subtotal_with_discount_value = $cart['cart']['pricing']['formattedSubtotalWithDiscount'];
 $tax = $cart['cart']['pricing']['formattedTax'];
 $order_total = $cart['cart']['pricing']['formattedOrderTotal'];
@@ -28,15 +29,15 @@ $is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
 
 <div class="dr-summary dr-summary--cart">
 
-    <div class="dr-summary__discount" <?php if ( $discount === 0 ) echo 'style="display: none;"' ?>>
+    <div class="dr-summary__subtotal">
 
-        <p class="discount-label"><?php echo __( 'Discount', 'digital-river-global-commerce' ) ?></p>
+        <p class="subtotal-label"><?php echo __( 'Subtotal', 'digital-river-global-commerce' ) ?></p>
 
-        <p class="discount-value"><?php echo '-' . $formatted_discount; ?></p>
+        <p class="subtotal-value"><?php echo $subtotal_value; ?></p>
 
     </div>
 
-    <div class="dr-summary__discounted-subtotal">
+    <div class="dr-summary__discounted-subtotal" style="display: none;">
 
         <p class="discounted-subtotal-label"><?php echo __( 'Subtotal', 'digital-river-global-commerce' ) ?></p>
 
@@ -69,6 +70,14 @@ $is_tax_inclusive = drgc_is_tax_inclusive( $customer['locale'] );
         <p class="shipping-tax-label"><?php echo $should_display_vat ? __( 'Estimated Shipping VAT', 'digital-river-global-commerce' ) : __( 'Estimated Shipping Tax', 'digital-river-global-commerce' ) ?></p>
 
         <p class="shipping-tax-value">--</p>
+
+    </div>
+
+    <div class="dr-summary__discount" <?php if ( $discount === 0 ) echo 'style="display: none;"' ?>>
+
+        <p class="discount-label"><?php echo __( 'Discount', 'digital-river-global-commerce' ) ?></p>
+
+        <p class="discount-value"><?php echo '-' . $formatted_discount; ?></p>
 
     </div>
 

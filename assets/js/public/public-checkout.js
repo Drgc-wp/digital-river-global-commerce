@@ -54,7 +54,7 @@ const CheckoutModule = (($) => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'GET',
-                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage`,
+                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage?clearTemplatesCache=true`,
                 success: (response) => {
                     const addressTypes = drgc_params.cart.cart.hasPhysicalProduct ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
@@ -64,7 +64,7 @@ const CheckoutModule = (($) => {
                         $(`#${type}-field-country option`).not(':first').remove();
                         $(`#${type}-field-country`)
                             .append($options)
-                            .val(savedCountryCode.indexOf(optionArr) > -1 ? savedCountryCode : '');
+                            .val(optionArr.indexOf(savedCountryCode) > -1 ? savedCountryCode : '');
                     });
                     resolve();
                 },
