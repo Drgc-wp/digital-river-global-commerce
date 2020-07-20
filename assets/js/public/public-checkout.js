@@ -52,7 +52,8 @@ const CheckoutModule = (($) => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 type: 'GET',
-                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage?ESICaching=off`,
+                url: `https://drh-fonts.img.digitalrivercontent.net/store/${drgc_params.siteID}/${selectedLocale}/DisplayPage/id.SimpleRegistrationPage`,
+                cache: false,
                 success: (response) => {
                     const addressTypes = requestShipping ? ['shipping', 'billing'] : ['billing'];
                     addressTypes.forEach((type) => {
