@@ -829,4 +829,23 @@ class DRGC_Public {
 			wp_send_json_error();
 		}
 	}
+
+  public function get_offers_by_pop_ajax() {
+    check_ajax_referer( 'drgc_ajax', 'nonce' );
+
+    $pop_type = $_POST['popType'];
+    $product_id = $_POST['productId'];
+
+    if ( isset( $pop_type ) ) {
+      $response = DRGC()->cart->get_offers_by_pop( $pop_type, $product_id );
+
+      if ( $response ) {
+        wp_send_json_success( $response );
+      } else {
+        wp_send_json_error();
+      }
+    } else {
+      wp_send_json_error();
+    }
+  }
 }
