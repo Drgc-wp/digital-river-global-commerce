@@ -296,43 +296,38 @@ const CartModule = (($) => {
     });
   };
 
-  const getCorrectSubtotalWithDiscount = (pricing) => {
-    const localeCode = $('.dr-currency-select').find('option:selected').data('locale').replace('_', '-');
-    const currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
-    const symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
-    const formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
-    const decimalSymbol = (0).toLocaleString(localeCode, { minimumFractionDigits: 1 })[1];
-    const digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ?
-      formattedPriceWithoutSymbol.split(decimalSymbol).pop().length :
-      0;
-    let val = pricing.subtotal.value - pricing.discount.value;
-    val = val.toLocaleString(localeCode, { minimumFractionDigits: digits });
-    val = symbolAsPrefix ? (currencySymbol + val) : (val + currencySymbol);
-    return val;
-  };
-
-  const renderSummary = (pricing, hasPhysicalProduct) => {
+  const renderSummary = (cart, hasPhysicalProduct) => {
+    const lineItems = cart.lineItems.lineItem;
+    const pricing = cart.pricing;
+    const $taxRow = $('.dr-summary__tax');
+    const $shippingTaxRow = $('.dr-summary__shipping-tax');
     const $discountRow = $('.dr-summary__discount');
     const $shippingRow = $('.dr-summary__shipping');
-    const $subtotalRow = $('.dr-summary__discounted-subtotal');
+    const $subtotalRow = $('.dr-summary__subtotal');
+    const $totalRow = $('.dr-summary__total');
+    const newPricing = CheckoutUtils.getSeparatedPricing(lineItems, pricing);
 
     $discountRow.find('.discount-value').text(`-${pricing.formattedDiscount}`);
+    $taxRow.find('.tax-value').text(newPricing.formattedProductTax);
+    $shippingTaxRow.find('.shipping-tax-value').text(newPricing.formattedShippingTax);
     $shippingRow.find('.shipping-value').text(
       pricing.shippingAndHandling.value === 0 ?
-        localizedText.free_label :
-        pricing.formattedShippingAndHandling
+      drgc_params.translations.free_label :
+      newPricing.formattedShippingAndHandling
     );
-    $subtotalRow.find('.discounted-subtotal-value').text(
-      pricing.subtotalWithDiscount.value > pricing.subtotal.value ?
-      getCorrectSubtotalWithDiscount(pricing) :
-      pricing.formattedSubtotalWithDiscount
-    );
+    $subtotalRow.find('.subtotal-value').text(newPricing.formattedSubtotal);
+    $totalRow.find('.total-value').text(pricing.formattedOrderTotal);
 
     if (pricing.discount.value) $discountRow.show();
     else $discountRow.hide();
 
-    if (hasPhysicalProduct) $shippingRow.show();
-    else $shippingRow.hide();
+    if (hasPhysicalProduct) {
+      $shippingRow.show();
+      $shippingTaxRow.show();
+    } else {
+      $shippingRow.hide();
+      $shippingTaxRow.hide();
+    }
 
     return new Promise(resolve => resolve());
   };
@@ -349,7 +344,7 @@ const CartModule = (($) => {
           hasPhysicalProduct = hasPhysicalProductInLineItems(lineItems);
           return Promise.all([
             renderLineItems(lineItems),
-            renderSummary(res.cart.pricing, hasPhysicalProduct)
+            renderSummary(res.cart, hasPhysicalProduct)
           ]);
         } else {
           if (typeof $.cookie('drgc_upsell_decline') !== 'undefined') $.removeCookie('drgc_upsell_decline', {path: '/'});
@@ -406,7 +401,6 @@ const CartModule = (($) => {
     disableEditBtnsForBundle,
     renderSingleLineItem,
     renderLineItems,
-    getCorrectSubtotalWithDiscount,
     renderSummary,
     fetchFreshCart,
     updateUpsellCookie
