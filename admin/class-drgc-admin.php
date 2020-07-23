@@ -238,12 +238,19 @@ class DRGC_Admin {
 			array( 'label_for' => $this->option_name . '_cron_handler' )
     );
 
+		add_settings_section(
+			$this->option_name . '_checkout',
+			__( 'Checkout', 'digital-river-global-commerce' ),
+			array( $this, $this->option_name . '_checkout_cb' ),
+			$this->plugin_name
+		);
+
 		add_settings_field(
 			$this->option_name . '_testOrder_handler',
 			__( 'Test Order', 'digital-river-global-commerce' ),
 			array( $this, $this->option_name . '_testOrder_handler_cb' ),
 			$this->plugin_name,
-			$this->option_name . '_general',
+			$this->option_name . '_checkout',
 			array( 'label_for' => $this->option_name . '_testOrder_handler' )
 		);
 
@@ -252,7 +259,7 @@ class DRGC_Admin {
 			__( 'Display As Excl. Tax', 'digital-river-global-commerce' ),
 			array( $this, $this->option_name . '_force_excl_tax_handler_cb' ),
 			$this->plugin_name,
-			$this->option_name . '_general',
+			$this->option_name . '_checkout',
 			array( 'label_for' => $this->option_name . '_force_excl_tax_handler' )
 		);
 
@@ -348,6 +355,15 @@ class DRGC_Admin {
 	 * @since  1.0.0
 	 */
 	public function drgc_general_cb() {
+		return; // No need to print section message
+	}
+
+	/**
+	 * Render the text for the checkout section.
+	 *
+	 * @since  1.3.1
+	 */
+	public function drgc_checkout_cb() {
 		return; // No need to print section message
 	}
 
