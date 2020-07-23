@@ -12780,22 +12780,47 @@ var CartModule = function ($) {
     });
   };
 
-  var renderOffers = function renderOffers(lineItems) {
-    lineItems.forEach(function (lineItem, idx) {
-      // Candy Rack (should be inserted after specific line item)
-      commerce_api.getOffersByPoP('CandyRack_ShoppingCart', {
-        expand: 'all'
-      }, lineItem.product.id).then(function (res) {
-        var offers = res.offers.offer;
+  var getOffersByPoP = function getOffersByPoP(type) {
+    var productId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+    var data = {
+      action: 'drgc_get_offers_by_pop',
+      nonce: drgc_params.ajaxNonce,
+      popType: type,
+      productId: productId
+    };
+    $.post(drgc_params.ajaxUrl, data, function (response) {
+      var res = response.data;
 
-        if (offers && offers.length) {
-          offers.forEach(function (offer) {
-            renderCandyRackOffer(offer, lineItems[idx].product.id);
-          });
+      if (response.success) {
+        if (res.offers) {
+          var offers = res.offers.offer || '';
+
+          if (offers && offers.length) {
+            offers.forEach(function (offer) {
+              switch (type) {
+                case 'CandyRack_ShoppingCart':
+                  renderCandyRackOffer(offer, productId);
+                  break;
+
+                case 'Banner_ShoppingCartLocal':
+                  renderBannerOffer(offer);
+                  break;
+              }
+            });
+          }
+        } else if (res.errors) {
+          drToast.displayMessage(res.errors.error[0], 'error');
         }
-      })["catch"](function (jqXHR) {
-        return checkout_utils.apiErrorHandler(jqXHR);
-      }); // Bundle Tight (should disable edit buttons of specific line item)
+      } else {
+        drToast.displayMessage(localizedText.undefined_error_msg, 'error');
+      }
+    });
+  };
+
+  var renderOffers = function renderOffers(lineItems) {
+    lineItems.forEach(function (lineItem) {
+      // Candy Rack (should be inserted after specific line item)
+      getOffersByPoP('CandyRack_ShoppingCart', lineItem.product.id); // Bundle Tight (should disable edit buttons of specific line item)
 
       commerce_api.getOffersByProduct(lineItem.product.id, {
         expand: 'all'
@@ -12812,19 +12837,7 @@ var CartModule = function ($) {
       });
     }); // Banner (should be appended after all the line items)
 
-    commerce_api.getOffersByPoP('Banner_ShoppingCartLocal', {
-      expand: 'all'
-    }).then(function (res) {
-      var offers = res.offers.offer;
-
-      if (offers && offers.length) {
-        offers.forEach(function (offer) {
-          renderBannerOffer(offer);
-        });
-      }
-    })["catch"](function (jqXHR) {
-      return checkout_utils.apiErrorHandler(jqXHR);
-    });
+    getOffersByPoP('Banner_ShoppingCartLocal');
   };
 
   var renderCandyRackOffer = function renderCandyRackOffer(offer, driverProductID) {
@@ -13047,6 +13060,7 @@ var CartModule = function ($) {
     initAutoRenewalTerms: initAutoRenewalTerms,
     appendAutoRenewalTerms: appendAutoRenewalTerms,
     setProductQty: setProductQty,
+    getOffersByPoP: getOffersByPoP,
     renderOffers: renderOffers,
     renderCandyRackOffer: renderCandyRackOffer,
     renderBannerOffer: renderBannerOffer,

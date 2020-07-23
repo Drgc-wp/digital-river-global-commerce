@@ -344,6 +344,9 @@ class DRGC {
 		$this->loader->add_action( 'wp_ajax_nopriv_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );
 		$this->loader->add_action( 'wp_ajax_drgc_reset_cookie', $plugin_public, 'reset_cookie_ajax' );
 
+    $this->loader->add_action( 'wp_ajax_nopriv_drgc_get_offers_by_pop', $plugin_public, 'get_offers_by_pop_ajax' );
+    $this->loader->add_action( 'wp_ajax_drgc_get_offers_by_pop', $plugin_public, 'get_offers_by_pop_ajax' );
+
 		$this->loader->add_action( 'wp_head', $plugin_public, 'add_modal_html' );
 	}
 
