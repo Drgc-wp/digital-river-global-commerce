@@ -80,6 +80,7 @@ describe('Test updateSummaryLabels', () => {
   test('It should display "Estimated" at tax/shipping label when the section is unfinished', () => {
     deliverySection.classList.add('active');
     paymentSection.classList.remove('active');
+    $('.dr-currency-select').val('USD');
     CheckoutModule.updateSummaryLabels();
     expect(taxLabel.innerHTML).toEqual('Estimated Tax');
     expect(shippingLabel.innerHTML).toEqual('Estimated Shipping');
@@ -88,6 +89,7 @@ describe('Test updateSummaryLabels', () => {
   test('It should NOT display "Estimated" at tax/shipping label when the section is finished', () => {
     deliverySection.classList.remove('active');
     paymentSection.classList.add('active');
+    $('.dr-currency-select').val('USD');
     CheckoutModule.updateSummaryLabels();
     expect(taxLabel.innerHTML).toEqual('Tax');
     expect(shippingLabel.innerHTML).toEqual('Shipping');
@@ -129,7 +131,8 @@ describe('Test getCountryOptionsFromGC', () => {
     CheckoutModule.getCountryOptionsFromGC();
     expect($.ajax).toBeCalledWith({
       type: 'GET',
-      url:  'https://drh-fonts.img.digitalrivercontent.net/store/drdod15/en_GB/DisplayPage/id.SimpleRegistrationPage?ESICaching=off',
+      url:  'https://drh-fonts.img.digitalrivercontent.net/store/drdod15/en_GB/DisplayPage/id.SimpleRegistrationPage',
+      cache: false,
       success: expect.any(Function),
       error: expect.any(Function)
     });
