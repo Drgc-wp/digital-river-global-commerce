@@ -87,19 +87,46 @@ const CartModule = (($) => {
       });
   };
 
-  const renderOffers = (lineItems) => {
-    lineItems.forEach((lineItem, idx) => {
-      // Candy Rack (should be inserted after specific line item)
-      DRCommerceApi.getOffersByPoP('CandyRack_ShoppingCart', { expand: 'all' }, lineItem.product.id)
-        .then((res) => {
-          const offers = res.offers.offer;
+  const getOffersByPoP = (type, productId = '') => {
+    const data = {
+      action: 'drgc_get_offers_by_pop',
+      nonce: drgc_params.ajaxNonce,
+      popType: type,
+      productId: productId
+    };
+
+    $.post(drgc_params.ajaxUrl, data, (response) => {
+      const res = response.data;
+
+      if (response.success) {
+        if (res.offers) {
+          const offers = res.offers.offer || '';
+
           if (offers && offers.length) {
             offers.forEach((offer) => {
-              renderCandyRackOffer(offer, lineItems[idx].product.id);
+              switch (type) {
+                case 'CandyRack_ShoppingCart':
+                  renderCandyRackOffer(offer, productId);
+                  break;
+                case 'Banner_ShoppingCartLocal':
+                  renderBannerOffer(offer);
+                  break;
+              }
             });
           }
-        })
-        .catch(jqXHR => CheckoutUtils.apiErrorHandler(jqXHR));
+        } else if (res.errors) {
+          drToast.displayMessage(res.errors.error[0], 'error');
+        }
+      } else {
+        drToast.displayMessage(localizedText.undefined_error_msg, 'error');
+      }
+    });
+  };
+
+  const renderOffers = (lineItems) => {
+    lineItems.forEach((lineItem) => {
+      // Candy Rack (should be inserted after specific line item)
+      getOffersByPoP('CandyRack_ShoppingCart', lineItem.product.id);
 
       // Bundle Tight (should disable edit buttons of specific line item)
       DRCommerceApi.getOffersByProduct(lineItem.product.id, { expand: 'all' })
@@ -115,16 +142,7 @@ const CartModule = (($) => {
     });
 
     // Banner (should be appended after all the line items)
-    DRCommerceApi.getOffersByPoP('Banner_ShoppingCartLocal', { expand: 'all' })
-      .then((res) => {
-        const offers = res.offers.offer;
-          if (offers && offers.length) {
-            offers.forEach((offer) => {
-              renderBannerOffer(offer);
-            });
-          }
-      })
-      .catch(jqXHR => CheckoutUtils.apiErrorHandler(jqXHR));
+    getOffersByPoP('Banner_ShoppingCartLocal');
   };
 
   const renderCandyRackOffer = (offer, driverProductID) => {
@@ -395,6 +413,7 @@ const CartModule = (($) => {
     initAutoRenewalTerms,
     appendAutoRenewalTerms,
     setProductQty,
+    getOffersByPoP,
     renderOffers,
     renderCandyRackOffer,
     renderBannerOffer,
