@@ -960,6 +960,14 @@ jQuery(document).ready(($) => {
                 requestShipping: requestShipping
             });
         }
+
+        $('.back-link a').click(() => {
+            if (document.referrer && document.referrer !== drgc_params.loginUrl) {
+                window.location.href = document.referrer;
+            } else {
+                window.location.href = drgc_params.cartUrl;
+            }
+        });
     }
 });
 
