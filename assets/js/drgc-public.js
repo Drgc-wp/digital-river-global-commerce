@@ -14702,11 +14702,11 @@ var LoginModule = function ($) {
     elem.setCustomValidity(customMsg);
 
     if (elem.validity.valueMissing) {
-      $(elem).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+      $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
     } else if (elem.validity.customError) {
-      $(elem).next('.invalid-feedback').text(elem.validationMessage);
+      $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(elem.validationMessage);
     } else {
-      $(elem).next('.invalid-feedback').text('');
+      $(elem).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
     }
   };
 
@@ -14737,10 +14737,7 @@ var LoginModule = function ($) {
       action: 'drgc_logout',
       nonce: drgc_params.ajaxNonce
     };
-    $('body').css({
-      'pointer-events': 'none',
-      'opacity': 0.5
-    });
+    $('body').addClass('dr-loading');
     $.post(drgc_params.ajaxUrl, data, function (response) {
       location.reload();
     });
@@ -14763,10 +14760,7 @@ var LoginModule = function ($) {
       action: 'drgc_logout',
       nonce: drgc_params.ajaxNonce
     };
-    $('body').css({
-      'pointer-events': 'none',
-      'opacity': 0.5
-    });
+    $('body').addClass('dr-loading');
     $.post(drgc_params.ajaxUrl, data, function () {
       window.location.href = url;
     });
@@ -14860,9 +14854,11 @@ jQuery(document).ready(function ($) {
     cpw.setCustomValidity(pw.value !== cpw.value ? drgc_params.translations.password_confirm_error_msg : '');
 
     if (cpw.validity.valueMissing) {
-      $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+      $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
     } else if (cpw.validity.customError) {
-      $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+      $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(cpw.validationMessage);
+    } else {
+      $(cpw).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
     }
   });
   $('.dr-signup-form').on('submit', function (e) {
@@ -15553,6 +15549,7 @@ jQuery(document).ready(function ($) {
 
 
 
+
 var AccountModule = function ($) {
   var appendAutoRenewalTerms = function appendAutoRenewalTerms(digitalriverjs, entityCode, locale) {
     var terms = checkout_utils.getLocalizedAutoRenewalTerms(digitalriverjs, entityCode, locale);
@@ -15562,12 +15559,20 @@ var AccountModule = function ($) {
     }
   };
 
+  var stylePasswordInput = function stylePasswordInput(elem, msg, isValid) {
+    var toAddClass = isValid ? 'is-valid' : 'is-invalid';
+    var toRemoveClass = isValid ? 'is-invalid' : 'is-valid';
+    $(elem).removeClass(toRemoveClass).addClass(toAddClass).next('.invalid-feedback').text(msg);
+  };
+
   return {
-    appendAutoRenewalTerms: appendAutoRenewalTerms
+    appendAutoRenewalTerms: appendAutoRenewalTerms,
+    stylePasswordInput: stylePasswordInput
   };
 }(jQuery);
 
 jquery_default()(function () {
+  var localizedText = drgc_params.translations;
   if (jquery_default()('#dr-account-page-wrapper').length < 1) return;
   window.drActiveOrderId = '';
   var $body = jquery_default()('body');
@@ -15647,16 +15652,6 @@ jquery_default()(function () {
     $dialog.css('max-width', '100%');
     window.print();
     $dialog.css('max-width', '');
-  }); // watch account page active tab to start on the same tab after reload
-
-  if (sessionStorage.drAccountTab && jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
-    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
-  } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
-    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
-  }
-
-  jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function (e) {
-    sessionStorage.drAccountTab = jquery_default()(e.target).attr('href');
   }); // Address
 
   var $addresses = jquery_default()('#dr-account-page-wrapper .address');
@@ -15872,9 +15867,7 @@ jquery_default()(function () {
   $addresses.find('form.dr-panel-edit').on('submit', function (e) {
     e.preventDefault();
     saveAddress(e.target);
-  }); //floating labels
-
-  float_label.init(); // Subscriptions
+  }); // Subscriptions
 
   var $subs = jquery_default()('#dr-account-page-wrapper .subscription');
   var $subscriptionError = jquery_default()('#subscriptionError');
@@ -15994,7 +15987,90 @@ jquery_default()(function () {
   jquery_default()('#dr-account-page-wrapper .back').on('click', function () {
     jquery_default()('.dr-tab-pane').removeClass('active show');
     jquery_default()('.dr-list-group-item').removeClass('active').attr('aria-selected', 'false');
+  }); // Change Password
+
+  jquery_default()('#pw-new').on('input', function (e) {
+    public_login.validatePassword(e);
   });
+  jquery_default()('#pw-current, #pw-new, #pw-confirm').on('input', function () {
+    var $form = jquery_default()('#dr_change_password_form');
+    var pw = $form.find('input[type=password]')[0];
+    var npw = $form.find('input[type=password]')[1];
+    var cpw = $form.find('input[type=password]')[2];
+    $form.find('.dr-err-field').text('');
+    npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : '');
+    cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
+
+    if (npw.validity.valueMissing) {
+      AccountModule.stylePasswordInput(npw, localizedText.required_field_msg, false);
+    } else if (npw.validity.customError) {
+      AccountModule.stylePasswordInput(npw, npw.validationMessage, false);
+    } else if (cpw.validity.valueMissing) {
+      AccountModule.stylePasswordInput(cpw, localizedText.required_field_msg, false);
+    } else if (cpw.validity.customError) {
+      AccountModule.stylePasswordInput(cpw, cpw.validationMessage, false);
+    } else {
+      AccountModule.stylePasswordInput(npw, '', true);
+      AccountModule.stylePasswordInput(cpw, '', true);
+    }
+  });
+  jquery_default()('#dr_change_password_form').on('submit', function (e) {
+    e.preventDefault();
+    var $form = jquery_default()(e.target);
+    var $error = $form.find('.dr-err-field');
+    $form.addClass('was-validated');
+    if ($form.data('processing')) return false;
+    if (!$form[0].checkValidity()) return false;
+    $form.data('processing', true);
+    $error.text('');
+    var data = {
+      action: 'drgc_change_password',
+      nonce: drgc_params.ajaxNonce,
+      current_password: jquery_default()('#pw-current').val(),
+      new_password: jquery_default()('#pw-new').val(),
+      confirm_new_password: jquery_default()('#pw-confirm').val()
+    };
+    jquery_default()('body').addClass('dr-loading');
+    jquery_default.a.post(drgc_params.ajaxUrl, data, function (response) {
+      if (!response.success) {
+        if (response.data && response.data.errors && response.data.errors.error[0].hasOwnProperty('description')) {
+          $error.text(response.data.errors.error[0].description);
+        } else if (Object.prototype.toString.call(response.data) === '[object String]') {
+          $error.text(response.data);
+        } else {
+          $error.text(localizedText.undefined_error_msg);
+        }
+
+        $error.css('color', 'red');
+        sessionStorage.setItem('drgc-pw-changed', 'false');
+        jquery_default()('body').removeClass('dr-loading');
+      } else {
+        sessionStorage.setItem('drgc-pw-changed', 'true');
+        location.reload();
+      }
+
+      jquery_default()('#pw-current, #pw-new, #pw-confirm').val('').removeClass('is-invalid').removeClass('is-valid');
+      $form.data('processing', false).removeClass('was-validated');
+    });
+  }); // watch account page active tab to start on the same tab after reload
+
+  jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function (e) {
+    sessionStorage.drAccountTab = jquery_default()(e.target).attr('href');
+
+    if (e.target.id === 'list-password-list' && sessionStorage.getItem('drgc-pw-changed') === 'true') {
+      sessionStorage.setItem('drgc-pw-changed', 'false');
+      jquery_default()('#dr-passwordUpdated').drModal('show');
+    }
+  });
+
+  if (sessionStorage.drAccountTab && jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
+    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
+  } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
+    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
+  } //floating labels
+
+
+  float_label.init();
 });
 /* harmony default export */ var public_account = (AccountModule);
 // CONCATENATED MODULE: ./assets/js/public/user-activity-watcher.js

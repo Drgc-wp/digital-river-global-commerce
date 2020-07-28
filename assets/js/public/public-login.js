@@ -30,11 +30,11 @@ const LoginModule = (($) => {
         elem.setCustomValidity(customMsg);
 
         if (elem.validity.valueMissing) {
-            $(elem).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+            $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
         } else if (elem.validity.customError) {
-            $(elem).next('.invalid-feedback').text(elem.validationMessage);
+            $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(elem.validationMessage);
         } else {
-            $(elem).next('.invalid-feedback').text('');
+            $(elem).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
         }
     };
 
@@ -70,7 +70,7 @@ const LoginModule = (($) => {
             action: 'drgc_logout',
             nonce: drgc_params.ajaxNonce
         };
-        $('body').css({ 'pointer-events': 'none', 'opacity': 0.5 });
+        $('body').addClass('dr-loading');
         $.post(drgc_params.ajaxUrl, data, function(response) {
             location.reload();
         });
@@ -94,7 +94,7 @@ const LoginModule = (($) => {
             nonce: drgc_params.ajaxNonce
         };
 
-        $('body').css({'pointer-events': 'none', 'opacity': 0.5});
+        $('body').addClass('dr-loading');
         $.post(drgc_params.ajaxUrl, data, () => {
             window.location.href = url;
         });
@@ -199,9 +199,11 @@ jQuery(document).ready(($) => {
 
         cpw.setCustomValidity(pw.value !== cpw.value ? drgc_params.translations.password_confirm_error_msg : '');
         if (cpw.validity.valueMissing) {
-            $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+            $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
         } else if (cpw.validity.customError) {
-            $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+            $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(cpw.validationMessage);
+        } else {
+            $(cpw).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
         }
     });
 

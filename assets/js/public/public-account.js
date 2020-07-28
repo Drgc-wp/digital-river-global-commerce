@@ -2,6 +2,7 @@ import FloatLabel from './float-label';
 import $ from 'jquery';
 import DRCommerceApi from './commerce-api';
 import CheckoutUtils from './checkout-utils';
+import LoginModule from './public-login';
 
 const AccountModule = (($) => {
     const appendAutoRenewalTerms = (digitalriverjs, entityCode, locale) => {
@@ -12,12 +13,21 @@ const AccountModule = (($) => {
         }
     };
 
+    const stylePasswordInput = (elem, msg, isValid) => {
+        const toAddClass = isValid ? 'is-valid' : 'is-invalid';
+        const toRemoveClass = isValid ? 'is-invalid' : 'is-valid';
+
+        $(elem).removeClass(toRemoveClass).addClass(toAddClass).next('.invalid-feedback').text(msg);
+    };
+
     return {
-        appendAutoRenewalTerms
+        appendAutoRenewalTerms,
+        stylePasswordInput
     };
 })(jQuery);
 
 $(() => {
+    const localizedText = drgc_params.translations;
 
     if ($('#dr-account-page-wrapper').length < 1) return;
 
@@ -134,16 +144,6 @@ $(() => {
         $dialog.css('max-width', '100%');
         window.print();
         $dialog.css('max-width', '');
-    });
-
-    // watch account page active tab to start on the same tab after reload
-    if (sessionStorage.drAccountTab && $('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
-        $('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
-    } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
-        $('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
-    }
-    $('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function(e) {
-      sessionStorage.drAccountTab = $(e.target).attr('href');
     });
 
     // Address
@@ -384,9 +384,6 @@ $(() => {
         saveAddress(e.target);
     });
 
-    //floating labels
-    FloatLabel.init();
-
     // Subscriptions
     var $subs = $('#dr-account-page-wrapper .subscription');
     var $subscriptionError = $('#subscriptionError');
@@ -517,6 +514,100 @@ $(() => {
         $('.dr-tab-pane').removeClass('active show');
         $('.dr-list-group-item').removeClass('active').attr('aria-selected', 'false');
     });
+
+    // Change Password
+    $('#pw-new').on('input', (e) => {
+        LoginModule.validatePassword(e);
+    });
+
+    $('#pw-current, #pw-new, #pw-confirm').on('input', () => {
+        const $form = $('#dr_change_password_form');
+        const pw = $form.find('input[type=password]')[0];
+        const npw = $form.find('input[type=password]')[1];
+        const cpw = $form.find('input[type=password]')[2];
+
+        $form.find('.dr-err-field').text('');
+        npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : '');
+        cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
+
+        if (npw.validity.valueMissing) {
+            AccountModule.stylePasswordInput(npw, localizedText.required_field_msg, false);
+        } else if (npw.validity.customError) {
+            AccountModule.stylePasswordInput(npw, npw.validationMessage, false);
+        } else if (cpw.validity.valueMissing) {
+            AccountModule.stylePasswordInput(cpw, localizedText.required_field_msg, false);
+        } else if (cpw.validity.customError) {
+            AccountModule.stylePasswordInput(cpw, cpw.validationMessage, false);
+        } else {
+            AccountModule.stylePasswordInput(npw, '', true);
+            AccountModule.stylePasswordInput(cpw, '', true);
+        }
+    });
+
+    $('#dr_change_password_form').on('submit', (e) => {
+        e.preventDefault();
+
+        const $form = $(e.target);
+        const $error = $form.find('.dr-err-field');
+
+        $form.addClass('was-validated');
+
+        if ($form.data('processing')) return false;
+        if (!$form[0].checkValidity()) return false;
+
+        $form.data('processing', true);
+        $error.text('');
+
+        const data = {
+            action: 'drgc_change_password',
+            nonce: drgc_params.ajaxNonce,
+            current_password: $('#pw-current').val(),
+            new_password: $('#pw-new').val(),
+            confirm_new_password: $('#pw-confirm').val()
+        };
+
+        $('body').addClass('dr-loading');
+        $.post(drgc_params.ajaxUrl, data, (response) => {
+            if (!response.success) {
+                if (response.data && response.data.errors && response.data.errors.error[0].hasOwnProperty('description')) {
+                    $error.text(response.data.errors.error[0].description);
+                } else if (Object.prototype.toString.call(response.data) === '[object String]') {
+                    $error.text(response.data);
+                } else {
+                    $error.text(localizedText.undefined_error_msg);
+                }
+
+                $error.css('color', 'red');
+                sessionStorage.setItem('drgc-pw-changed', 'false');
+                $('body').removeClass('dr-loading');
+            } else {
+                sessionStorage.setItem('drgc-pw-changed', 'true');
+                location.reload();
+            }
+
+            $('#pw-current, #pw-new, #pw-confirm').val('').removeClass('is-invalid').removeClass('is-valid');
+            $form.data('processing', false).removeClass('was-validated');
+        });
+    });
+
+    // watch account page active tab to start on the same tab after reload
+    $('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function(e) {
+        sessionStorage.drAccountTab = $(e.target).attr('href');
+
+        if ((e.target.id === 'list-password-list') && (sessionStorage.getItem('drgc-pw-changed') === 'true')) {
+            sessionStorage.setItem('drgc-pw-changed', 'false');
+            $('#dr-passwordUpdated').drModal('show');
+        }
+    });
+
+    if (sessionStorage.drAccountTab && $('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
+        $('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
+    } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
+        $('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
+    }
+
+    //floating labels
+    FloatLabel.init();
 });
 
 export default AccountModule;
