@@ -1,4 +1,4 @@
-<form class="dr_change_password_form dr-panel-edit needs-validation" id="dr_change_password_form" novalidate>
+<form class="change-password-form dr-panel-edit needs-validation" id="change-password-form" novalidate>
 
     <div class="required-text">
         <?php echo __( 'Fields marked with * are mandatory', 'digital-river-global-commerce' ); ?>

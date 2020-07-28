@@ -521,7 +521,7 @@ $(() => {
     });
 
     $('#pw-current, #pw-new, #pw-confirm').on('input', () => {
-        const $form = $('#dr_change_password_form');
+        const $form = $('#change-password-form');
         const pw = $form.find('input[type=password]')[0];
         const npw = $form.find('input[type=password]')[1];
         const cpw = $form.find('input[type=password]')[2];
@@ -544,7 +544,7 @@ $(() => {
         }
     });
 
-    $('#dr_change_password_form').on('submit', (e) => {
+    $('#change-password-form').on('submit', (e) => {
         e.preventDefault();
 
         const $form = $(e.target);

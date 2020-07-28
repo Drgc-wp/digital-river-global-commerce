@@ -16075,7 +16075,7 @@ jquery_default()(function () {
     public_login.validatePassword(e);
   });
   jquery_default()('#pw-current, #pw-new, #pw-confirm').on('input', function () {
-    var $form = jquery_default()('#dr_change_password_form');
+    var $form = jquery_default()('#change-password-form');
     var pw = $form.find('input[type=password]')[0];
     var npw = $form.find('input[type=password]')[1];
     var cpw = $form.find('input[type=password]')[2];
@@ -16096,7 +16096,7 @@ jquery_default()(function () {
       AccountModule.stylePasswordInput(cpw, '', true);
     }
   });
-  jquery_default()('#dr_change_password_form').on('submit', function (e) {
+  jquery_default()('#change-password-form').on('submit', function (e) {
     e.preventDefault();
     var $form = jquery_default()(e.target);
     var $error = $form.find('.dr-err-field');
