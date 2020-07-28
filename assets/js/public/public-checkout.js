@@ -27,26 +27,30 @@ const CheckoutModule = (($) => {
     };
 
     const updateSummaryLabels = () => {
-        const taxSuffixLabel = CheckoutUtils.isTaxInclusive() ?
-          drgc_params.forceExclTax === 'true' ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label
-          : '';
+        const isTaxInclusive = drgc_params.isTaxInclusive === 'true';
+        const forceExclTax = drgc_params.forceExclTax === 'true';
+        const shouldDisplayVat = drgc_params.shouldDisplayVat === 'true';
+
+        const taxSuffixLabel = isTaxInclusive ?
+            forceExclTax ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label :
+            '';
         if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-            $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+            $('.dr-summary__tax .item-label').text(shouldDisplayVat ?
                 localizedText.vat_label :
                 localizedText.tax_label
             );
             $('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
-            $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+            $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ?
                 localizedText.shipping_vat_label :
                 localizedText.shipping_tax_label
             );
         } else {
-            $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+            $('.dr-summary__tax .item-label').text(shouldDisplayVat ?
                 localizedText.estimated_vat_label :
                 localizedText.estimated_tax_label
             );
             $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label + taxSuffixLabel);
-            $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+            $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ?
                 localizedText.estimated_shipping_vat_label :
                 localizedText.estimated_shipping_tax_label
             );

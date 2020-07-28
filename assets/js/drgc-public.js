@@ -12181,6 +12181,7 @@ var CheckoutUtils = function ($, params) {
   var getSeparatedPricing = function getSeparatedPricing(lineItems, pricing) {
     var productTax = 0;
     var shippingTax = 0;
+    var isTaxInclusive = drgc_params.isTaxInclusive === 'true';
     var forceExclTax = drgc_params.forceExclTax === 'true';
     var shippingVal = pricing.shippingAndHandling ? pricing.shippingAndHandling.value : pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
 
@@ -12191,19 +12192,9 @@ var CheckoutUtils = function ($, params) {
     return {
       formattedProductTax: formatPrice(productTax, pricing),
       formattedShippingTax: formatPrice(shippingTax, pricing),
-      formattedSubtotal: isTaxInclusive() && forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
-      formattedShippingAndHandling: isTaxInclusive() && forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : pricing.formattedShippingAndHandling || pricing.formattedShipping
+      formattedSubtotal: isTaxInclusive && forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: isTaxInclusive && forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : pricing.formattedShippingAndHandling || pricing.formattedShipping
     };
-  };
-
-  var shouldDisplayVat = function shouldDisplayVat() {
-    var currency = $('.dr-currency-select').val();
-    return currency === 'GBP' || currency === 'EUR';
-  };
-
-  var isTaxInclusive = function isTaxInclusive() {
-    var locale = $('.dr-currency-select option:selected').data('locale') || drgc_params.drLocale;
-    return locale !== 'en_US';
   };
 
   return {
@@ -12231,9 +12222,7 @@ var CheckoutUtils = function ($, params) {
     getLocalizedAutoRenewalTerms: getLocalizedAutoRenewalTerms,
     formatPrice: formatPrice,
     getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
-    getSeparatedPricing: getSeparatedPricing,
-    shouldDisplayVat: shouldDisplayVat,
-    isTaxInclusive: isTaxInclusive
+    getSeparatedPricing: getSeparatedPricing
   };
 }(jQuery, drgc_params);
 
@@ -13789,16 +13778,19 @@ var CheckoutModule = function ($) {
   };
 
   var updateSummaryLabels = function updateSummaryLabels() {
-    var taxSuffixLabel = checkout_utils.isTaxInclusive() ? drgc_params.forceExclTax === 'true' ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label : '';
+    var isTaxInclusive = drgc_params.isTaxInclusive === 'true';
+    var forceExclTax = drgc_params.forceExclTax === 'true';
+    var shouldDisplayVat = drgc_params.shouldDisplayVat === 'true';
+    var taxSuffixLabel = isTaxInclusive ? forceExclTax ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label : '';
 
     if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-      $('.dr-summary__tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.vat_label : localizedText.tax_label);
+      $('.dr-summary__tax .item-label').text(shouldDisplayVat ? localizedText.vat_label : localizedText.tax_label);
       $('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
-      $('.dr-summary__shipping-tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.shipping_vat_label : localizedText.shipping_tax_label);
+      $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ? localizedText.shipping_vat_label : localizedText.shipping_tax_label);
     } else {
-      $('.dr-summary__tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.estimated_vat_label : localizedText.estimated_tax_label);
+      $('.dr-summary__tax .item-label').text(shouldDisplayVat ? localizedText.estimated_vat_label : localizedText.estimated_tax_label);
       $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label + taxSuffixLabel);
-      $('.dr-summary__shipping-tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.estimated_shipping_vat_label : localizedText.estimated_shipping_tax_label);
+      $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ? localizedText.estimated_shipping_vat_label : localizedText.estimated_shipping_tax_label);
     }
   };
 

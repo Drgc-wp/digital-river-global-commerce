@@ -316,6 +316,7 @@ const CheckoutUtils = (($, params) => {
   const getSeparatedPricing = (lineItems, pricing) => {
     let productTax = 0;
     let shippingTax = 0;
+    const isTaxInclusive = drgc_params.isTaxInclusive === 'true';
     const forceExclTax = drgc_params.forceExclTax === 'true';
     const shippingVal = pricing.shippingAndHandling ?
       pricing.shippingAndHandling.value :
@@ -329,20 +330,10 @@ const CheckoutUtils = (($, params) => {
     return {
       formattedProductTax: formatPrice(productTax, pricing),
       formattedShippingTax: formatPrice(shippingTax, pricing),
-      formattedSubtotal: (isTaxInclusive() && forceExclTax) ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
-      formattedShippingAndHandling: (isTaxInclusive() && forceExclTax) ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
+      formattedSubtotal: (isTaxInclusive && forceExclTax) ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: (isTaxInclusive && forceExclTax) ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
     };
   };
-
-  const shouldDisplayVat = () => {
-    const currency = $('.dr-currency-select').val();
-    return (currency === 'GBP' || currency === 'EUR');
-  };
-
-  const isTaxInclusive = () => {
-    const locale = $('.dr-currency-select option:selected').data('locale') || drgc_params.drLocale;
-    return locale !== 'en_US';
-  }
 
   return {
     createDisplayItems,
@@ -369,9 +360,7 @@ const CheckoutUtils = (($, params) => {
     getLocalizedAutoRenewalTerms,
     formatPrice,
     getCorrectSubtotalWithDiscount,
-    getSeparatedPricing,
-    shouldDisplayVat,
-    isTaxInclusive
+    getSeparatedPricing
   };
 })(jQuery, drgc_params);
 

@@ -97,6 +97,11 @@ class DRGC_Public {
 			if ( is_page( 'thank-you' ) ) $order_obj = DRGC()->cart->retrieve_order();
 		}
 
+		$customer = array();
+		if ( DRGC()->shopper ) {
+			$customer = DRGC()->shopper->retrieve_shopper();
+		}
+
     //test Order Handler
     $testOrder_option = get_option( 'drgc_testOrder_handler' );
 		$testOrder_enable = ( is_array( $testOrder_option ) && '1' == $testOrder_option['checkbox'] )  ? "true" : "false";
@@ -202,6 +207,8 @@ class DRGC_Public {
 				'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
       ),
 			'testOrder'          => $testOrder_enable,
+			'shouldDisplayVat'   => drgc_should_display_vat( isset( $customer['currency'] ) ? $customer['currency'] : '' ) ? 'true' : 'false',
+			'isTaxInclusive'     => drgc_is_tax_inclusive( isset( $customer['locale'] ) ? $customer['locale'] : '' ) ? 'true' : 'false',
 			'forceExclTax'       => $force_excl_tax_enable,
 			'translations'       => $translation_array,
 			'isApplePayEnabled'  => $applepay_enabled,
