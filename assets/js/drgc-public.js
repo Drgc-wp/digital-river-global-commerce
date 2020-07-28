@@ -11981,17 +11981,14 @@ var CheckoutUtils = function ($, params) {
   };
 
   var updateSummaryPricing = function updateSummaryPricing(cart) {
-    var _cart$pricing = cart.pricing,
-        formattedOrderTotal = _cart$pricing.formattedOrderTotal,
-        formattedTax = _cart$pricing.formattedTax;
-
-    if (Object.keys(cart.shippingMethod).length) {
-      var formattedShippingAndHandling = cart.pricing.shippingAndHandling.value === 0 ? params.translations.free_label : cart.pricing.formattedShippingAndHandling;
-      $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
-    }
-
-    $('div.dr-summary__tax > .item-value').text(formattedTax);
-    $('div.dr-summary__total > .total-value').text(formattedOrderTotal);
+    var lineItems = cart.lineItems.lineItem;
+    var pricing = cart.pricing;
+    var newPricing = getSeparatedPricing(lineItems, pricing);
+    $('div.dr-summary__shipping > .item-value').text(pricing.shippingAndHandling.value === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
+    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
+    $('div.dr-summary__total > .total-value').text(pricing.formattedOrderTotal);
     $('.dr-summary').removeClass('dr-loading');
   };
 
@@ -12158,6 +12155,55 @@ var CheckoutUtils = function ($, params) {
     return Object.keys(compliance).length ? compliance.autorenewalPlanTerms.localizedText : '';
   };
 
+  var formatPrice = function formatPrice(val, pricing) {
+    var localeCode = ($('.dr-currency-select').find('option:selected').data('locale') || drgc_params.drLocale).replace('_', '-');
+    var currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
+    var symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
+    var formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
+    var decimalSymbol = 0 .toLocaleString(localeCode, {
+      minimumFractionDigits: 1
+    })[1];
+    var digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ? formattedPriceWithoutSymbol.split(decimalSymbol).pop().length : 0;
+    val = val.toLocaleString(localeCode, {
+      minimumFractionDigits: digits
+    });
+    val = symbolAsPrefix ? currencySymbol + val : val + currencySymbol;
+    return val;
+  };
+
+  var getCorrectSubtotalWithDiscount = function getCorrectSubtotalWithDiscount(pricing) {
+    var val = pricing.subtotal.value - pricing.discount.value;
+    return formatPrice(val, pricing);
+  };
+
+  var getSeparatedPricing = function getSeparatedPricing(lineItems, pricing) {
+    var productTax = 0;
+    var shippingTax = 0;
+    var forceExclTax = drgc_params.forceExclTax === 'true';
+    var shippingVal = pricing.shippingAndHandling ? pricing.shippingAndHandling.value : pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
+
+    lineItems.forEach(function (lineItem) {
+      productTax += lineItem.pricing.productTax.value;
+      shippingTax += lineItem.pricing.shippingTax.value;
+    });
+    return {
+      formattedProductTax: formatPrice(productTax, pricing),
+      formattedShippingTax: formatPrice(shippingTax, pricing),
+      formattedSubtotal: isTaxInclusive() && forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: isTaxInclusive() && forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : pricing.formattedShippingAndHandling || pricing.formattedShipping
+    };
+  };
+
+  var shouldDisplayVat = function shouldDisplayVat() {
+    var currency = $('.dr-currency-select').val();
+    return currency === 'GBP' || currency === 'EUR';
+  };
+
+  var isTaxInclusive = function isTaxInclusive() {
+    var locale = $('.dr-currency-select option:selected').data('locale') || drgc_params.drLocale;
+    return locale !== 'en_US';
+  };
+
   return {
     createDisplayItems: createDisplayItems,
     createShippingOptions: createShippingOptions,
@@ -12180,7 +12226,12 @@ var CheckoutUtils = function ($, params) {
     getSupportedCountries: getSupportedCountries,
     createCartRequest: createCartRequest,
     isSubsAddedToCart: isSubsAddedToCart,
-    getLocalizedAutoRenewalTerms: getLocalizedAutoRenewalTerms
+    getLocalizedAutoRenewalTerms: getLocalizedAutoRenewalTerms,
+    formatPrice: formatPrice,
+    getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
+    getSeparatedPricing: getSeparatedPricing,
+    shouldDisplayVat: shouldDisplayVat,
+    isTaxInclusive: isTaxInclusive
   };
 }(jQuery, drgc_params);
 
@@ -12780,22 +12831,47 @@ var CartModule = function ($) {
     });
   };
 
-  var renderOffers = function renderOffers(lineItems) {
-    lineItems.forEach(function (lineItem, idx) {
-      // Candy Rack (should be inserted after specific line item)
-      commerce_api.getOffersByPoP('CandyRack_ShoppingCart', {
-        expand: 'all'
-      }, lineItem.product.id).then(function (res) {
-        var offers = res.offers.offer;
+  var getOffersByPoP = function getOffersByPoP(type) {
+    var productId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+    var data = {
+      action: 'drgc_get_offers_by_pop',
+      nonce: drgc_params.ajaxNonce,
+      popType: type,
+      productId: productId
+    };
+    $.post(drgc_params.ajaxUrl, data, function (response) {
+      var res = response.data;
 
-        if (offers && offers.length) {
-          offers.forEach(function (offer) {
-            renderCandyRackOffer(offer, lineItems[idx].product.id);
-          });
+      if (response.success) {
+        if (res.offers) {
+          var offers = res.offers.offer || '';
+
+          if (offers && offers.length) {
+            offers.forEach(function (offer) {
+              switch (type) {
+                case 'CandyRack_ShoppingCart':
+                  renderCandyRackOffer(offer, productId);
+                  break;
+
+                case 'Banner_ShoppingCartLocal':
+                  renderBannerOffer(offer);
+                  break;
+              }
+            });
+          }
+        } else if (res.errors) {
+          drToast.displayMessage(res.errors.error[0], 'error');
         }
-      })["catch"](function (jqXHR) {
-        return checkout_utils.apiErrorHandler(jqXHR);
-      }); // Bundle Tight (should disable edit buttons of specific line item)
+      } else {
+        drToast.displayMessage(localizedText.undefined_error_msg, 'error');
+      }
+    });
+  };
+
+  var renderOffers = function renderOffers(lineItems) {
+    lineItems.forEach(function (lineItem) {
+      // Candy Rack (should be inserted after specific line item)
+      getOffersByPoP('CandyRack_ShoppingCart', lineItem.product.id); // Bundle Tight (should disable edit buttons of specific line item)
 
       commerce_api.getOffersByProduct(lineItem.product.id, {
         expand: 'all'
@@ -12812,19 +12888,7 @@ var CartModule = function ($) {
       });
     }); // Banner (should be appended after all the line items)
 
-    commerce_api.getOffersByPoP('Banner_ShoppingCartLocal', {
-      expand: 'all'
-    }).then(function (res) {
-      var offers = res.offers.offer;
-
-      if (offers && offers.length) {
-        offers.forEach(function (offer) {
-          renderBannerOffer(offer);
-        });
-      }
-    })["catch"](function (jqXHR) {
-      return checkout_utils.apiErrorHandler(jqXHR);
-    });
+    getOffersByPoP('Banner_ShoppingCartLocal');
   };
 
   var renderCandyRackOffer = function renderCandyRackOffer(offer, driverProductID) {
@@ -12951,32 +13015,32 @@ var CartModule = function ($) {
     };
   }();
 
-  var getCorrectSubtotalWithDiscount = function getCorrectSubtotalWithDiscount(pricing) {
-    var localeCode = $('.dr-currency-select').find('option:selected').data('locale').replace('_', '-');
-    var currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
-    var symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
-    var formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
-    var decimalSymbol = 0 .toLocaleString(localeCode, {
-      minimumFractionDigits: 1
-    })[1];
-    var digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ? formattedPriceWithoutSymbol.split(decimalSymbol).pop().length : 0;
-    var val = pricing.subtotal.value - pricing.discount.value;
-    val = val.toLocaleString(localeCode, {
-      minimumFractionDigits: digits
-    });
-    val = symbolAsPrefix ? currencySymbol + val : val + currencySymbol;
-    return val;
-  };
-
-  var renderSummary = function renderSummary(pricing, hasPhysicalProduct) {
+  var renderSummary = function renderSummary(cart, hasPhysicalProduct) {
+    var lineItems = cart.lineItems.lineItem;
+    var pricing = cart.pricing;
+    var $taxRow = $('.dr-summary__tax');
+    var $shippingTaxRow = $('.dr-summary__shipping-tax');
     var $discountRow = $('.dr-summary__discount');
     var $shippingRow = $('.dr-summary__shipping');
-    var $subtotalRow = $('.dr-summary__discounted-subtotal');
+    var $subtotalRow = $('.dr-summary__subtotal');
+    var $totalRow = $('.dr-summary__total');
+    var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing);
     $discountRow.find('.discount-value').text("-".concat(pricing.formattedDiscount));
-    $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? localizedText.free_label : pricing.formattedShippingAndHandling);
-    $subtotalRow.find('.discounted-subtotal-value').text(pricing.subtotalWithDiscount.value > pricing.subtotal.value ? getCorrectSubtotalWithDiscount(pricing) : pricing.formattedSubtotalWithDiscount);
+    $taxRow.find('.tax-value').text(newPricing.formattedProductTax);
+    $shippingTaxRow.find('.shipping-tax-value').text(newPricing.formattedShippingTax);
+    $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? drgc_params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $subtotalRow.find('.subtotal-value').text(newPricing.formattedSubtotal);
+    $totalRow.find('.total-value').text(pricing.formattedOrderTotal);
     if (pricing.discount.value) $discountRow.show();else $discountRow.hide();
-    if (hasPhysicalProduct) $shippingRow.show();else $shippingRow.hide();
+
+    if (hasPhysicalProduct) {
+      $shippingRow.show();
+      $shippingTaxRow.show();
+    } else {
+      $shippingRow.hide();
+      $shippingTaxRow.hide();
+    }
+
     return new Promise(function (resolve) {
       return resolve();
     });
@@ -12992,7 +13056,7 @@ var CartModule = function ($) {
 
       if (lineItems && lineItems.length) {
         hasPhysicalProduct = hasPhysicalProductInLineItems(lineItems);
-        return Promise.all([renderLineItems(lineItems), renderSummary(res.cart.pricing, hasPhysicalProduct)]);
+        return Promise.all([renderLineItems(lineItems), renderSummary(res.cart, hasPhysicalProduct)]);
       } else {
         if (typeof $.cookie('drgc_upsell_decline') !== 'undefined') $.removeCookie('drgc_upsell_decline', {
           path: '/'
@@ -13047,13 +13111,13 @@ var CartModule = function ($) {
     initAutoRenewalTerms: initAutoRenewalTerms,
     appendAutoRenewalTerms: appendAutoRenewalTerms,
     setProductQty: setProductQty,
+    getOffersByPoP: getOffersByPoP,
     renderOffers: renderOffers,
     renderCandyRackOffer: renderCandyRackOffer,
     renderBannerOffer: renderBannerOffer,
     disableEditBtnsForBundle: disableEditBtnsForBundle,
     renderSingleLineItem: renderSingleLineItem,
     renderLineItems: renderLineItems,
-    getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
     renderSummary: renderSummary,
     fetchFreshCart: fetchFreshCart,
     updateUpsellCookie: updateUpsellCookie
@@ -13711,18 +13775,17 @@ var CheckoutModule = function ($) {
     $('#dr-preTAndC').trigger('change');
   };
 
-  var shouldDisplayVat = function shouldDisplayVat() {
-    var currency = $('.dr-currency-select').val();
-    return currency === 'GBP' || currency === 'EUR';
-  };
-
   var updateSummaryLabels = function updateSummaryLabels() {
+    var taxSuffixLabel = checkout_utils.isTaxInclusive() ? drgc_params.forceExclTax === 'true' ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label : '';
+
     if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-      $('.dr-summary__tax .item-label').text(shouldDisplayVat() ? localizedText.vat_label : localizedText.tax_label);
-      $('.dr-summary__shipping .item-label').text(localizedText.shipping_label);
+      $('.dr-summary__tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.vat_label : localizedText.tax_label);
+      $('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
+      $('.dr-summary__shipping-tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.shipping_vat_label : localizedText.shipping_tax_label);
     } else {
-      $('.dr-summary__tax .item-label').text(shouldDisplayVat() ? localizedText.estimated_vat_label : localizedText.estimated_tax_label);
-      $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label);
+      $('.dr-summary__tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.estimated_vat_label : localizedText.estimated_tax_label);
+      $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label + taxSuffixLabel);
+      $('.dr-summary__shipping-tax .item-label').text(checkout_utils.shouldDisplayVat() ? localizedText.estimated_shipping_vat_label : localizedText.estimated_shipping_tax_label);
     }
   };
 
@@ -14020,7 +14083,9 @@ jQuery(document).ready(function ($) {
     };
     var paymentSourceId = null; // Section progress
 
-    var finishedSectionIdx = -1; // Create elements through DR.js
+    var finishedSectionIdx = -1; // Break down tax and update summary on page load
+
+    checkout_utils.updateSummaryPricing(cartData); // Create elements through DR.js
 
     if ($('.credit-card-section').length) {
       var getStyleOptionsFromClass = function getStyleOptionsFromClass(className) {
@@ -15346,9 +15411,26 @@ jQuery(document).ready(function ($) {
 /* harmony default export */ var public_pdp = (PdpModule);
 // CONCATENATED MODULE: ./assets/js/public/public-thank-you.js
 
-var ThankYouModule = {};
+
+var ThankYouModule = function ($) {
+  var updateSummaryPricing = function updateSummaryPricing(order) {
+    var lineItems = order.lineItems.lineItem;
+    var pricing = order.pricing;
+    var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing);
+    $('div.dr-summary__shipping > .item-value').text(pricing.shipping.value === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
+    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
+  };
+
+  return {
+    updateSummaryPricing: updateSummaryPricing
+  };
+}(jQuery);
+
 jQuery(document).ready(function ($) {
   if ($('.dr-thank-you-wrapper:visible').length) {
+    if (drgc_params.order && drgc_params.order.order) ThankYouModule.updateSummaryPricing(drgc_params.order.order);
     $(document).on('click', '#print-button', function () {
       var printContents = $('.dr-thank-you-wrapper').html();
       var originalContents = document.body.innerHTML;

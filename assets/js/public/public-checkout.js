@@ -26,24 +26,30 @@ const CheckoutModule = (($) => {
         $('#dr-preTAndC').trigger('change');
     };
 
-    const shouldDisplayVat = () => {
-        const currency = $('.dr-currency-select').val();
-        return (currency === 'GBP' || currency === 'EUR');
-    };
-
     const updateSummaryLabels = () => {
+        const taxSuffixLabel = CheckoutUtils.isTaxInclusive() ?
+          drgc_params.forceExclTax === 'true' ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label
+          : '';
         if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-            $('.dr-summary__tax .item-label').text(shouldDisplayVat() ?
+            $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
                 localizedText.vat_label :
                 localizedText.tax_label
             );
-            $('.dr-summary__shipping .item-label').text(localizedText.shipping_label);
+            $('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
+            $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+                localizedText.shipping_vat_label :
+                localizedText.shipping_tax_label
+            );
         } else {
-            $('.dr-summary__tax .item-label').text(shouldDisplayVat() ?
+            $('.dr-summary__tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
                 localizedText.estimated_vat_label :
                 localizedText.estimated_tax_label
             );
-            $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label);
+            $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label + taxSuffixLabel);
+            $('.dr-summary__shipping-tax .item-label').text(CheckoutUtils.shouldDisplayVat() ?
+                localizedText.estimated_shipping_vat_label :
+                localizedText.estimated_shipping_tax_label
+            );
         }
     };
 
@@ -301,6 +307,9 @@ jQuery(document).ready(($) => {
         let paymentSourceId = null;
         // Section progress
         let finishedSectionIdx = -1;
+
+        // Break down tax and update summary on page load
+        CheckoutUtils.updateSummaryPricing(cartData);
 
         // Create elements through DR.js
         if ($('.credit-card-section').length) {
