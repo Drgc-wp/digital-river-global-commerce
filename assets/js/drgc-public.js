@@ -14705,6 +14705,14 @@ jQuery(document).ready(function ($) {
         requestShipping: requestShipping
       });
     }
+
+    $('.back-link a').click(function () {
+      if (document.referrer && document.referrer !== drgc_params.loginUrl) {
+        window.location.href = document.referrer;
+      } else {
+        window.location.href = drgc_params.cartUrl;
+      }
+    });
   }
 });
 /* harmony default export */ var public_checkout = (CheckoutModule);
