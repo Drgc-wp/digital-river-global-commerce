@@ -11986,7 +11986,9 @@ var CheckoutUtils = function ($, params) {
     var lineItems = cart.lineItems.lineItem;
     var pricing = cart.pricing;
     var newPricing = getSeparatedPricing(lineItems, pricing);
-    $('div.dr-summary__shipping > .item-value').text(pricing.shippingAndHandling.value === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    var shippingVal = pricing.shippingAndHandling ? pricing.shippingAndHandling.value : pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
+
+    $('div.dr-summary__shipping > .item-value').text(shippingVal === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
     $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
     $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
     $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
@@ -15425,25 +15427,11 @@ jQuery(document).ready(function ($) {
 // CONCATENATED MODULE: ./assets/js/public/public-thank-you.js
 
 
-var ThankYouModule = function ($) {
-  var updateSummaryPricing = function updateSummaryPricing(order) {
-    var lineItems = order.lineItems.lineItem;
-    var pricing = order.pricing;
-    var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing);
-    $('div.dr-summary__shipping > .item-value').text(pricing.shipping.value === 0 ? drgc_params.translations.free_label : newPricing.formattedShippingAndHandling);
-    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
-    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
-    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
-  };
-
-  return {
-    updateSummaryPricing: updateSummaryPricing
-  };
-}(jQuery);
+var ThankYouModule = function ($) {}(jQuery);
 
 jQuery(document).ready(function ($) {
   if ($('.dr-thank-you-wrapper:visible').length) {
-    if (drgc_params.order && drgc_params.order.order) ThankYouModule.updateSummaryPricing(drgc_params.order.order);
+    if (drgc_params.order && drgc_params.order.order) checkout_utils.updateSummaryPricing(drgc_params.order.order);
     $(document).on('click', '#print-button', function () {
       var printContents = $('.dr-thank-you-wrapper').html();
       var originalContents = document.body.innerHTML;

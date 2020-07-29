@@ -107,9 +107,12 @@ const CheckoutUtils = (($, params) => {
     const lineItems = cart.lineItems.lineItem;
     const pricing = cart.pricing;
     const newPricing = getSeparatedPricing(lineItems, pricing);
+    const shippingVal = pricing.shippingAndHandling ?
+      pricing.shippingAndHandling.value :
+      pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
 
     $('div.dr-summary__shipping > .item-value').text(
-      pricing.shippingAndHandling.value === 0 ?
+      shippingVal === 0 ?
       params.translations.free_label :
       newPricing.formattedShippingAndHandling
     );
