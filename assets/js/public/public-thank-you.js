@@ -8,7 +8,7 @@ const ThankYouModule = (($) => {
 
     $('div.dr-summary__shipping > .item-value').text(
       pricing.shipping.value === 0 ?
-      params.translations.free_label :
+      drgc_params.translations.free_label :
       newPricing.formattedShippingAndHandling
     );
     $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);

@@ -15430,7 +15430,7 @@ var ThankYouModule = function ($) {
     var lineItems = order.lineItems.lineItem;
     var pricing = order.pricing;
     var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing);
-    $('div.dr-summary__shipping > .item-value').text(pricing.shipping.value === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $('div.dr-summary__shipping > .item-value').text(pricing.shipping.value === 0 ? drgc_params.translations.free_label : newPricing.formattedShippingAndHandling);
     $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
     $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
     $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
