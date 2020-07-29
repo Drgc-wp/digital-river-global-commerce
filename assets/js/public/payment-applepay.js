@@ -135,7 +135,7 @@ const DRApplePay = (($, translations) => {
         };
 
         event.updateWith(requestUpdateObject);
-        CheckoutUtils.updateSummaryPricing(data.cart);
+        CheckoutUtils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       }).catch((jqXHR) => {
         event.updateWith({
           status: 'failure',

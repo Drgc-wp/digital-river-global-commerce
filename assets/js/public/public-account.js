@@ -23,6 +23,8 @@ $(() => {
 
     window.drActiveOrderId = '';
 
+    const localizedText = drgc_params.translations;
+
     var $body = $('body');
 
     var $ordersModal = $('#ordersModal');
@@ -43,6 +45,7 @@ $(() => {
             // orderID
             $('.dr-modal-orderNumber').text(orderID);
             // Order Pricing
+            drOrders[orderID].pricing = $.parseJSON(drOrders[orderID].encodedPricing);
             $('.dr-modal-subtotal').text(drOrders[orderID].formattedSubtotal);
             $('.dr-modal-tax').text(drOrders[orderID].formattedTax);
             $('.dr-modal-shipping').text(drOrders[orderID].formattedShipping);
@@ -74,10 +77,36 @@ $(() => {
             shippingAddress2 += (drOrders[orderID].shippingAddress.zip) ? ' ' + drOrders[orderID].shippingAddress.zip : '';
             $('.dr-modal-shippingAddress2').text(shippingAddress2);
             $('.dr-modal-shippingCountry').text(drOrders[orderID].shippingAddress.country);
+
+            // Summary Labels
+            const isTaxInclusive = drOrders[orderID].isTaxInclusive === 'true';
+            const forceExclTax = drgc_params.forceExclTax === 'true';
+            const shouldDisplayVat = drOrders[orderID].shouldDisplayVat === 'true';
+            const taxSuffixLabel = isTaxInclusive ?
+                forceExclTax ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label :
+                '';
+            $('.dr-summary__subtotal .subtotal-label').text(localizedText.subtotal_label + taxSuffixLabel);
+            $('.dr-summary__tax .item-label').text(shouldDisplayVat ?
+                localizedText.vat_label :
+                localizedText.tax_label
+            );
+            $('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
+            $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ?
+                localizedText.shipping_vat_label :
+                localizedText.shipping_tax_label
+            );
+            if (isTaxInclusive && !forceExclTax) {
+              $('.dr-summary__tax, .dr-summary__shipping-tax').addClass('tree-sub-item');
+            } else {
+              $('.dr-summary__tax, .dr-summary__shipping-tax').removeClass('tree-sub-item');
+            }
+
             // Products
             var html = '';
             for (var i = 0; i < drOrders[orderID].products.length; i++) {
                 var prod = drOrders[orderID].products[i];
+                prod.pricing = $.parseJSON(prod.encodedPricing);
+
                 html += `<div class="dr-product">
                 <div class="dr-product-content">
                     <div class="dr-product__img dr-modal-productImgBG" style="background-image:url(${prod.image});"></div>
@@ -115,10 +144,12 @@ $(() => {
 
             $('.dr-summary__products').html(html);
 
+            CheckoutUtils.updateSummaryPricing(drOrders[orderID], isTaxInclusive);
+
             if (!requestShipping) {
-                $('.dr-order-address__shipping, .dr-summary__shipping').hide();
+                $('.dr-order-address__shipping, .dr-summary__shipping, .dr-summary__shipping-tax').hide();
             } else {
-                $('.dr-order-address__shipping, .dr-summary__shipping').show();
+                $('.dr-order-address__shipping, .dr-summary__shipping, .dr-summary__shipping-tax').show();
             }
 
             // set this last

@@ -5,7 +5,9 @@ const ThankYouModule = (($) => {
 
 jQuery(document).ready(($) => {
     if ($('.dr-thank-you-wrapper:visible').length) {
-        if (drgc_params.order && drgc_params.order.order) CheckoutUtils.updateSummaryPricing(drgc_params.order.order);
+        if (drgc_params.order && drgc_params.order.order) {
+          CheckoutUtils.updateSummaryPricing(drgc_params.order.order, drgc_params.isTaxInclusive === 'true');
+        }
 
         $(document).on('click', '#print-button', function() {
             var printContents = $('.dr-thank-you-wrapper').html();

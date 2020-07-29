@@ -313,7 +313,7 @@ jQuery(document).ready(($) => {
         let finishedSectionIdx = -1;
 
         // Break down tax and update summary on page load
-        CheckoutUtils.updateSummaryPricing(cartData);
+        CheckoutUtils.updateSummaryPricing(cartData, drgc_params.isTaxInclusive === 'true');
 
         // Create elements through DR.js
         if ($('.credit-card-section').length) {
@@ -451,7 +451,7 @@ jQuery(document).ready(($) => {
                     }
 
                     CheckoutModule.moveToNextSection($section);
-                    CheckoutUtils.updateSummaryPricing(data.cart);
+                    CheckoutUtils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
                 })
                 .catch((jqXHR) => {
                     $button.removeClass('sending').blur();
@@ -568,7 +568,7 @@ jQuery(document).ready(($) => {
                     }
 
                     CheckoutModule.moveToNextSection($section);
-                    CheckoutUtils.updateSummaryPricing(data.cart);
+                    CheckoutUtils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
                 })
                 .catch((jqXHR) => {
                     $button.removeClass('sending').blur();
@@ -601,7 +601,7 @@ jQuery(document).ready(($) => {
                     }
 
                     CheckoutModule.moveToNextSection($section);
-                    CheckoutUtils.updateSummaryPricing(data.cart);
+                    CheckoutUtils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
                 })
                 .catch((jqXHR) => {
                     $button.removeClass('sending').blur();
@@ -617,7 +617,7 @@ jQuery(document).ready(($) => {
 
             DRCommerceApi.applyShippingOption(shippingOptionId)
                 .then((data) => {
-                    CheckoutUtils.updateSummaryPricing(data.cart);
+                    CheckoutUtils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
                 })
                 .catch((jqXHR) => {
                     CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));

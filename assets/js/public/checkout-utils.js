@@ -103,10 +103,10 @@ const CheckoutUtils = (($, params) => {
     $target.text(addressArr.join(', '));
   };
 
-  const updateSummaryPricing = (cart) => {
-    const lineItems = cart.lineItems.lineItem;
-    const pricing = cart.pricing;
-    const newPricing = getSeparatedPricing(lineItems, pricing);
+  const updateSummaryPricing = (order, isTaxInclusive) => {
+    const lineItems = order.lineItems ? order.lineItems.lineItem : (order.products || []);
+    const pricing = order.pricing;
+    const newPricing = getSeparatedPricing(lineItems, pricing, isTaxInclusive);
     const shippingVal = pricing.shippingAndHandling ?
       pricing.shippingAndHandling.value :
       pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
@@ -316,10 +316,9 @@ const CheckoutUtils = (($, params) => {
     return formatPrice(val, pricing);
   };
 
-  const getSeparatedPricing = (lineItems, pricing) => {
+  const getSeparatedPricing = (lineItems, pricing, isTaxInclusive) => {
     let productTax = 0;
     let shippingTax = 0;
-    const isTaxInclusive = drgc_params.isTaxInclusive === 'true';
     const forceExclTax = drgc_params.forceExclTax === 'true';
     const shippingVal = pricing.shippingAndHandling ?
       pricing.shippingAndHandling.value :

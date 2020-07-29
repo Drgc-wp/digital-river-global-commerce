@@ -323,7 +323,7 @@ const CartModule = (($) => {
     const $shippingRow = $('.dr-summary__shipping');
     const $subtotalRow = $('.dr-summary__subtotal');
     const $totalRow = $('.dr-summary__total');
-    const newPricing = CheckoutUtils.getSeparatedPricing(lineItems, pricing);
+    const newPricing = CheckoutUtils.getSeparatedPricing(lineItems, pricing, drgc_params.isTaxInclusive === 'true');
 
     $discountRow.find('.discount-value').text(`-${pricing.formattedDiscount}`);
     $taxRow.find('.tax-value').text(newPricing.formattedProductTax);
