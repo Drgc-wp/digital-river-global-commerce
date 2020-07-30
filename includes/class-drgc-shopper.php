@@ -315,6 +315,28 @@ class DRGC_Shopper extends AbstractHttpService {
 		}
 	}
 
+  /**
+   * Updates password for the current shopper.
+   *
+   * @param string $password
+   *
+   * @return mixed
+   */
+  public function update_shopper_password( $password ) {
+    $data = array( 
+      'shopper' => array(
+        'password' => base64_encode( $password )
+      )
+    );
+
+    try {
+      $res = $this->post( "/v1/shoppers/me", $data );
+      return $res;
+    } catch (\Exception $e) {
+      return $e->getMessage();
+    }
+  }
+
 	/**
 	 * Return true if the shopper is authenticated
 	 *
