@@ -84,9 +84,9 @@ class DRGC_Shopper extends AbstractHttpService {
 		$this->token         = $this->authenticator->get_token();
 		$this->refresh_token = $this->authenticator->get_refresh_token();
 
-		if ( ! $this->user_id && $this->token ) {
-			$this->get_access_token_information();
-		}
+    if ( $this->token ) {
+      $this->get_access_token_information();
+    }
 	}
 
 	/**
@@ -215,12 +215,15 @@ class DRGC_Shopper extends AbstractHttpService {
 		try {
 			$res = $this->get($url);
 
-			$this->shopper_data = array(
-				'username'   =>  $res['shopper']['username'],
-				'last_name'  =>  $res['shopper']['lastName'],
-				'first_name' =>  $res['shopper']['firstName'],
-				'email'      =>  $res['shopper']['emailAddress'],
-			);
+      $this->shopper_data = array(
+        'username'   =>  $res['shopper']['username'],
+        'last_name'  =>  $res['shopper']['lastName'],
+        'first_name' =>  $res['shopper']['firstName'],
+        'email'      =>  $res['shopper']['emailAddress'],
+        'id'         =>  $res['shopper']['id'],
+        'locale'     =>  $res['shopper']['locale'],
+        'currency'   =>  $res['shopper']['currency']
+      );
 
 			$this->user_id = $res['shopper']['id'];
 
@@ -329,6 +332,15 @@ class DRGC_Shopper extends AbstractHttpService {
 	public function get_locale() {
 		return $this->locale;
 	}
+
+  /**
+   * Return current shopper data
+   *
+   * @return array
+   */
+  public function get_shopper_data() {
+    return $this->shopper_data;
+  }
 
   /**
    * Retrieve all scriptions for the current authenticated shopper.

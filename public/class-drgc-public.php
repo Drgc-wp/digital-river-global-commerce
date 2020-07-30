@@ -66,104 +66,104 @@ class DRGC_Public {
 
 	}
 
-	/**
-	 * Register the JavaScript for the public-facing side of the site.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_scripts() {
-		$suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
-		// Adds support for ES6
-		wp_enqueue_script( 'js-polyfill', '//cdn.polyfill.io/v3/polyfill.js' );
+  /**
+   * Register the JavaScript for the public-facing side of the site.
+   *
+   * @since    1.0.0
+   */
+  public function enqueue_scripts() {
+    $suffix = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+    // Adds support for ES6
+    wp_enqueue_script( 'js-polyfill', '//cdn.polyfill.io/v3/polyfill.js' );
 
-		wp_enqueue_script( $this->drgc, DRGC_PLUGIN_URL . 'assets/js/drgc-public' . $suffix . '.js', array( 'jquery' ), $this->version, false );
+    wp_enqueue_script( $this->drgc, DRGC_PLUGIN_URL . 'assets/js/drgc-public' . $suffix . '.js', array( 'jquery' ), $this->version, false );
 
-		if ( is_page( 'cart' ) || is_page( 'checkout' ) || is_page( 'thank-you' ) || is_page( 'account' ) ) {
-			wp_enqueue_script( 'digital-river-js', 'https://js.digitalriverws.com/v1/DigitalRiver.js', array( $this->drgc ), null, true );
-		}
-		if ( is_page( 'checkout' ) ) {
-			wp_enqueue_script( 'paypal-checkout-js', 'https://www.paypalobjects.com/api/checkout.js', array( $this->drgc ), null, true );
-		}
+    if ( is_page( 'cart' ) || is_page( 'checkout' ) || is_page( 'thank-you' ) || is_page( 'account' ) ) {
+      wp_enqueue_script( 'digital-river-js', 'https://js.digitalriverws.com/v1/DigitalRiver.js', array( $this->drgc ), null, true );
+    }
+    if ( is_page( 'checkout' ) ) {
+      wp_enqueue_script( 'paypal-checkout-js', 'https://www.paypalobjects.com/api/checkout.js', array( $this->drgc ), null, true );
+    }
 
-		$access_token = '';
-		if ( DRGC()->authenticator ) {
-			$access_token = DRGC()->authenticator->get_token();
-		}
+    $access_token = '';
+    if ( DRGC()->authenticator ) {
+      $access_token = DRGC()->authenticator->get_token();
+    }
 
-		$cart_obj = '';
-		$order_obj = '';
-		if ( DRGC()->cart ) {
-			$cart_obj = DRGC()->cart->retrieve_cart();
-			if ( is_page( 'thank-you' ) ) $order_obj = DRGC()->cart->retrieve_order();
-		}
+    $cart_obj = '';
+    $order_obj = '';
+    if ( DRGC()->cart ) {
+      $cart_obj = DRGC()->cart->retrieve_cart();
+      if ( is_page( 'thank-you' ) ) $order_obj = DRGC()->cart->retrieve_order();
+    }
 
     //test Order Handler
     $testOrder_option = get_option( 'drgc_testOrder_handler' );
-		$testOrder_enable = ( is_array( $testOrder_option ) && '1' == $testOrder_option['checkbox'] )  ? "true" : "false";
+    $testOrder_enable = ( is_array( $testOrder_option ) && '1' == $testOrder_option['checkbox'] )  ? "true" : "false";
 
-		$force_excl_tax_option = get_option( 'drgc_force_excl_tax_handler' );
-		$force_excl_tax_enable = ( is_array( $force_excl_tax_option ) && '1' == $force_excl_tax_option['checkbox'] )  ? "true" : "false";
+    $force_excl_tax_option = get_option( 'drgc_force_excl_tax_handler' );
+    $force_excl_tax_enable = ( is_array( $force_excl_tax_option ) && '1' == $force_excl_tax_option['checkbox'] )  ? "true" : "false";
 
-		$applepay_option = get_option( 'drgc_applepay_handler' );
-		$applepay_enabled = ( is_array( $applepay_option ) && '1' == $applepay_option['checkbox'] )  ? 'true' : 'false';
+    $applepay_option = get_option( 'drgc_applepay_handler' );
+    $applepay_enabled = ( is_array( $applepay_option ) && '1' == $applepay_option['checkbox'] )  ? 'true' : 'false';
 
-		$googlepay_option = get_option( 'drgc_googlepay_handler' );
-		$googlepay_enabled = ( is_array( $googlepay_option ) && '1' == $googlepay_option['checkbox'] )  ? 'true' : 'false';
+    $googlepay_option = get_option( 'drgc_googlepay_handler' );
+    $googlepay_enabled = ( is_array( $googlepay_option ) && '1' == $googlepay_option['checkbox'] )  ? 'true' : 'false';
 
-		$translation_array = array(
-			'upgrade_label'               => __('Upgrade', 'digital-river-global-commerce'),
-			'add_label'                   => __('Add', 'digital-river-global-commerce'),
-			'free_label'                  => __('FREE', 'digital-river-global-commerce'),
-			'incl_vat_label'              => __('Incl. VAT', 'digital-river-global-commerce'),
-			'excl_vat_label'              => __('Excl. VAT', 'digital-river-global-commerce'),
-			'vat_label'                   => __('VAT', 'digital-river-global-commerce'),
-			'estimated_vat_label'         => __('Estimated VAT', 'digital-river-global-commerce'),
-			'shipping_vat_label'          => __('Shipping VAT', 'digital-river-global-commerce'),
-			'estimated_shipping_vat_label'=> __('Estimated Shipping VAT', 'digital-river-global-commerce'),
-			'tax_label'              	    => __('Tax', 'digital-river-global-commerce'),
-			'estimated_tax_label'         => __('Estimated Tax', 'digital-river-global-commerce'),
-			'shipping_tax_label'          => __('Shipping Tax', 'digital-river-global-commerce'),
-			'estimated_shipping_tax_label'=> __('Estimated Shipping Tax', 'digital-river-global-commerce'),
-			'shipping_label'              => __('Shipping', 'digital-river-global-commerce'),
-			'estimated_shipping_label'    => __('Estimated Shipping', 'digital-river-global-commerce'),
-			'credit_card_ending_label'    => __('Credit card ending in', 'digital-river-global-commerce'),
-			'pay_with_card_label'         => __('pay with card', 'digital-river-global-commerce'),
-			'pay_with_paypal_label'       => __('pay with paypal', 'digital-river-global-commerce'),
-			'view_cart_label'             => __('View Cart', 'digital-river-global-commerce'),
-			'checkout_label'              => __('Checkout', 'digital-river-global-commerce'),
-			'remove_label'                => __('Remove', 'digital-river-global-commerce'),
-			'subtotal_label'              => __('Sub-Total', 'digital-river-global-commerce'),
-			'qty_label'                   => __('Qty', 'digital-river-global-commerce'),
-			'shipping_and_handling_label'	=> __('Shipping and Handling', 'digital-river-global-commerce'),
-			'discount_label'		          => __('Discount', 'digital-river-global-commerce'),
-			'order_total_label'		        => __('Order Total', 'digital-river-global-commerce'),
-			'product_label'               => __('Product', 'digital-river-global-commerce'),
-			'password_reset_title'        => __('Password reset email sent', 'digital-river-global-commerce'),
-			'password_saved_title'        => __('Password saved', 'digital-river-global-commerce'),
-			'password_reset_msg'          => __('You will be receiving an email soon with instructions on resetting your login password.', 'digital-river-global-commerce'),
-			'password_saved_msg'          => __('You can now log in with your new password.', 'digital-river-global-commerce'),
-			'empty_cart_msg'              => __('Your cart is empty.', 'digital-river-global-commerce'),
-			'invalid_promo_code_msg'      => __('Please enter a valid promo code.', 'digital-river-global-commerce'),
-			'invalid_email_msg'           => __('Please enter a valid email address.', 'digital-river-global-commerce'),
-			'address_error_msg'           => __('Address not accepted for current currency.', 'digital-river-global-commerce'),
-			'credit_card_error_msg'       => __('Failed payment for specified credit card.', 'digital-river-global-commerce'),
-			'required_field_msg'          => __('This field is required.', 'digital-river-global-commerce'),
-			'email_confirm_error_msg'     => __('Emails do not match.', 'digital-river-global-commerce'),
-			'password_length_error_msg'      => __('Password must be between 8 - 32 characters.', 'digital-river-global-commerce'),
-			'password_uppercase_error_msg'   => __('Must use at least one upper case letter.', 'digital-river-global-commerce'),
-			'password_lowercase_error_msg'   => __('Must use at least one lower case letter.', 'digital-river-global-commerce'),
-			'password_number_error_msg'      => __('Must use at least one number.', 'digital-river-global-commerce'),
-			'password_char_error_msg'        => __('Must use at least one special character (! _ @).', 'digital-river-global-commerce'),
-			'password_banned_char_error_msg' => __('Contains non-allowable special characters (only ! _ @ are allowed).', 'digital-river-global-commerce'),
-			'password_confirm_error_msg'     => __('Passwords do not match.', 'digital-river-global-commerce'),
-			'required_tandc_msg'             => __('Please indicate you have read and accepted the privacy policy and terms of sale.', 'digital-river-global-commerce'),
-			'undefined_error_msg'            => __('Something went wrong. Please try again.', 'digital-river-global-commerce'),
-			'loading_msg'                    => __('Loading...', 'digital-river-global-commerce'),
-			'buy_now'                        => __('Buy Now', 'digital-river-global-commerce'),
-			'add_to_cart'                    => __('Add to Cart', 'digital-river-global-commerce'),
-			'out_of_stock'                   => __('Out of Stock', 'digital-river-global-commerce'),
-			'cancel_subs_confirm'            => __('Are you sure you want to immediately unsubscribe this subscription?', 'digital-river-global-commerce'),
-			'change_renewal_qty_prompt'      => __('Please enter the required quantity:', 'digital-river-global-commerce'),
+    $translation_array = array(
+      'upgrade_label'               => __('Upgrade', 'digital-river-global-commerce'),
+      'add_label'                   => __('Add', 'digital-river-global-commerce'),
+      'free_label'                  => __('FREE', 'digital-river-global-commerce'),
+      'incl_vat_label'              => __('Incl. VAT', 'digital-river-global-commerce'),
+      'excl_vat_label'              => __('Excl. VAT', 'digital-river-global-commerce'),
+      'vat_label'                   => __('VAT', 'digital-river-global-commerce'),
+      'estimated_vat_label'         => __('Estimated VAT', 'digital-river-global-commerce'),
+      'shipping_vat_label'          => __('Shipping VAT', 'digital-river-global-commerce'),
+      'estimated_shipping_vat_label'=> __('Estimated Shipping VAT', 'digital-river-global-commerce'),
+      'tax_label'              	    => __('Tax', 'digital-river-global-commerce'),
+      'estimated_tax_label'         => __('Estimated Tax', 'digital-river-global-commerce'),
+      'shipping_tax_label'          => __('Shipping Tax', 'digital-river-global-commerce'),
+      'estimated_shipping_tax_label'=> __('Estimated Shipping Tax', 'digital-river-global-commerce'),
+      'shipping_label'              => __('Shipping', 'digital-river-global-commerce'),
+      'estimated_shipping_label'    => __('Estimated Shipping', 'digital-river-global-commerce'),
+      'credit_card_ending_label'    => __('Credit card ending in', 'digital-river-global-commerce'),
+      'pay_with_card_label'         => __('pay with card', 'digital-river-global-commerce'),
+      'pay_with_paypal_label'       => __('pay with paypal', 'digital-river-global-commerce'),
+      'view_cart_label'             => __('View Cart', 'digital-river-global-commerce'),
+      'checkout_label'              => __('Checkout', 'digital-river-global-commerce'),
+      'remove_label'                => __('Remove', 'digital-river-global-commerce'),
+      'subtotal_label'              => __('Sub-Total', 'digital-river-global-commerce'),
+      'qty_label'                   => __('Qty', 'digital-river-global-commerce'),
+      'shipping_and_handling_label'	=> __('Shipping and Handling', 'digital-river-global-commerce'),
+      'discount_label'		          => __('Discount', 'digital-river-global-commerce'),
+      'order_total_label'		        => __('Order Total', 'digital-river-global-commerce'),
+      'product_label'               => __('Product', 'digital-river-global-commerce'),
+      'password_reset_title'        => __('Password reset email sent', 'digital-river-global-commerce'),
+      'password_saved_title'        => __('Password saved', 'digital-river-global-commerce'),
+      'password_reset_msg'          => __('You will be receiving an email soon with instructions on resetting your login password.', 'digital-river-global-commerce'),
+      'password_saved_msg'          => __('You can now log in with your new password.', 'digital-river-global-commerce'),
+      'empty_cart_msg'              => __('Your cart is empty.', 'digital-river-global-commerce'),
+      'invalid_promo_code_msg'      => __('Please enter a valid promo code.', 'digital-river-global-commerce'),
+      'invalid_email_msg'           => __('Please enter a valid email address.', 'digital-river-global-commerce'),
+      'address_error_msg'           => __('Address not accepted for current currency.', 'digital-river-global-commerce'),
+      'credit_card_error_msg'       => __('Failed payment for specified credit card.', 'digital-river-global-commerce'),
+      'required_field_msg'          => __('This field is required.', 'digital-river-global-commerce'),
+      'email_confirm_error_msg'     => __('Emails do not match.', 'digital-river-global-commerce'),
+      'password_length_error_msg'      => __('Password must be between 8 - 32 characters.', 'digital-river-global-commerce'),
+      'password_uppercase_error_msg'   => __('Must use at least one upper case letter.', 'digital-river-global-commerce'),
+      'password_lowercase_error_msg'   => __('Must use at least one lower case letter.', 'digital-river-global-commerce'),
+      'password_number_error_msg'      => __('Must use at least one number.', 'digital-river-global-commerce'),
+      'password_char_error_msg'        => __('Must use at least one special character (! _ @).', 'digital-river-global-commerce'),
+      'password_banned_char_error_msg' => __('Contains non-allowable special characters (only ! _ @ are allowed).', 'digital-river-global-commerce'),
+      'password_confirm_error_msg'     => __('Passwords do not match.', 'digital-river-global-commerce'),
+      'required_tandc_msg'             => __('Please indicate you have read and accepted the privacy policy and terms of sale.', 'digital-river-global-commerce'),
+      'undefined_error_msg'            => __('Something went wrong. Please try again.', 'digital-river-global-commerce'),
+      'loading_msg'                    => __('Loading...', 'digital-river-global-commerce'),
+      'buy_now'                        => __('Buy Now', 'digital-river-global-commerce'),
+      'add_to_cart'                    => __('Add to Cart', 'digital-river-global-commerce'),
+      'out_of_stock'                   => __('Out of Stock', 'digital-river-global-commerce'),
+      'cancel_subs_confirm'            => __('Are you sure you want to immediately unsubscribe this subscription?', 'digital-river-global-commerce'),
+      'change_renewal_qty_prompt'      => __('Please enter the required quantity:', 'digital-river-global-commerce'),
       'shipping_options_error_msg'	   => __('There are no delivery options available for your cart or destination.', 'digital-river-global-commerce'),
       'card_expiration_placeholder'    => __('MM/YY', 'digital-river-global-commerce'),
       'card_cvv_placeholder'           => __('CVV', 'digital-river-global-commerce'),
@@ -174,47 +174,47 @@ class DRGC_Public {
       'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce'),
       'upsell_decline_label'           => __('No, thanks', 'digital-river-global-commerce'),
       'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce')
-		);
+    );
 
-		// transfer drgc options from PHP to JS
-		$options = array(
-			'wpLocale'          =>  get_locale(),
-			'drLocale'          =>  get_dr_locale( get_locale() ),
-			'ajaxUrl'           =>  admin_url( 'admin-ajax.php' ),
-			'ajaxNonce'         =>  wp_create_nonce( 'drgc_ajax' ),
-			'homeUrl'           =>  get_home_url(),
-			'cartUrl'           =>  drgc_get_page_link( 'cart' ),
-			'checkoutUrl'       =>  drgc_get_page_link( 'checkout' ),
-			'accountUrl'        =>  drgc_get_page_link( 'account' ),
-			'mySubsUrl'         =>  drgc_get_page_link( 'my-subscriptions' ),
-			'loginPath'         =>  parse_url( drgc_get_page_link( 'login' ) )['path'],
-			'siteID'            =>  get_option( 'drgc_site_id' ),
-			'domain'            =>  get_option( 'drgc_domain' ),
-			'digitalRiverKey'   =>  get_option( 'drgc_digitalRiver_key' ),
-			'accessToken'       =>  $access_token,
-			'cart'              =>  $cart_obj,
-			'order'             =>  $order_obj,
-			'thankYouEndpoint'  =>  esc_url( drgc_get_page_link( 'thank-you' ) ),
-			'isLogin'           =>  drgc_get_user_status(),
-			'payPal'            =>  array (
-				'sourceId' => isset( $_GET['sourceId'] ) ? $_GET['sourceId'] : false,
-				'failure'  => isset( $_GET['ppcancel'] ) ? $_GET['ppcancel'] : false,
-				'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
+    // transfer drgc options from PHP to JS
+    $options = array(
+      'wpLocale'          =>  get_locale(),
+      'drLocale'          =>  get_dr_locale( get_locale() ),
+      'ajaxUrl'           =>  admin_url( 'admin-ajax.php' ),
+      'ajaxNonce'         =>  wp_create_nonce( 'drgc_ajax' ),
+      'homeUrl'           =>  get_home_url(),
+      'cartUrl'           =>  drgc_get_page_link( 'cart' ),
+      'checkoutUrl'       =>  drgc_get_page_link( 'checkout' ),
+      'accountUrl'        =>  drgc_get_page_link( 'account' ),
+      'mySubsUrl'         =>  drgc_get_page_link( 'my-subscriptions' ),
+      'loginPath'         =>  parse_url( drgc_get_page_link( 'login' ) )['path'],
+      'siteID'            =>  get_option( 'drgc_site_id' ),
+      'domain'            =>  get_option( 'drgc_domain' ),
+      'digitalRiverKey'   =>  get_option( 'drgc_digitalRiver_key' ),
+      'accessToken'       =>  $access_token,
+      'cart'              =>  $cart_obj,
+      'order'             =>  $order_obj,
+      'thankYouEndpoint'  =>  esc_url( drgc_get_page_link( 'thank-you' ) ),
+      'isLogin'           =>  drgc_get_user_status(),
+      'payPal'            =>  array (
+        'sourceId' => isset( $_GET['sourceId'] ) ? $_GET['sourceId'] : false,
+        'failure'  => isset( $_GET['ppcancel'] ) ? $_GET['ppcancel'] : false,
+        'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
       ),
-			'testOrder'          => $testOrder_enable,
-			'forceExclTax'       => $force_excl_tax_enable,
-			'translations'       => $translation_array,
-			'isApplePayEnabled'  => $applepay_enabled,
-			'isGooglePayEnabled' => $googlepay_enabled,
-			'client_ip'          => $_SERVER['REMOTE_ADDR'],
+      'testOrder'          => $testOrder_enable,
+      'forceExclTax'       => $force_excl_tax_enable,
+      'translations'       => $translation_array,
+      'isApplePayEnabled'  => $applepay_enabled,
+      'isGooglePayEnabled' => $googlepay_enabled,
+      'client_ip'          => $_SERVER['REMOTE_ADDR'],
       'applePayButtonType'   => get_option( 'drgc_applepay_button_type' ),
       'applePayButtonColor'  => get_option( 'drgc_applepay_button_color' ),
       'googlePayButtonType'  => get_option( 'drgc_googlepay_button_type' ),
       'googlePayButtonColor' => get_option( 'drgc_googlepay_button_color' )
-		);
+    );
 
-		wp_localize_script( $this->drgc, 'drgc_params', $options );
-	}
+    wp_localize_script( $this->drgc, 'drgc_params', $options );
+  }
 
 	public function ajax_attempt_auth() {
 		check_ajax_referer( 'drgc_ajax', 'nonce' );
@@ -856,6 +856,27 @@ class DRGC_Public {
       }
     } else {
       wp_send_json_error();
+    }
+  }
+
+  /**
+   * Renew access token
+   */
+  public function renew_access_token() {
+    if ( ! is_page( 'thank-you' ) ) return;
+
+    $plugin = DRGC();
+    $customer = $plugin->shopper->retrieve_shopper();
+
+    $plugin->session->clear_session();
+
+    if ( $customer && ( $customer['id'] !== 'Anonymous' ) ) {
+      $current_user = get_user_by( 'login', $customer['username'] );
+      $external_reference_id = get_user_meta( $current_user->ID, '_external_reference_id', true );
+
+      $plugin->shopper->generate_access_token_by_ref_id( $external_reference_id );
+    } else {
+      $plugin->authenticator->do_refresh_access_token();
     }
   }
 }

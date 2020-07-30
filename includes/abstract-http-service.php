@@ -304,17 +304,18 @@ abstract class AbstractHttpService {
     }
 
     /**
-     * @param string $uri
-     * @param array  $data
+     * @param string  $uri
+     * @param array   $data
+     * @param boolean $force_bearer_token
      *
      * @return array
      */
-    protected function post( string $uri = '', array $data = array() ) {
+    protected function post( string $uri = '', array $data = array(), $force_bearer_token = true ) {
         if ( $this->config['headers']['Content-Type'] === 'application/json' ) {
             $data = array( GuzzleHttp\RequestOptions::JSON => $data );
         }
 
-        $client = $this->createClient();
+        $client = $this->createClient( $force_bearer_token );
 
         $uri = $this->normalizeUri($uri);
 
