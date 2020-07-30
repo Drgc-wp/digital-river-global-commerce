@@ -723,7 +723,7 @@ class DRGC_Public {
         wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
         exit;
       }
-    } elseif ( is_page( 'account' ) ) {
+    } elseif ( is_page( 'account' ) || is_page( 'thank-you' ) ) {
       $customer = DRGC()->shopper->retrieve_shopper();
       $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
 

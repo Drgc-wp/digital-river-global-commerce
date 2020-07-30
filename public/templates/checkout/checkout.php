@@ -37,6 +37,8 @@ if ( $is_logged_in ) {
             }
         }
     }
+    $default_address['firstName'] = $default_address['firstName'] ?? $customer['firstName'];
+    $default_address['lastName'] = $default_address['lastName'] ?? $customer['lastName'];
 }
 
 $check_subs = drgc_is_subs_added_to_cart( $cart );
