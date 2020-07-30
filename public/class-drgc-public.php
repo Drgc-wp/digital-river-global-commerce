@@ -97,6 +97,11 @@ class DRGC_Public {
       if ( is_page( 'thank-you' ) ) $order_obj = DRGC()->cart->retrieve_order();
     }
 
+		$customer = array();
+		if ( DRGC()->shopper ) {
+			$customer = DRGC()->shopper->retrieve_shopper();
+		}
+
     //test Order Handler
     $testOrder_option = get_option( 'drgc_testOrder_handler' );
     $testOrder_enable = ( is_array( $testOrder_option ) && '1' == $testOrder_option['checkbox'] )  ? "true" : "false";
@@ -203,12 +208,14 @@ class DRGC_Public {
 				'failure'  => isset( $_GET['ppcancel'] ) ? $_GET['ppcancel'] : false,
 				'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
       ),
-      'testOrder'          => $testOrder_enable,
-      'forceExclTax'       => $force_excl_tax_enable,
-      'translations'       => $translation_array,
-      'isApplePayEnabled'  => $applepay_enabled,
-      'isGooglePayEnabled' => $googlepay_enabled,
-      'client_ip'          => $_SERVER['REMOTE_ADDR'],
+			'testOrder'          => $testOrder_enable,
+			'shouldDisplayVat'   => drgc_should_display_vat( isset( $customer['currency'] ) ? $customer['currency'] : '' ) ? 'true' : 'false',
+			'isTaxInclusive'     => drgc_is_tax_inclusive( isset( $customer['locale'] ) ? $customer['locale'] : '' ) ? 'true' : 'false',
+			'forceExclTax'       => $force_excl_tax_enable,
+			'translations'       => $translation_array,
+			'isApplePayEnabled'  => $applepay_enabled,
+			'isGooglePayEnabled' => $googlepay_enabled,
+			'client_ip'          => $_SERVER['REMOTE_ADDR'],
       'applePayButtonType'   => get_option( 'drgc_applepay_button_type' ),
       'applePayButtonColor'  => get_option( 'drgc_applepay_button_color' ),
       'googlePayButtonType'  => get_option( 'drgc_googlepay_button_type' ),
