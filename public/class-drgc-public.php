@@ -173,8 +173,9 @@ class DRGC_Public {
       'invalid_city_msg'               => __('Your city is invalid.', 'digital-river-global-commerce'),
       'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce'),
       'upsell_decline_label'           => __('No, thanks', 'digital-river-global-commerce'),
-      'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce')
-		);
+      'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce'),
+      'new_password_error_msg'         => __('The new password must be different from the current password.', 'digital-river-global-commerce')
+    );
 
 		// transfer drgc options from PHP to JS
 		$options = array(
@@ -367,6 +368,56 @@ class DRGC_Public {
 		$plugin->session->clear_session();
 		wp_send_json_success();
 	}
+
+  public function change_password_ajax() {
+    check_ajax_referer( 'drgc_ajax', 'nonce' );
+
+    $plugin = DRGC();
+    $gc_user = $plugin->shopper->retrieve_shopper();
+    $username = $gc_user['username'];
+    $current_user = get_user_by( 'login', $username );
+    $current_user_id = $current_user->ID;
+    $email = $current_user->user_email;
+    $current_password = sanitize_text_field( $_POST['current_password'] );
+    $new_password = sanitize_text_field( $_POST['new_password'] );
+    $confirm_new_password = sanitize_text_field( $_POST['confirm_new_password'] );
+    $error_msgs = $this->get_password_error_msgs( $new_password, $confirm_new_password );
+
+    if ( ! empty( $error_msgs ) ) {
+      wp_send_json_error( join( ' ', $error_msgs) );
+    }
+
+    if ( ! wp_check_password( $current_password, $current_user->user_pass, $current_user_id ) ) {
+      wp_send_json_error( __( 'The current password you entered is incorrect.', 'digital-river-global-commerce' ) );
+    }
+
+    if ( $new_password === $current_password ) {
+      wp_send_json_error( __( 'Your new password can not be the same as the current password.', 'digital-river-global-commerce' ) );
+    }
+
+    $attempt = $plugin->shopper->update_shopper_password( $new_password );
+
+    if ( isset( $attempt['errors']['error'] ) ) {
+      wp_send_json_error( $attempt );
+    }
+
+    wp_set_password( $new_password, $current_user_id );
+
+    $user_data = array(
+      'user_login'    => $email,
+      'user_password' => $new_password,
+      'remember'      => false
+    );
+
+    $user = wp_signon( $user_data );
+
+    if ( is_wp_error( $user ) ) {
+      $attempt = $plugin->shopper->update_shopper_password( $current_password );
+      wp_send_json_error( $user );
+    }
+
+    wp_send_json_success();
+  }
 
 	/**
 	 * Ajax handles sending password retrieval email to user.
@@ -827,7 +878,23 @@ class DRGC_Public {
 					</div>
 				</div>
 			</div>
-		<?php endif; ?>
+    <?php endif; ?>
+    <?php if ( is_page( 'account' ) && ( drgc_get_user_status() !== 'false' ) ): ?>
+      <div id="dr-passwordUpdated" class="dr-modal" tabindex="-1" role="dialog">
+        <div class="dr-modal-dialog dr-modal-dialog-centered">
+          <div class="dr-modal-content">
+            <div class="dr-modal-body">
+              <div class="dr-modal-icon"><img src="<?php echo DRGC_PLUGIN_URL . 'assets/images/success-icon.svg' ?>" alt="success icon"></div>
+              <h4><?php echo __( 'Password Updated!', 'digital-river-global-commerce' ); ?></h4>
+              <p><?php echo __( 'Your password has been changed successfully.', 'digital-river-global-commerce' ); ?></p>
+            </div>
+            <div class="dr-modal-footer">
+              <button type="button" class="dr-btn dr-btn-blue" data-dismiss="dr-modal"><?php echo __( 'OK', 'digital-river-global-commerce' ); ?></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
 	<?php
 	}
 
