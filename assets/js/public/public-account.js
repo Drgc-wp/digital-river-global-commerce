@@ -13,16 +13,8 @@ const AccountModule = (($) => {
         }
     };
 
-    const stylePasswordInput = (elem, msg, isValid) => {
-        const toAddClass = isValid ? 'is-valid' : 'is-invalid';
-        const toRemoveClass = isValid ? 'is-invalid' : 'is-valid';
-
-        $(elem).removeClass(toRemoveClass).addClass(toAddClass).next('.invalid-feedback').text(msg);
-    };
-
     return {
-        appendAutoRenewalTerms,
-        stylePasswordInput
+        appendAutoRenewalTerms
     };
 })(jQuery);
 
@@ -527,21 +519,26 @@ $(() => {
         const cpw = $form.find('input[type=password]')[2];
 
         $form.find('.dr-err-field').text('');
-        npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : '');
+        npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : npw.validationMessage);
         cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
 
         if (npw.validity.valueMissing) {
-            AccountModule.stylePasswordInput(npw, localizedText.required_field_msg, false);
+            $(npw).next('.invalid-feedback').text(localizedText.required_field_msg);
         } else if (npw.validity.customError) {
-            AccountModule.stylePasswordInput(npw, npw.validationMessage, false);
-        } else if (cpw.validity.valueMissing) {
-            AccountModule.stylePasswordInput(cpw, localizedText.required_field_msg, false);
-        } else if (cpw.validity.customError) {
-            AccountModule.stylePasswordInput(cpw, cpw.validationMessage, false);
+            $(npw).next('.invalid-feedback').text(npw.validationMessage);
         } else {
-            AccountModule.stylePasswordInput(npw, '', true);
-            AccountModule.stylePasswordInput(cpw, '', true);
+            $(npw).next('.invalid-feedback').text('');
         }
+
+        if (cpw.validity.valueMissing) {
+            $(cpw).next('.invalid-feedback').text(localizedText.required_field_msg);
+        } else if (cpw.validity.customError) {
+            $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+        } else {
+            $(cpw).next('.invalid-feedback').text('');
+        }
+
+        $form.addClass('was-validated');
     });
 
     $('#change-password-form').on('submit', (e) => {

@@ -30,11 +30,11 @@ const LoginModule = (($) => {
         elem.setCustomValidity(customMsg);
 
         if (elem.validity.valueMissing) {
-            $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+            $(elem).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
         } else if (elem.validity.customError) {
-            $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(elem.validationMessage);
+            $(elem).next('.invalid-feedback').text(elem.validationMessage);
         } else {
-            $(elem).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
+            $(elem).next('.invalid-feedback').text('');
         }
     };
 
@@ -199,11 +199,11 @@ jQuery(document).ready(($) => {
 
         cpw.setCustomValidity(pw.value !== cpw.value ? drgc_params.translations.password_confirm_error_msg : '');
         if (cpw.validity.valueMissing) {
-            $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+            $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
         } else if (cpw.validity.customError) {
-            $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(cpw.validationMessage);
+            $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
         } else {
-            $(cpw).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
+            $(cpw).next('.invalid-feedback').text('');
         }
     });
 

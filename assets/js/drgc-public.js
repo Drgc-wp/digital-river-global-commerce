@@ -14776,11 +14776,11 @@ var LoginModule = function ($) {
     elem.setCustomValidity(customMsg);
 
     if (elem.validity.valueMissing) {
-      $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+      $(elem).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
     } else if (elem.validity.customError) {
-      $(elem).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(elem.validationMessage);
+      $(elem).next('.invalid-feedback').text(elem.validationMessage);
     } else {
-      $(elem).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
+      $(elem).next('.invalid-feedback').text('');
     }
   };
 
@@ -14928,11 +14928,11 @@ jQuery(document).ready(function ($) {
     cpw.setCustomValidity(pw.value !== cpw.value ? drgc_params.translations.password_confirm_error_msg : '');
 
     if (cpw.validity.valueMissing) {
-      $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
+      $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
     } else if (cpw.validity.customError) {
-      $(cpw).removeClass('is-valid').addClass('is-invalid').next('.invalid-feedback').text(cpw.validationMessage);
+      $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
     } else {
-      $(cpw).removeClass('is-invalid').addClass('is-valid').next('.invalid-feedback').text('');
+      $(cpw).next('.invalid-feedback').text('');
     }
   });
   $('.dr-signup-form').on('submit', function (e) {
@@ -15650,15 +15650,8 @@ var AccountModule = function ($) {
     }
   };
 
-  var stylePasswordInput = function stylePasswordInput(elem, msg, isValid) {
-    var toAddClass = isValid ? 'is-valid' : 'is-invalid';
-    var toRemoveClass = isValid ? 'is-invalid' : 'is-valid';
-    $(elem).removeClass(toRemoveClass).addClass(toAddClass).next('.invalid-feedback').text(msg);
-  };
-
   return {
-    appendAutoRenewalTerms: appendAutoRenewalTerms,
-    stylePasswordInput: stylePasswordInput
+    appendAutoRenewalTerms: appendAutoRenewalTerms
   };
 }(jQuery);
 
@@ -16089,21 +16082,26 @@ jquery_default()(function () {
     var npw = $form.find('input[type=password]')[1];
     var cpw = $form.find('input[type=password]')[2];
     $form.find('.dr-err-field').text('');
-    npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : '');
+    npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : npw.validationMessage);
     cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
 
     if (npw.validity.valueMissing) {
-      AccountModule.stylePasswordInput(npw, localizedText.required_field_msg, false);
+      jquery_default()(npw).next('.invalid-feedback').text(localizedText.required_field_msg);
     } else if (npw.validity.customError) {
-      AccountModule.stylePasswordInput(npw, npw.validationMessage, false);
-    } else if (cpw.validity.valueMissing) {
-      AccountModule.stylePasswordInput(cpw, localizedText.required_field_msg, false);
-    } else if (cpw.validity.customError) {
-      AccountModule.stylePasswordInput(cpw, cpw.validationMessage, false);
+      jquery_default()(npw).next('.invalid-feedback').text(npw.validationMessage);
     } else {
-      AccountModule.stylePasswordInput(npw, '', true);
-      AccountModule.stylePasswordInput(cpw, '', true);
+      jquery_default()(npw).next('.invalid-feedback').text('');
     }
+
+    if (cpw.validity.valueMissing) {
+      jquery_default()(cpw).next('.invalid-feedback').text(localizedText.required_field_msg);
+    } else if (cpw.validity.customError) {
+      jquery_default()(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+    } else {
+      jquery_default()(cpw).next('.invalid-feedback').text('');
+    }
+
+    $form.addClass('was-validated');
   });
   jquery_default()('#change-password-form').on('submit', function (e) {
     e.preventDefault();
