@@ -875,7 +875,7 @@ class DRGC_Public {
       $current_user = get_user_by( 'login', $customer['username'] );
       $external_reference_id = get_user_meta( $current_user->ID, '_external_reference_id', true );
 
-      $plugin->shopper->generate_access_token_by_ref_id( $external_reference_id );
+      $plugin->shopper->generate_access_token_by_ref_id( $external_reference_id, false );
     } else {
       $plugin->authenticator->do_refresh_access_token();
     }
