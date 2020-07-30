@@ -13826,16 +13826,17 @@ var CheckoutModule = function ($) {
       $nextSection.next().removeClass('small-closed-right');
     }
 
-    if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('closed')) {
-      $('.dr-address-book-btn.shipping').hide();
-    } else if ($nextSection.hasClass('dr-checkout__shipping') && $nextSection.hasClass('active')) {
-      $('.dr-address-book-btn.shipping').show();
+    if ($section.find('.dr-address-book').length) {
+      $section.find('.dr-address-book-btn').removeClass('active');
+      $section.find('.dr-address-book-btn, .dr-address-book').hide();
     }
 
-    if ($section.hasClass('dr-checkout__billing') && $section.hasClass('closed')) {
-      $('.dr-address-book-btn.billing').hide();
-    } else if ($nextSection.hasClass('dr-checkout__billing') && $nextSection.hasClass('active') && !$('#checkbox-billing').prop('checked')) {
-      $('.dr-address-book-btn.billing').show();
+    if ($nextSection.find('.dr-address-book').length) {
+      if ($nextSection.hasClass('dr-checkout__billing') && $('#checkbox-billing').prop('checked')) {
+        $nextSection.find('.dr-address-book-btn').hide();
+      } else {
+        $nextSection.find('.dr-address-book-btn').show();
+      }
     }
 
     adjustColumns($section);
@@ -14463,12 +14464,12 @@ jQuery(document).ready(function ($) {
       $activeSection.removeClass('active');
       $section.removeClass('closed').addClass('active');
 
-      if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('active')) {
-        $('.dr-address-book-btn.shipping').show();
-      }
-
-      if ($section.hasClass('dr-checkout__billing') && $section.hasClass('active')) {
-        $('.dr-address-book-btn.billing').show();
+      if ($section.find('.dr-address-book').length) {
+        if ($section.hasClass('dr-checkout__billing') && $('#checkbox-billing').prop('checked')) {
+          $section.find('.dr-address-book-btn').hide();
+        } else {
+          $section.find('.dr-address-book-btn').show();
+        }
       }
 
       CheckoutModule.adjustColumns($section);
@@ -14687,6 +14688,14 @@ jQuery(document).ready(function ($) {
         requestShipping: requestShipping
       });
     }
+
+    $('.back-link a').click(function () {
+      if (document.referrer && document.referrer !== drgc_params.loginUrl) {
+        window.location.href = document.referrer;
+      } else {
+        window.location.href = drgc_params.cartUrl;
+      }
+    });
   }
 });
 /* harmony default export */ var public_checkout = (CheckoutModule);

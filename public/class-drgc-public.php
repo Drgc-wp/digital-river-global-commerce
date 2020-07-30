@@ -188,6 +188,7 @@ class DRGC_Public {
 			'checkoutUrl'       =>  drgc_get_page_link( 'checkout' ),
 			'accountUrl'        =>  drgc_get_page_link( 'account' ),
 			'mySubsUrl'         =>  drgc_get_page_link( 'my-subscriptions' ),
+			'loginUrl'          =>  drgc_get_page_link( 'login' ),
 			'loginPath'         =>  parse_url( drgc_get_page_link( 'login' ) )['path'],
 			'siteID'            =>  get_option( 'drgc_site_id' ),
 			'domain'            =>  get_option( 'drgc_domain' ),
