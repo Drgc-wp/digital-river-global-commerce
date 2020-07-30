@@ -174,32 +174,33 @@ class DRGC_Public {
       'invalid_region_msg'             => __('Your region value is invalid. Please supply a different one.', 'digital-river-global-commerce'),
       'upsell_decline_label'           => __('No, thanks', 'digital-river-global-commerce'),
       'unable_place_order_msg'         => __('Unable to place order', 'digital-river-global-commerce')
-    );
+		);
 
-    // transfer drgc options from PHP to JS
-    $options = array(
-      'wpLocale'          =>  get_locale(),
-      'drLocale'          =>  get_dr_locale( get_locale() ),
-      'ajaxUrl'           =>  admin_url( 'admin-ajax.php' ),
-      'ajaxNonce'         =>  wp_create_nonce( 'drgc_ajax' ),
-      'homeUrl'           =>  get_home_url(),
-      'cartUrl'           =>  drgc_get_page_link( 'cart' ),
-      'checkoutUrl'       =>  drgc_get_page_link( 'checkout' ),
-      'accountUrl'        =>  drgc_get_page_link( 'account' ),
-      'mySubsUrl'         =>  drgc_get_page_link( 'my-subscriptions' ),
-      'loginPath'         =>  parse_url( drgc_get_page_link( 'login' ) )['path'],
-      'siteID'            =>  get_option( 'drgc_site_id' ),
-      'domain'            =>  get_option( 'drgc_domain' ),
-      'digitalRiverKey'   =>  get_option( 'drgc_digitalRiver_key' ),
-      'accessToken'       =>  $access_token,
-      'cart'              =>  $cart_obj,
-      'order'             =>  $order_obj,
-      'thankYouEndpoint'  =>  esc_url( drgc_get_page_link( 'thank-you' ) ),
-      'isLogin'           =>  drgc_get_user_status(),
-      'payPal'            =>  array (
-        'sourceId' => isset( $_GET['sourceId'] ) ? $_GET['sourceId'] : false,
-        'failure'  => isset( $_GET['ppcancel'] ) ? $_GET['ppcancel'] : false,
-        'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
+		// transfer drgc options from PHP to JS
+		$options = array(
+			'wpLocale'          =>  get_locale(),
+			'drLocale'          =>  get_dr_locale( get_locale() ),
+			'ajaxUrl'           =>  admin_url( 'admin-ajax.php' ),
+			'ajaxNonce'         =>  wp_create_nonce( 'drgc_ajax' ),
+			'homeUrl'           =>  get_home_url(),
+			'cartUrl'           =>  drgc_get_page_link( 'cart' ),
+			'checkoutUrl'       =>  drgc_get_page_link( 'checkout' ),
+			'accountUrl'        =>  drgc_get_page_link( 'account' ),
+			'mySubsUrl'         =>  drgc_get_page_link( 'my-subscriptions' ),
+			'loginUrl'          =>  drgc_get_page_link( 'login' ),
+			'loginPath'         =>  parse_url( drgc_get_page_link( 'login' ) )['path'],
+			'siteID'            =>  get_option( 'drgc_site_id' ),
+			'domain'            =>  get_option( 'drgc_domain' ),
+			'digitalRiverKey'   =>  get_option( 'drgc_digitalRiver_key' ),
+			'accessToken'       =>  $access_token,
+			'cart'              =>  $cart_obj,
+			'order'             =>  $order_obj,
+			'thankYouEndpoint'  =>  esc_url( drgc_get_page_link( 'thank-you' ) ),
+			'isLogin'           =>  drgc_get_user_status(),
+			'payPal'            =>  array (
+				'sourceId' => isset( $_GET['sourceId'] ) ? $_GET['sourceId'] : false,
+				'failure'  => isset( $_GET['ppcancel'] ) ? $_GET['ppcancel'] : false,
+				'success'  => isset ( $_GET['ppsuccess'] ) ? $_GET['ppsuccess'] : false,
       ),
       'testOrder'          => $testOrder_enable,
       'forceExclTax'       => $force_excl_tax_enable,
