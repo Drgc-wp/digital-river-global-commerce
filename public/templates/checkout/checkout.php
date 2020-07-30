@@ -46,7 +46,7 @@ $check_subs = drgc_is_subs_added_to_cart( $cart );
     <div class="dr-checkout-wrapper__actions">
         <div class="back-link">
 
-            <a href="" onclick="history.back(); return false;">&#60; Back</a>
+            <a href="javascript:void(0)">&#60; Back</a>
 
         </div>
 

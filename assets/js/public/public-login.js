@@ -70,7 +70,7 @@ const LoginModule = (($) => {
             action: 'drgc_logout',
             nonce: drgc_params.ajaxNonce
         };
-        $('body').css({ 'pointer-events': 'none', 'opacity': 0.5 });
+        $('body').addClass('dr-loading');
         $.post(drgc_params.ajaxUrl, data, function(response) {
             location.reload();
         });
@@ -94,7 +94,7 @@ const LoginModule = (($) => {
             nonce: drgc_params.ajaxNonce
         };
 
-        $('body').css({'pointer-events': 'none', 'opacity': 0.5});
+        $('body').addClass('dr-loading');
         $.post(drgc_params.ajaxUrl, data, () => {
             window.location.href = url;
         });
@@ -202,6 +202,8 @@ jQuery(document).ready(($) => {
             $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
         } else if (cpw.validity.customError) {
             $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+        } else {
+            $(cpw).next('.invalid-feedback').text('');
         }
     });
 

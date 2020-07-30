@@ -13832,16 +13832,17 @@ var CheckoutModule = function ($) {
       $nextSection.next().removeClass('small-closed-right');
     }
 
-    if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('closed')) {
-      $('.dr-address-book-btn.shipping').hide();
-    } else if ($nextSection.hasClass('dr-checkout__shipping') && $nextSection.hasClass('active')) {
-      $('.dr-address-book-btn.shipping').show();
+    if ($section.find('.dr-address-book').length) {
+      $section.find('.dr-address-book-btn').removeClass('active');
+      $section.find('.dr-address-book-btn, .dr-address-book').hide();
     }
 
-    if ($section.hasClass('dr-checkout__billing') && $section.hasClass('closed')) {
-      $('.dr-address-book-btn.billing').hide();
-    } else if ($nextSection.hasClass('dr-checkout__billing') && $nextSection.hasClass('active') && !$('#checkbox-billing').prop('checked')) {
-      $('.dr-address-book-btn.billing').show();
+    if ($nextSection.find('.dr-address-book').length) {
+      if ($nextSection.hasClass('dr-checkout__billing') && $('#checkbox-billing').prop('checked')) {
+        $nextSection.find('.dr-address-book-btn').hide();
+      } else {
+        $nextSection.find('.dr-address-book-btn').show();
+      }
     }
 
     adjustColumns($section);
@@ -14473,12 +14474,12 @@ jQuery(document).ready(function ($) {
       $activeSection.removeClass('active');
       $section.removeClass('closed').addClass('active');
 
-      if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('active')) {
-        $('.dr-address-book-btn.shipping').show();
-      }
-
-      if ($section.hasClass('dr-checkout__billing') && $section.hasClass('active')) {
-        $('.dr-address-book-btn.billing').show();
+      if ($section.find('.dr-address-book').length) {
+        if ($section.hasClass('dr-checkout__billing') && $('#checkbox-billing').prop('checked')) {
+          $section.find('.dr-address-book-btn').hide();
+        } else {
+          $section.find('.dr-address-book-btn').show();
+        }
       }
 
       CheckoutModule.adjustColumns($section);
@@ -14697,6 +14698,14 @@ jQuery(document).ready(function ($) {
         requestShipping: requestShipping
       });
     }
+
+    $('.back-link a').click(function () {
+      if (document.referrer && document.referrer !== drgc_params.loginUrl) {
+        window.location.href = document.referrer;
+      } else {
+        window.location.href = drgc_params.cartUrl;
+      }
+    });
   }
 });
 /* harmony default export */ var public_checkout = (CheckoutModule);
@@ -14812,10 +14821,7 @@ var LoginModule = function ($) {
       action: 'drgc_logout',
       nonce: drgc_params.ajaxNonce
     };
-    $('body').css({
-      'pointer-events': 'none',
-      'opacity': 0.5
-    });
+    $('body').addClass('dr-loading');
     $.post(drgc_params.ajaxUrl, data, function (response) {
       location.reload();
     });
@@ -14838,10 +14844,7 @@ var LoginModule = function ($) {
       action: 'drgc_logout',
       nonce: drgc_params.ajaxNonce
     };
-    $('body').css({
-      'pointer-events': 'none',
-      'opacity': 0.5
-    });
+    $('body').addClass('dr-loading');
     $.post(drgc_params.ajaxUrl, data, function () {
       window.location.href = url;
     });
@@ -14938,6 +14941,8 @@ jQuery(document).ready(function ($) {
       $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
     } else if (cpw.validity.customError) {
       $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+    } else {
+      $(cpw).next('.invalid-feedback').text('');
     }
   });
   $('.dr-signup-form').on('submit', function (e) {
@@ -15634,6 +15639,7 @@ jQuery(document).ready(function ($) {
 
 
 
+
 var AccountModule = function ($) {
   var appendAutoRenewalTerms = function appendAutoRenewalTerms(digitalriverjs, entityCode, locale) {
     var terms = checkout_utils.getLocalizedAutoRenewalTerms(digitalriverjs, entityCode, locale);
@@ -15649,9 +15655,9 @@ var AccountModule = function ($) {
 }(jQuery);
 
 jquery_default()(function () {
+  var localizedText = drgc_params.translations;
   if (jquery_default()('#dr-account-page-wrapper').length < 1) return;
   window.drActiveOrderId = '';
-  var localizedText = drgc_params.translations;
   var $body = jquery_default()('body');
   var $ordersModal = jquery_default()('#ordersModal');
   $body.append($ordersModal); // Order detail click
@@ -15748,16 +15754,6 @@ jquery_default()(function () {
     $dialog.css('max-width', '100%');
     window.print();
     $dialog.css('max-width', '');
-  }); // watch account page active tab to start on the same tab after reload
-
-  if (sessionStorage.drAccountTab && jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
-    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
-  } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
-    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
-  }
-
-  jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function (e) {
-    sessionStorage.drAccountTab = jquery_default()(e.target).attr('href');
   }); // Address
 
   var $addresses = jquery_default()('#dr-account-page-wrapper .address');
@@ -15973,9 +15969,7 @@ jquery_default()(function () {
   $addresses.find('form.dr-panel-edit').on('submit', function (e) {
     e.preventDefault();
     saveAddress(e.target);
-  }); //floating labels
-
-  float_label.init(); // Subscriptions
+  }); // Subscriptions
 
   var $subs = jquery_default()('#dr-account-page-wrapper .subscription');
   var $subscriptionError = jquery_default()('#subscriptionError');
@@ -16095,7 +16089,95 @@ jquery_default()(function () {
   jquery_default()('#dr-account-page-wrapper .back').on('click', function () {
     jquery_default()('.dr-tab-pane').removeClass('active show');
     jquery_default()('.dr-list-group-item').removeClass('active').attr('aria-selected', 'false');
+  }); // Change Password
+
+  jquery_default()('#pw-new').on('input', function (e) {
+    public_login.validatePassword(e);
   });
+  jquery_default()('#pw-current, #pw-new, #pw-confirm').on('input', function () {
+    var $form = jquery_default()('#change-password-form');
+    var pw = $form.find('input[type=password]')[0];
+    var npw = $form.find('input[type=password]')[1];
+    var cpw = $form.find('input[type=password]')[2];
+    $form.find('.dr-err-field').text('');
+    npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : npw.validationMessage);
+    cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
+
+    if (npw.validity.valueMissing) {
+      jquery_default()(npw).next('.invalid-feedback').text(localizedText.required_field_msg);
+    } else if (npw.validity.customError) {
+      jquery_default()(npw).next('.invalid-feedback').text(npw.validationMessage);
+    } else {
+      jquery_default()(npw).next('.invalid-feedback').text('');
+    }
+
+    if (cpw.validity.valueMissing) {
+      jquery_default()(cpw).next('.invalid-feedback').text(localizedText.required_field_msg);
+    } else if (cpw.validity.customError) {
+      jquery_default()(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+    } else {
+      jquery_default()(cpw).next('.invalid-feedback').text('');
+    }
+
+    $form.addClass('was-validated');
+  });
+  jquery_default()('#change-password-form').on('submit', function (e) {
+    e.preventDefault();
+    var $form = jquery_default()(e.target);
+    var $error = $form.find('.dr-err-field');
+    $form.addClass('was-validated');
+    if ($form.data('processing')) return false;
+    if (!$form[0].checkValidity()) return false;
+    $form.data('processing', true);
+    $error.text('');
+    var data = {
+      action: 'drgc_change_password',
+      nonce: drgc_params.ajaxNonce,
+      current_password: jquery_default()('#pw-current').val(),
+      new_password: jquery_default()('#pw-new').val(),
+      confirm_new_password: jquery_default()('#pw-confirm').val()
+    };
+    jquery_default()('body').addClass('dr-loading');
+    jquery_default.a.post(drgc_params.ajaxUrl, data, function (response) {
+      if (!response.success) {
+        if (response.data && response.data.errors && response.data.errors.error[0].hasOwnProperty('description')) {
+          $error.text(response.data.errors.error[0].description);
+        } else if (Object.prototype.toString.call(response.data) === '[object String]') {
+          $error.text(response.data);
+        } else {
+          $error.text(localizedText.undefined_error_msg);
+        }
+
+        $error.css('color', 'red');
+        sessionStorage.setItem('drgc-pw-changed', 'false');
+        jquery_default()('body').removeClass('dr-loading');
+      } else {
+        sessionStorage.setItem('drgc-pw-changed', 'true');
+        location.reload();
+      }
+
+      jquery_default()('#pw-current, #pw-new, #pw-confirm').val('').removeClass('is-invalid').removeClass('is-valid');
+      $form.data('processing', false).removeClass('was-validated');
+    });
+  }); // watch account page active tab to start on the same tab after reload
+
+  jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function (e) {
+    sessionStorage.drAccountTab = jquery_default()(e.target).attr('href');
+
+    if (e.target.id === 'list-password-list' && sessionStorage.getItem('drgc-pw-changed') === 'true') {
+      sessionStorage.setItem('drgc-pw-changed', 'false');
+      jquery_default()('#dr-passwordUpdated').drModal('show');
+    }
+  });
+
+  if (sessionStorage.drAccountTab && jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
+    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
+  } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
+    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
+  } //floating labels
+
+
+  float_label.init();
 });
 /* harmony default export */ var public_account = (AccountModule);
 // CONCATENATED MODULE: ./assets/js/public/user-activity-watcher.js
