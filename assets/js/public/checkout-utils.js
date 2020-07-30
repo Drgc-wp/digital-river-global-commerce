@@ -103,13 +103,16 @@ const CheckoutUtils = (($, params) => {
     $target.text(addressArr.join(', '));
   };
 
-  const updateSummaryPricing = (cart) => {
-    const lineItems = cart.lineItems.lineItem;
-    const pricing = cart.pricing;
-    const newPricing = getSeparatedPricing(lineItems, pricing);
+  const updateSummaryPricing = (order, isTaxInclusive) => {
+    const lineItems = order.lineItems ? order.lineItems.lineItem : (order.products || []);
+    const pricing = order.pricing;
+    const newPricing = getSeparatedPricing(lineItems, pricing, isTaxInclusive);
+    const shippingVal = pricing.shippingAndHandling ?
+      pricing.shippingAndHandling.value :
+      pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
 
     $('div.dr-summary__shipping > .item-value').text(
-      pricing.shippingAndHandling.value === 0 ?
+      shippingVal === 0 ?
       params.translations.free_label :
       newPricing.formattedShippingAndHandling
     );
@@ -313,7 +316,7 @@ const CheckoutUtils = (($, params) => {
     return formatPrice(val, pricing);
   };
 
-  const getSeparatedPricing = (lineItems, pricing) => {
+  const getSeparatedPricing = (lineItems, pricing, isTaxInclusive) => {
     let productTax = 0;
     let shippingTax = 0;
     const forceExclTax = drgc_params.forceExclTax === 'true';
@@ -329,20 +332,10 @@ const CheckoutUtils = (($, params) => {
     return {
       formattedProductTax: formatPrice(productTax, pricing),
       formattedShippingTax: formatPrice(shippingTax, pricing),
-      formattedSubtotal: (isTaxInclusive() && forceExclTax) ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
-      formattedShippingAndHandling: (isTaxInclusive() && forceExclTax) ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
+      formattedSubtotal: (isTaxInclusive && forceExclTax) ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: (isTaxInclusive && forceExclTax) ? formatPrice(shippingVal - shippingTax, pricing) : (pricing.formattedShippingAndHandling || pricing.formattedShipping)
     };
   };
-
-  const shouldDisplayVat = () => {
-    const currency = $('.dr-currency-select').val();
-    return (currency === 'GBP' || currency === 'EUR');
-  };
-
-  const isTaxInclusive = () => {
-    const locale = $('.dr-currency-select option:selected').data('locale') || drgc_params.drLocale;
-    return locale !== 'en_US';
-  }
 
   return {
     createDisplayItems,
@@ -369,9 +362,7 @@ const CheckoutUtils = (($, params) => {
     getLocalizedAutoRenewalTerms,
     formatPrice,
     getCorrectSubtotalWithDiscount,
-    getSeparatedPricing,
-    shouldDisplayVat,
-    isTaxInclusive
+    getSeparatedPricing
   };
 })(jQuery, drgc_params);
 
