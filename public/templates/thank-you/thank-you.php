@@ -53,7 +53,24 @@ if($billing_city !== '' && $billing_code !== '') {
 
 ?>
 
-<div class="dr-thank-you-wrapper" id="dr-thank-you-page-wrapper">
+<style>
+/* For thank you page only */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .section-to-print, .section-to-print * {
+    visibility: visible;
+  }
+  .section-to-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+</style>
+
+<div class="dr-thank-you-wrapper section-to-print" id="dr-thank-you-page-wrapper">
 
     <h1 class="page-title"><?php echo __( 'Thank you', 'digital-river-global-commerce' ) ?></h1>
 

@@ -15440,11 +15440,7 @@ jQuery(document).ready(function ($) {
     }
 
     $(document).on('click', '#print-button', function () {
-      var printContents = $('.dr-thank-you-wrapper').html();
-      var originalContents = document.body.innerHTML;
-      document.body.innerHTML = printContents;
       window.print();
-      document.body.innerHTML = originalContents;
     });
     var digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
     checkout_utils.applyLegalLinks(digitalriverjs);
