@@ -15122,12 +15122,8 @@ var PdpModule = function ($) {
   };
 
   var displayRealTimeBuyBtn = function displayRealTimeBuyBtn(purchasable, isRedirectBuyBtn, $target) {
-    if (isRedirectBuyBtn) {
-      $target.text(drgc_params.translations.buy_now).addClass('dr-redirect-buy-btn').prop('disabled', false);
-    } else {
-      purchasable = purchasable === 'true';
-      $target.text(purchasable ? drgc_params.translations.add_to_cart : drgc_params.translations.out_of_stock).prop('disabled', !purchasable);
-    }
+    var isOutOfStock = purchasable === 'false';
+    $target.prop('disabled', isOutOfStock).text(isOutOfStock ? drgc_params.translations.out_of_stock : isRedirectBuyBtn ? drgc_params.translations.buy_now : drgc_params.translations.add_to_cart).addClass(isRedirectBuyBtn ? 'dr-redirect-buy-btn' : '');
   };
 
   return {
@@ -15413,17 +15409,34 @@ jQuery(document).ready(function ($) {
       var $priceDiv = $(elem).find(pdDisplayOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
       var $buyBtn = $(elem).find('.dr-buy-btn').text(drgc_params.translations.loading_msg).prop('disabled', true);
       var productID = $buyBtn.data('product-id');
+      var parentId = $buyBtn.data('parent-id');
       if (!productID) return;
-      commerce_api.getProduct(productID, {
-        expand: 'inventoryStatus'
-      }).then(function (res) {
-        var purchasable = res.product.inventoryStatus.productIsInStock;
-        var isVariation = res.product.parentProduct ? true : false;
-        isPdCard = true; // to avoid being overwritten by concurrency
 
-        PdpModule.displayRealTimePricing(res.product.pricing, pdDisplayOption, $priceDiv);
-        PdpModule.displayRealTimeBuyBtn(purchasable, isVariation, $buyBtn);
-      });
+      if (parentId) {
+        commerce_api.getProduct(parentId, {
+          fields: 'variations',
+          expand: 'all'
+        }).then(function (res) {
+          var variations = res.product.variations.product;
+          var isInStock = variations.some(function (elem) {
+            return elem.inventoryStatus.availableQuantity > 0;
+          });
+          isPdCard = true; // to avoid being overwritten by concurrency
+
+          PdpModule.displayRealTimePricing(variations[0].pricing, pdDisplayOption, $priceDiv);
+          PdpModule.displayRealTimeBuyBtn(isInStock.toString(), true, $buyBtn);
+        });
+      } else {
+        commerce_api.getProduct(productID, {
+          expand: 'inventoryStatus'
+        }).then(function (res) {
+          var purchasable = res.product.inventoryStatus.productIsInStock;
+          isPdCard = true; // to avoid being overwritten by concurrency
+
+          PdpModule.displayRealTimePricing(res.product.pricing, pdDisplayOption, $priceDiv);
+          PdpModule.displayRealTimeBuyBtn(purchasable, false, $buyBtn);
+        });
+      }
     });
   }
 });
