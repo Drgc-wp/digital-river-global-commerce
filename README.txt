@@ -91,6 +91,13 @@ No, you are responsible for hosting your own site.
 
 
 == Changelog ==
+= [1.3.1] - 2020-08-04 =
+* Added new display for Tax inclusive/exclusive price
+* Added Change Password feature in Profile management
+* Minor Bug fixes
+
+
+
 = [1.3] - 2020-07-14 =
 * Added Subscriptions feature with support for manual/recurring billing
 * Added Profile management for registered shoppers to manage and view orders, addresses and subscriptions
