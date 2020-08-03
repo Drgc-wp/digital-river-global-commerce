@@ -708,28 +708,33 @@ class DRGC_Public {
    * @since  1.1.0
    */
   public function redirect_on_page_load() {
-    if ( is_page( 'checkout' ) ) {
-      $cart = DRGC()->cart->retrieve_cart();
+    if ( is_page( 'checkout' ) || is_page( 'account' ) || is_page( 'thank-you' ) ) {
       $customer = DRGC()->shopper->retrieve_shopper();
       $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
       $is_guest = 'true' === $_COOKIE['drgc_guest_flag'];
-      $check_subs = drgc_is_subs_added_to_cart( $cart );
-      $terms_checked = drgc_is_auto_renewal_terms_checked( $cart );
 
-      if ( ! $is_logged_in && ( ! $is_guest || $check_subs['has_subs'] ) ) {
-        wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
-        exit;
-      } elseif ( $check_subs['is_auto'] && ! $terms_checked ) {
-        wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
-        exit;
-      }
-    } elseif ( is_page( 'account' ) ) {
-      $customer = DRGC()->shopper->retrieve_shopper();
-      $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
+      if ( is_page( 'checkout' ) ) {
+        $cart = DRGC()->cart->retrieve_cart();
+        $check_subs = drgc_is_subs_added_to_cart( $cart );
+        $terms_checked = drgc_is_auto_renewal_terms_checked( $cart );
 
-      if ( ! $is_logged_in ) {
-        wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
-        exit;
+        if ( ! $is_logged_in && ( ! $is_guest || $check_subs['has_subs'] ) ) {
+          wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
+          exit;
+        } elseif ( $check_subs['is_auto'] && ! $terms_checked ) {
+          wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
+          exit;
+        }
+      } elseif ( is_page( 'account' ) ) {
+        if ( ! $is_logged_in ) {
+          wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
+          exit;
+        }
+      } elseif ( is_page( 'thank-you' ) ) {
+        if ( ! $is_logged_in && ! $is_guest ) {
+          wp_redirect( get_permalink( get_page_by_path( 'login' ) ) );
+          exit;
+        }
       }
     }
   }
