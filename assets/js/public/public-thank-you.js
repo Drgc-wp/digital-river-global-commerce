@@ -10,12 +10,7 @@ jQuery(document).ready(($) => {
         }
 
         $(document).on('click', '#print-button', function() {
-            var printContents = $('.dr-thank-you-wrapper').html();
-            var originalContents = document.body.innerHTML;
-
-            document.body.innerHTML = printContents;
             window.print();
-            document.body.innerHTML = originalContents;
         });
 
         const digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
