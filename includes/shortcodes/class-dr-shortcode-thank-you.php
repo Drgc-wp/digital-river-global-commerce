@@ -30,6 +30,10 @@ class DR_Shortcode_Thank_You {
     $order = $plugin->cart->retrieve_order();
     $customer = $plugin->shopper->get_shopper_data();
 
+    if(!isset($order["order"]["id"])){
+      echo  __( 'Session Expired!', 'digital-river-global-commerce' );
+      exit;
+    }
     drgc_get_template(
       'thank-you/thank-you.php',
       compact( 'order', 'customer' )

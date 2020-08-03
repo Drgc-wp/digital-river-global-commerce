@@ -723,7 +723,7 @@ class DRGC_Public {
         wp_redirect( get_permalink( get_page_by_path( 'cart' ) ) );
         exit;
       }
-    } elseif ( is_page( 'account' ) || is_page( 'thank-you' ) ) {
+    } elseif ( is_page( 'account' ) ) {
       $customer = DRGC()->shopper->retrieve_shopper();
       $is_logged_in = $customer && 'Anonymous' !== $customer['id'];
 
@@ -749,7 +749,7 @@ class DRGC_Public {
 				'renewal_type' => $_POST['renewalType']
 			);
 
-			$response = $plugin->user_management->send_request( 'SWITCH_RENEWAL_TYPE', $params );			
+			$response = $plugin->user_management->send_request( 'SWITCH_RENEWAL_TYPE', $params );
 
 			if ( $response ) {
 				$plugin->user_management->send_json_response( $response );
