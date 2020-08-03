@@ -548,7 +548,8 @@ $(() => {
         const cpw = $form.find('input[type=password]')[2];
 
         $form.find('.dr-err-field').text('');
-        npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : npw.validationMessage);
+        npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : 
+            npw.validationMessage !== localizedText.new_password_error_msg ? npw.validationMessage : '');
         cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
 
         if (npw.validity.valueMissing) {
