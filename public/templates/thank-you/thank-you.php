@@ -74,6 +74,8 @@ if($billing_city !== '' && $billing_code !== '') {
 
     <h1 class="page-title"><?php echo __( 'Thank you', 'digital-river-global-commerce' ) ?></h1>
 
+    <?php if ( isset( $order['order']['id'] ) ): ?>
+
     <div class="dr-thank-you-wrapper__info">
 
         <div class="subheading"><?php echo __( 'Your order was completed successfully.', 'digital-river-global-commerce' ) ?></div>
@@ -156,5 +158,7 @@ if($billing_city !== '' && $billing_code !== '') {
         </div>
 
     </div>
+
+    <?php endif; ?>
 
 </div>
