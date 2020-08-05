@@ -829,6 +829,19 @@
     }
 }
 
+#dr-passwordUpdated {
+    .dr-modal-content {
+        text-align: center;
+    }
+    .dr-modal-icon > img {
+        max-width: 25%;
+    }
+
+    .dr-modal-footer > button {
+        width: 100%;
+    }
+}
+
 .drgc-wrapper #dr-account-page-wrapper .dr-panel-edit label {
     cursor:text;
 }

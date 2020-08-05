@@ -48,6 +48,10 @@
 
 <?php foreach ( $orders['orders']['order'] as $order ): ?>
 
+<?php
+  $order_currency = $order['pricing']['total']['currency'] ?? '';
+  $order_locale = $order['locale'] ?? '';
+?>
     <div class="order">
 
         <div class="order-id" data-heading="<?php echo $orderID; ?>">
@@ -116,10 +120,14 @@
                         name: '<?php echo $lineItem['product']['displayName']; ?>',
                         image: '<?php echo $lineItem['product']['thumbnailImage']; ?>',
                         salePrice: '<?php echo $lineItem['pricing']['formattedSalePriceWithQuantity']; ?>',
-                        strikePrice: '<?php echo $lineItem['pricing']['formattedListPriceWithQuantity']; ?>'
+                        strikePrice: '<?php echo $lineItem['pricing']['formattedListPriceWithQuantity']; ?>',
+                        encodedPricing: '<?php echo json_encode( $lineItem['pricing'] ); ?>'
                     },
                 <?php endforeach; ?>
-            ]
+            ],
+            encodedPricing: '<?php echo json_encode( $order['pricing'] ); ?>',
+            shouldDisplayVat: '<?php echo drgc_should_display_vat( $order_currency ) ? 'true' : 'false' ?>',
+            isTaxInclusive: '<?php echo drgc_is_tax_inclusive( $order_locale ) ? 'true' : 'false' ?>'
         }
     </script>
     
@@ -190,6 +198,10 @@
                             <div class="dr-summary__shipping">
                                 <p class="item-label"><?php echo __( 'Shipping', 'digital-river-global-commerce' ) ?></p>
                                 <p class="item-value dr-modal-shipping"></p>
+                            </div>
+                            <div class="dr-summary__shipping-tax">
+                                <p class="item-label"><?php echo __( 'Shipping Tax', 'digital-river-global-commerce' ) ?></p>
+                                <p class="item-value dr-modal-shipping-tax"></p>
                             </div>
                             <!-- end if -->
                             <div class="dr-summary__discount">

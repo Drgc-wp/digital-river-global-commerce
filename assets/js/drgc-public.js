@@ -11980,18 +11980,17 @@ var CheckoutUtils = function ($, params) {
     $target.text(addressArr.join(', '));
   };
 
-  var updateSummaryPricing = function updateSummaryPricing(cart) {
-    var _cart$pricing = cart.pricing,
-        formattedOrderTotal = _cart$pricing.formattedOrderTotal,
-        formattedTax = _cart$pricing.formattedTax;
+  var updateSummaryPricing = function updateSummaryPricing(order, isTaxInclusive) {
+    var lineItems = order.lineItems ? order.lineItems.lineItem : order.products || [];
+    var pricing = order.pricing;
+    var newPricing = getSeparatedPricing(lineItems, pricing, isTaxInclusive);
+    var shippingVal = pricing.shippingAndHandling ? pricing.shippingAndHandling.value : pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
 
-    if (Object.keys(cart.shippingMethod).length) {
-      var formattedShippingAndHandling = cart.pricing.shippingAndHandling.value === 0 ? params.translations.free_label : cart.pricing.formattedShippingAndHandling;
-      $('div.dr-summary__shipping > .item-value').text(formattedShippingAndHandling);
-    }
-
-    $('div.dr-summary__tax > .item-value').text(formattedTax);
-    $('div.dr-summary__total > .total-value').text(formattedOrderTotal);
+    $('div.dr-summary__shipping > .item-value').text(shippingVal === 0 ? params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $('div.dr-summary__tax > .item-value').text(newPricing.formattedProductTax);
+    $('div.dr-summary__shipping-tax > .item-value').text(newPricing.formattedShippingTax);
+    $('div.dr-summary__subtotal > .subtotal-value').text(newPricing.formattedSubtotal);
+    $('div.dr-summary__total > .total-value').text(pricing.formattedOrderTotal);
     $('.dr-summary').removeClass('dr-loading');
   };
 
@@ -12158,6 +12157,45 @@ var CheckoutUtils = function ($, params) {
     return Object.keys(compliance).length ? compliance.autorenewalPlanTerms.localizedText : '';
   };
 
+  var formatPrice = function formatPrice(val, pricing) {
+    var localeCode = ($('.dr-currency-select').find('option:selected').data('locale') || drgc_params.drLocale).replace('_', '-');
+    var currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
+    var symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
+    var formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
+    var decimalSymbol = 0 .toLocaleString(localeCode, {
+      minimumFractionDigits: 1
+    })[1];
+    var digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ? formattedPriceWithoutSymbol.split(decimalSymbol).pop().length : 0;
+    val = val.toLocaleString(localeCode, {
+      minimumFractionDigits: digits
+    });
+    val = symbolAsPrefix ? currencySymbol + val : val + currencySymbol;
+    return val;
+  };
+
+  var getCorrectSubtotalWithDiscount = function getCorrectSubtotalWithDiscount(pricing) {
+    var val = pricing.subtotal.value - pricing.discount.value;
+    return formatPrice(val, pricing);
+  };
+
+  var getSeparatedPricing = function getSeparatedPricing(lineItems, pricing, isTaxInclusive) {
+    var productTax = 0;
+    var shippingTax = 0;
+    var forceExclTax = drgc_params.forceExclTax === 'true';
+    var shippingVal = pricing.shippingAndHandling ? pricing.shippingAndHandling.value : pricing.shipping ? pricing.shipping.value : 0; // cart is using shippingAndHandling, order is using shipping
+
+    lineItems.forEach(function (lineItem) {
+      productTax += lineItem.pricing.productTax.value;
+      shippingTax += lineItem.pricing.shippingTax.value;
+    });
+    return {
+      formattedProductTax: formatPrice(productTax, pricing),
+      formattedShippingTax: formatPrice(shippingTax, pricing),
+      formattedSubtotal: isTaxInclusive && forceExclTax ? formatPrice(pricing.subtotal.value - productTax, pricing) : pricing.formattedSubtotal,
+      formattedShippingAndHandling: isTaxInclusive && forceExclTax ? formatPrice(shippingVal - shippingTax, pricing) : pricing.formattedShippingAndHandling || pricing.formattedShipping
+    };
+  };
+
   return {
     createDisplayItems: createDisplayItems,
     createShippingOptions: createShippingOptions,
@@ -12180,7 +12218,10 @@ var CheckoutUtils = function ($, params) {
     getSupportedCountries: getSupportedCountries,
     createCartRequest: createCartRequest,
     isSubsAddedToCart: isSubsAddedToCart,
-    getLocalizedAutoRenewalTerms: getLocalizedAutoRenewalTerms
+    getLocalizedAutoRenewalTerms: getLocalizedAutoRenewalTerms,
+    formatPrice: formatPrice,
+    getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
+    getSeparatedPricing: getSeparatedPricing
   };
 }(jQuery, drgc_params);
 
@@ -12780,22 +12821,47 @@ var CartModule = function ($) {
     });
   };
 
-  var renderOffers = function renderOffers(lineItems) {
-    lineItems.forEach(function (lineItem, idx) {
-      // Candy Rack (should be inserted after specific line item)
-      commerce_api.getOffersByPoP('CandyRack_ShoppingCart', {
-        expand: 'all'
-      }, lineItem.product.id).then(function (res) {
-        var offers = res.offers.offer;
+  var getOffersByPoP = function getOffersByPoP(type) {
+    var productId = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+    var data = {
+      action: 'drgc_get_offers_by_pop',
+      nonce: drgc_params.ajaxNonce,
+      popType: type,
+      productId: productId
+    };
+    $.post(drgc_params.ajaxUrl, data, function (response) {
+      var res = response.data;
 
-        if (offers && offers.length) {
-          offers.forEach(function (offer) {
-            renderCandyRackOffer(offer, lineItems[idx].product.id);
-          });
+      if (response.success) {
+        if (res.offers) {
+          var offers = res.offers.offer || '';
+
+          if (offers && offers.length) {
+            offers.forEach(function (offer) {
+              switch (type) {
+                case 'CandyRack_ShoppingCart':
+                  renderCandyRackOffer(offer, productId);
+                  break;
+
+                case 'Banner_ShoppingCartLocal':
+                  renderBannerOffer(offer);
+                  break;
+              }
+            });
+          }
+        } else if (res.errors) {
+          drToast.displayMessage(res.errors.error[0], 'error');
         }
-      })["catch"](function (jqXHR) {
-        return checkout_utils.apiErrorHandler(jqXHR);
-      }); // Bundle Tight (should disable edit buttons of specific line item)
+      } else {
+        drToast.displayMessage(localizedText.undefined_error_msg, 'error');
+      }
+    });
+  };
+
+  var renderOffers = function renderOffers(lineItems) {
+    lineItems.forEach(function (lineItem) {
+      // Candy Rack (should be inserted after specific line item)
+      getOffersByPoP('CandyRack_ShoppingCart', lineItem.product.id); // Bundle Tight (should disable edit buttons of specific line item)
 
       commerce_api.getOffersByProduct(lineItem.product.id, {
         expand: 'all'
@@ -12812,19 +12878,7 @@ var CartModule = function ($) {
       });
     }); // Banner (should be appended after all the line items)
 
-    commerce_api.getOffersByPoP('Banner_ShoppingCartLocal', {
-      expand: 'all'
-    }).then(function (res) {
-      var offers = res.offers.offer;
-
-      if (offers && offers.length) {
-        offers.forEach(function (offer) {
-          renderBannerOffer(offer);
-        });
-      }
-    })["catch"](function (jqXHR) {
-      return checkout_utils.apiErrorHandler(jqXHR);
-    });
+    getOffersByPoP('Banner_ShoppingCartLocal');
   };
 
   var renderCandyRackOffer = function renderCandyRackOffer(offer, driverProductID) {
@@ -12951,32 +13005,32 @@ var CartModule = function ($) {
     };
   }();
 
-  var getCorrectSubtotalWithDiscount = function getCorrectSubtotalWithDiscount(pricing) {
-    var localeCode = $('.dr-currency-select').find('option:selected').data('locale').replace('_', '-');
-    var currencySymbol = pricing.formattedSubtotal.replace(/\d+/g, '').replace(/[,.]/g, '');
-    var symbolAsPrefix = pricing.formattedSubtotal.indexOf(currencySymbol) === 0;
-    var formattedPriceWithoutSymbol = pricing.formattedSubtotal.replace(currencySymbol, '');
-    var decimalSymbol = 0 .toLocaleString(localeCode, {
-      minimumFractionDigits: 1
-    })[1];
-    var digits = formattedPriceWithoutSymbol.indexOf(decimalSymbol) > -1 ? formattedPriceWithoutSymbol.split(decimalSymbol).pop().length : 0;
-    var val = pricing.subtotal.value - pricing.discount.value;
-    val = val.toLocaleString(localeCode, {
-      minimumFractionDigits: digits
-    });
-    val = symbolAsPrefix ? currencySymbol + val : val + currencySymbol;
-    return val;
-  };
-
-  var renderSummary = function renderSummary(pricing, hasPhysicalProduct) {
+  var renderSummary = function renderSummary(cart, hasPhysicalProduct) {
+    var lineItems = cart.lineItems.lineItem;
+    var pricing = cart.pricing;
+    var $taxRow = $('.dr-summary__tax');
+    var $shippingTaxRow = $('.dr-summary__shipping-tax');
     var $discountRow = $('.dr-summary__discount');
     var $shippingRow = $('.dr-summary__shipping');
-    var $subtotalRow = $('.dr-summary__discounted-subtotal');
+    var $subtotalRow = $('.dr-summary__subtotal');
+    var $totalRow = $('.dr-summary__total');
+    var newPricing = checkout_utils.getSeparatedPricing(lineItems, pricing, drgc_params.isTaxInclusive === 'true');
     $discountRow.find('.discount-value').text("-".concat(pricing.formattedDiscount));
-    $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? localizedText.free_label : pricing.formattedShippingAndHandling);
-    $subtotalRow.find('.discounted-subtotal-value').text(pricing.subtotalWithDiscount.value > pricing.subtotal.value ? getCorrectSubtotalWithDiscount(pricing) : pricing.formattedSubtotalWithDiscount);
+    $taxRow.find('.tax-value').text(newPricing.formattedProductTax);
+    $shippingTaxRow.find('.shipping-tax-value').text(newPricing.formattedShippingTax);
+    $shippingRow.find('.shipping-value').text(pricing.shippingAndHandling.value === 0 ? drgc_params.translations.free_label : newPricing.formattedShippingAndHandling);
+    $subtotalRow.find('.subtotal-value').text(newPricing.formattedSubtotal);
+    $totalRow.find('.total-value').text(pricing.formattedOrderTotal);
     if (pricing.discount.value) $discountRow.show();else $discountRow.hide();
-    if (hasPhysicalProduct) $shippingRow.show();else $shippingRow.hide();
+
+    if (hasPhysicalProduct) {
+      $shippingRow.show();
+      $shippingTaxRow.show();
+    } else {
+      $shippingRow.hide();
+      $shippingTaxRow.hide();
+    }
+
     return new Promise(function (resolve) {
       return resolve();
     });
@@ -12992,7 +13046,7 @@ var CartModule = function ($) {
 
       if (lineItems && lineItems.length) {
         hasPhysicalProduct = hasPhysicalProductInLineItems(lineItems);
-        return Promise.all([renderLineItems(lineItems), renderSummary(res.cart.pricing, hasPhysicalProduct)]);
+        return Promise.all([renderLineItems(lineItems), renderSummary(res.cart, hasPhysicalProduct)]);
       } else {
         if (typeof $.cookie('drgc_upsell_decline') !== 'undefined') $.removeCookie('drgc_upsell_decline', {
           path: '/'
@@ -13047,13 +13101,13 @@ var CartModule = function ($) {
     initAutoRenewalTerms: initAutoRenewalTerms,
     appendAutoRenewalTerms: appendAutoRenewalTerms,
     setProductQty: setProductQty,
+    getOffersByPoP: getOffersByPoP,
     renderOffers: renderOffers,
     renderCandyRackOffer: renderCandyRackOffer,
     renderBannerOffer: renderBannerOffer,
     disableEditBtnsForBundle: disableEditBtnsForBundle,
     renderSingleLineItem: renderSingleLineItem,
     renderLineItems: renderLineItems,
-    getCorrectSubtotalWithDiscount: getCorrectSubtotalWithDiscount,
     renderSummary: renderSummary,
     fetchFreshCart: fetchFreshCart,
     updateUpsellCookie: updateUpsellCookie
@@ -13369,7 +13423,7 @@ var DRGooglePay = function ($, translations) {
           shippingOptions: shippingOptions
         };
         event.updateWith(requestUpdateObject);
-        checkout_utils.updateSummaryPricing(data.cart);
+        checkout_utils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       })["catch"](function (jqXHR) {
         event.updateWith({
           status: 'failure',
@@ -13589,7 +13643,7 @@ var DRApplePay = function ($, translations) {
           shippingOptions: shippingOptions
         };
         event.updateWith(requestUpdateObject);
-        checkout_utils.updateSummaryPricing(data.cart);
+        checkout_utils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       })["catch"](function (jqXHR) {
         event.updateWith({
           status: 'failure',
@@ -13711,18 +13765,20 @@ var CheckoutModule = function ($) {
     $('#dr-preTAndC').trigger('change');
   };
 
-  var shouldDisplayVat = function shouldDisplayVat() {
-    var currency = $('.dr-currency-select').val();
-    return currency === 'GBP' || currency === 'EUR';
-  };
-
   var updateSummaryLabels = function updateSummaryLabels() {
+    var isTaxInclusive = drgc_params.isTaxInclusive === 'true';
+    var forceExclTax = drgc_params.forceExclTax === 'true';
+    var shouldDisplayVat = drgc_params.shouldDisplayVat === 'true';
+    var taxSuffixLabel = isTaxInclusive ? forceExclTax ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label : '';
+
     if ($('.dr-checkout__payment').hasClass('active') || $('.dr-checkout__confirmation').hasClass('active')) {
-      $('.dr-summary__tax .item-label').text(shouldDisplayVat() ? localizedText.vat_label : localizedText.tax_label);
-      $('.dr-summary__shipping .item-label').text(localizedText.shipping_label);
+      $('.dr-summary__tax .item-label').text(shouldDisplayVat ? localizedText.vat_label : localizedText.tax_label);
+      $('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
+      $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ? localizedText.shipping_vat_label : localizedText.shipping_tax_label);
     } else {
-      $('.dr-summary__tax .item-label').text(shouldDisplayVat() ? localizedText.estimated_vat_label : localizedText.estimated_tax_label);
-      $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label);
+      $('.dr-summary__tax .item-label').text(shouldDisplayVat ? localizedText.estimated_vat_label : localizedText.estimated_tax_label);
+      $('.dr-summary__shipping .item-label').text(localizedText.estimated_shipping_label + taxSuffixLabel);
+      $('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ? localizedText.estimated_shipping_vat_label : localizedText.estimated_shipping_tax_label);
     }
   };
 
@@ -13731,7 +13787,8 @@ var CheckoutModule = function ($) {
     return new Promise(function (resolve, reject) {
       $.ajax({
         type: 'GET',
-        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage?ESICaching=off"),
+        url: "https://drh-fonts.img.digitalrivercontent.net/store/".concat(drgc_params.siteID, "/").concat(selectedLocale, "/DisplayPage/id.SimpleRegistrationPage"),
+        cache: false,
         success: function success(response) {
           var addressTypes = requestShipping ? ['shipping', 'billing'] : ['billing'];
           addressTypes.forEach(function (type) {
@@ -13762,16 +13819,17 @@ var CheckoutModule = function ($) {
       $nextSection.next().removeClass('small-closed-right');
     }
 
-    if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('closed')) {
-      $('.dr-address-book-btn.shipping').hide();
-    } else if ($nextSection.hasClass('dr-checkout__shipping') && $nextSection.hasClass('active')) {
-      $('.dr-address-book-btn.shipping').show();
+    if ($section.find('.dr-address-book').length) {
+      $section.find('.dr-address-book-btn').removeClass('active');
+      $section.find('.dr-address-book-btn, .dr-address-book').hide();
     }
 
-    if ($section.hasClass('dr-checkout__billing') && $section.hasClass('closed')) {
-      $('.dr-address-book-btn.billing').hide();
-    } else if ($nextSection.hasClass('dr-checkout__billing') && $nextSection.hasClass('active') && !$('#checkbox-billing').prop('checked')) {
-      $('.dr-address-book-btn.billing').show();
+    if ($nextSection.find('.dr-address-book').length) {
+      if ($nextSection.hasClass('dr-checkout__billing') && $('#checkbox-billing').prop('checked')) {
+        $nextSection.find('.dr-address-book-btn').hide();
+      } else {
+        $nextSection.find('.dr-address-book-btn').show();
+      }
     }
 
     adjustColumns($section);
@@ -14019,7 +14077,9 @@ jQuery(document).ready(function ($) {
     };
     var paymentSourceId = null; // Section progress
 
-    var finishedSectionIdx = -1; // Create elements through DR.js
+    var finishedSectionIdx = -1; // Break down tax and update summary on page load
+
+    checkout_utils.updateSummaryPricing(cartData, drgc_params.isTaxInclusive === 'true'); // Create elements through DR.js
 
     if ($('.credit-card-section').length) {
       var getStyleOptionsFromClass = function getStyleOptionsFromClass(className) {
@@ -14151,7 +14211,7 @@ jQuery(document).ready(function ($) {
         }
 
         CheckoutModule.moveToNextSection($section);
-        checkout_utils.updateSummaryPricing(data.cart);
+        checkout_utils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       })["catch"](function (jqXHR) {
         $button.removeClass('sending').blur();
         CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
@@ -14261,7 +14321,7 @@ jQuery(document).ready(function ($) {
         }
 
         CheckoutModule.moveToNextSection($section);
-        checkout_utils.updateSummaryPricing(data.cart);
+        checkout_utils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       })["catch"](function (jqXHR) {
         $button.removeClass('sending').blur();
         CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
@@ -14287,7 +14347,7 @@ jQuery(document).ready(function ($) {
         }
 
         CheckoutModule.moveToNextSection($section);
-        checkout_utils.updateSummaryPricing(data.cart);
+        checkout_utils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       })["catch"](function (jqXHR) {
         $button.removeClass('sending').blur();
         CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
@@ -14298,7 +14358,7 @@ jQuery(document).ready(function ($) {
       var shippingOptionId = $form.children().find('input:radio:checked').first().data('id');
       $('.dr-summary').addClass('dr-loading');
       commerce_api.applyShippingOption(shippingOptionId).then(function (data) {
-        checkout_utils.updateSummaryPricing(data.cart);
+        checkout_utils.updateSummaryPricing(data.cart, drgc_params.isTaxInclusive === 'true');
       })["catch"](function (jqXHR) {
         CheckoutModule.displayAddressErrMsg(jqXHR, $form.find('.dr-err-field'));
         $('.dr-summary').removeClass('dr-loading');
@@ -14397,12 +14457,12 @@ jQuery(document).ready(function ($) {
       $activeSection.removeClass('active');
       $section.removeClass('closed').addClass('active');
 
-      if ($section.hasClass('dr-checkout__shipping') && $section.hasClass('active')) {
-        $('.dr-address-book-btn.shipping').show();
-      }
-
-      if ($section.hasClass('dr-checkout__billing') && $section.hasClass('active')) {
-        $('.dr-address-book-btn.billing').show();
+      if ($section.find('.dr-address-book').length) {
+        if ($section.hasClass('dr-checkout__billing') && $('#checkbox-billing').prop('checked')) {
+          $section.find('.dr-address-book-btn').hide();
+        } else {
+          $section.find('.dr-address-book-btn').show();
+        }
       }
 
       CheckoutModule.adjustColumns($section);
@@ -14621,6 +14681,14 @@ jQuery(document).ready(function ($) {
         requestShipping: requestShipping
       });
     }
+
+    $('.back-link a').click(function () {
+      if (document.referrer && document.referrer !== drgc_params.loginUrl) {
+        window.location.href = document.referrer;
+      } else {
+        window.location.href = drgc_params.cartUrl;
+      }
+    });
   }
 });
 /* harmony default export */ var public_checkout = (CheckoutModule);
@@ -14736,10 +14804,7 @@ var LoginModule = function ($) {
       action: 'drgc_logout',
       nonce: drgc_params.ajaxNonce
     };
-    $('body').css({
-      'pointer-events': 'none',
-      'opacity': 0.5
-    });
+    $('body').addClass('dr-loading');
     $.post(drgc_params.ajaxUrl, data, function (response) {
       location.reload();
     });
@@ -14762,10 +14827,7 @@ var LoginModule = function ($) {
       action: 'drgc_logout',
       nonce: drgc_params.ajaxNonce
     };
-    $('body').css({
-      'pointer-events': 'none',
-      'opacity': 0.5
-    });
+    $('body').addClass('dr-loading');
     $.post(drgc_params.ajaxUrl, data, function () {
       window.location.href = url;
     });
@@ -14862,6 +14924,8 @@ jQuery(document).ready(function ($) {
       $(cpw).next('.invalid-feedback').text(drgc_params.translations.required_field_msg);
     } else if (cpw.validity.customError) {
       $(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+    } else {
+      $(cpw).next('.invalid-feedback').text('');
     }
   });
   $('.dr-signup-form').on('submit', function (e) {
@@ -15041,12 +15105,8 @@ var PdpModule = function ($) {
   };
 
   var displayRealTimeBuyBtn = function displayRealTimeBuyBtn(purchasable, isRedirectBuyBtn, $target) {
-    if (isRedirectBuyBtn) {
-      $target.text(drgc_params.translations.buy_now).addClass('dr-redirect-buy-btn').prop('disabled', false);
-    } else {
-      purchasable = purchasable === 'true';
-      $target.text(purchasable ? drgc_params.translations.add_to_cart : drgc_params.translations.out_of_stock).prop('disabled', !purchasable);
-    }
+    var isOutOfStock = purchasable === 'false';
+    $target.prop('disabled', isOutOfStock).text(isOutOfStock ? drgc_params.translations.out_of_stock : isRedirectBuyBtn ? drgc_params.translations.buy_now : drgc_params.translations.add_to_cart).addClass(isRedirectBuyBtn ? 'dr-redirect-buy-btn' : '');
   };
 
   return {
@@ -15332,32 +15392,51 @@ jQuery(document).ready(function ($) {
       var $priceDiv = $(elem).find(pdDisplayOption.priceDivSelector()).text(drgc_params.translations.loading_msg);
       var $buyBtn = $(elem).find('.dr-buy-btn').text(drgc_params.translations.loading_msg).prop('disabled', true);
       var productID = $buyBtn.data('product-id');
+      var parentId = $buyBtn.data('parent-id');
       if (!productID) return;
-      commerce_api.getProduct(productID, {
-        expand: 'inventoryStatus'
-      }).then(function (res) {
-        var purchasable = res.product.inventoryStatus.productIsInStock;
-        var isVariation = res.product.parentProduct ? true : false;
-        isPdCard = true; // to avoid being overwritten by concurrency
 
-        PdpModule.displayRealTimePricing(res.product.pricing, pdDisplayOption, $priceDiv);
-        PdpModule.displayRealTimeBuyBtn(purchasable, isVariation, $buyBtn);
-      });
+      if (parentId) {
+        commerce_api.getProduct(parentId, {
+          fields: 'variations',
+          expand: 'all'
+        }).then(function (res) {
+          var variations = res.product.variations.product;
+          var isInStock = variations.some(function (elem) {
+            return elem.inventoryStatus.availableQuantity > 0;
+          });
+          isPdCard = true; // to avoid being overwritten by concurrency
+
+          PdpModule.displayRealTimePricing(variations[0].pricing, pdDisplayOption, $priceDiv);
+          PdpModule.displayRealTimeBuyBtn(isInStock.toString(), true, $buyBtn);
+        });
+      } else {
+        commerce_api.getProduct(productID, {
+          expand: 'inventoryStatus'
+        }).then(function (res) {
+          var purchasable = res.product.inventoryStatus.productIsInStock;
+          isPdCard = true; // to avoid being overwritten by concurrency
+
+          PdpModule.displayRealTimePricing(res.product.pricing, pdDisplayOption, $priceDiv);
+          PdpModule.displayRealTimeBuyBtn(purchasable, false, $buyBtn);
+        });
+      }
     });
   }
 });
 /* harmony default export */ var public_pdp = (PdpModule);
 // CONCATENATED MODULE: ./assets/js/public/public-thank-you.js
 
-var ThankYouModule = {};
+
+var ThankYouModule = function ($) {}(jQuery);
+
 jQuery(document).ready(function ($) {
   if ($('.dr-thank-you-wrapper:visible').length) {
+    if (drgc_params.order && drgc_params.order.order) {
+      checkout_utils.updateSummaryPricing(drgc_params.order.order, drgc_params.isTaxInclusive === 'true');
+    }
+
     $(document).on('click', '#print-button', function () {
-      var printContents = $('.dr-thank-you-wrapper').html();
-      var originalContents = document.body.innerHTML;
-      document.body.innerHTML = printContents;
       window.print();
-      document.body.innerHTML = originalContents;
     });
     var digitalriverjs = new DigitalRiver(drgc_params.digitalRiverKey);
     checkout_utils.applyLegalLinks(digitalriverjs);
@@ -15552,6 +15631,7 @@ jQuery(document).ready(function ($) {
 
 
 
+
 var AccountModule = function ($) {
   var appendAutoRenewalTerms = function appendAutoRenewalTerms(digitalriverjs, entityCode, locale) {
     var terms = checkout_utils.getLocalizedAutoRenewalTerms(digitalriverjs, entityCode, locale);
@@ -15567,6 +15647,7 @@ var AccountModule = function ($) {
 }(jQuery);
 
 jquery_default()(function () {
+  var localizedText = drgc_params.translations;
   if (jquery_default()('#dr-account-page-wrapper').length < 1) return;
   window.drActiveOrderId = '';
   var $body = jquery_default()('body');
@@ -15584,6 +15665,7 @@ jquery_default()(function () {
       // orderID
       jquery_default()('.dr-modal-orderNumber').text(orderID); // Order Pricing
 
+      drOrders[orderID].pricing = jquery_default.a.parseJSON(drOrders[orderID].encodedPricing);
       jquery_default()('.dr-modal-subtotal').text(drOrders[orderID].formattedSubtotal);
       jquery_default()('.dr-modal-tax').text(drOrders[orderID].formattedTax);
       jquery_default()('.dr-modal-shipping').text(drOrders[orderID].formattedShipping);
@@ -15616,21 +15698,39 @@ jquery_default()(function () {
       shippingAddress2 += drOrders[orderID].shippingAddress.state ? ', ' + drOrders[orderID].shippingAddress.state : '';
       shippingAddress2 += drOrders[orderID].shippingAddress.zip ? ' ' + drOrders[orderID].shippingAddress.zip : '';
       jquery_default()('.dr-modal-shippingAddress2').text(shippingAddress2);
-      jquery_default()('.dr-modal-shippingCountry').text(drOrders[orderID].shippingAddress.country); // Products
+      jquery_default()('.dr-modal-shippingCountry').text(drOrders[orderID].shippingAddress.country); // Summary Labels
+
+      var isTaxInclusive = drOrders[orderID].isTaxInclusive === 'true';
+      var forceExclTax = drgc_params.forceExclTax === 'true';
+      var shouldDisplayVat = drOrders[orderID].shouldDisplayVat === 'true';
+      var taxSuffixLabel = isTaxInclusive ? forceExclTax ? ' ' + localizedText.excl_vat_label : ' ' + localizedText.incl_vat_label : '';
+      jquery_default()('.dr-summary__subtotal .subtotal-label').text(localizedText.subtotal_label + taxSuffixLabel);
+      jquery_default()('.dr-summary__tax .item-label').text(shouldDisplayVat ? localizedText.vat_label : localizedText.tax_label);
+      jquery_default()('.dr-summary__shipping .item-label').text(localizedText.shipping_label + taxSuffixLabel);
+      jquery_default()('.dr-summary__shipping-tax .item-label').text(shouldDisplayVat ? localizedText.shipping_vat_label : localizedText.shipping_tax_label);
+
+      if (isTaxInclusive && !forceExclTax) {
+        jquery_default()('.dr-summary__tax, .dr-summary__shipping-tax').addClass('tree-sub-item');
+      } else {
+        jquery_default()('.dr-summary__tax, .dr-summary__shipping-tax').removeClass('tree-sub-item');
+      } // Products
+
 
       var html = '';
 
       for (var i = 0; i < drOrders[orderID].products.length; i++) {
         var prod = drOrders[orderID].products[i];
+        prod.pricing = jquery_default.a.parseJSON(prod.encodedPricing);
         html += "<div class=\"dr-product\">\n                <div class=\"dr-product-content\">\n                    <div class=\"dr-product__img dr-modal-productImgBG\" style=\"background-image:url(".concat(prod.image, ");\"></div>\n                    <div class=\"dr-product__info\">\n                        <a class=\"product-name dr-modal-productName\">").concat(prod.name, "</a>\n                        <div class=\"product-sku\">\n                            <span>Product </span>\n                            <span class=\"dr-modal-productSku\">").concat(prod.sku, "</span>\n                        </div>\n                        <div class=\"product-qty\">\n                            <span class=\"qty-text\">Qty <span class=\"dr-modal-productQty\">").concat(prod.qty, "</span></span>\n                            <span class=\"dr-pd-cart-qty-minus value-button-decrease\"></span>\n                            <input\n                                type=\"number\"\n                                class=\"product-qty-number\"\n                                step=\"1\"\n                                min=\"1\"\n                                max=\"999\"\n                                value=\"").concat(prod.qty, "\"\n                                maxlength=\"5\"\n                                size=\"2\"\n                                pattern=\"[0-9]*\"\n                                inputmode=\"numeric\"\n                                readonly=\"true\"/>\n                            <span class=\"dr-pd-cart-qty-plus value-button-increase\"></span>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"dr-product__price\">\n                    <span class=\"sale-price dr-modal-salePrice\">").concat(prod.salePrice, "</span>\n                    <span class=\"regular-price dr-modal-strikePrice\" ").concat(prod.salePrice === prod.strikePrice ? 'style="display:none"' : '', ">").concat(prod.strikePrice, "</span>\n                </div>\n            </div>");
       }
 
       jquery_default()('.dr-summary__products').html(html);
+      checkout_utils.updateSummaryPricing(drOrders[orderID], isTaxInclusive);
 
       if (!requestShipping) {
-        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping').hide();
+        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping, .dr-summary__shipping-tax').hide();
       } else {
-        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping').show();
+        jquery_default()('.dr-order-address__shipping, .dr-summary__shipping, .dr-summary__shipping-tax').show();
       } // set this last
 
 
@@ -15646,16 +15746,6 @@ jquery_default()(function () {
     $dialog.css('max-width', '100%');
     window.print();
     $dialog.css('max-width', '');
-  }); // watch account page active tab to start on the same tab after reload
-
-  if (sessionStorage.drAccountTab && jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
-    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
-  } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
-    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
-  }
-
-  jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function (e) {
-    sessionStorage.drAccountTab = jquery_default()(e.target).attr('href');
   }); // Address
 
   var $addresses = jquery_default()('#dr-account-page-wrapper .address');
@@ -15871,9 +15961,7 @@ jquery_default()(function () {
   $addresses.find('form.dr-panel-edit').on('submit', function (e) {
     e.preventDefault();
     saveAddress(e.target);
-  }); //floating labels
-
-  float_label.init(); // Subscriptions
+  }); // Subscriptions
 
   var $subs = jquery_default()('#dr-account-page-wrapper .subscription');
   var $subscriptionError = jquery_default()('#subscriptionError');
@@ -15993,7 +16081,95 @@ jquery_default()(function () {
   jquery_default()('#dr-account-page-wrapper .back').on('click', function () {
     jquery_default()('.dr-tab-pane').removeClass('active show');
     jquery_default()('.dr-list-group-item').removeClass('active').attr('aria-selected', 'false');
+  }); // Change Password
+
+  jquery_default()('#pw-new').on('input', function (e) {
+    public_login.validatePassword(e);
   });
+  jquery_default()('#pw-current, #pw-new, #pw-confirm').on('input', function () {
+    var $form = jquery_default()('#change-password-form');
+    var pw = $form.find('input[type=password]')[0];
+    var npw = $form.find('input[type=password]')[1];
+    var cpw = $form.find('input[type=password]')[2];
+    $form.find('.dr-err-field').text('');
+    npw.setCustomValidity(pw.value === npw.value ? localizedText.new_password_error_msg : npw.validationMessage !== localizedText.new_password_error_msg ? npw.validationMessage : '');
+    cpw.setCustomValidity(npw.value !== cpw.value ? localizedText.password_confirm_error_msg : '');
+
+    if (npw.validity.valueMissing) {
+      jquery_default()(npw).next('.invalid-feedback').text(localizedText.required_field_msg);
+    } else if (npw.validity.customError) {
+      jquery_default()(npw).next('.invalid-feedback').text(npw.validationMessage);
+    } else {
+      jquery_default()(npw).next('.invalid-feedback').text('');
+    }
+
+    if (cpw.validity.valueMissing) {
+      jquery_default()(cpw).next('.invalid-feedback').text(localizedText.required_field_msg);
+    } else if (cpw.validity.customError) {
+      jquery_default()(cpw).next('.invalid-feedback').text(cpw.validationMessage);
+    } else {
+      jquery_default()(cpw).next('.invalid-feedback').text('');
+    }
+
+    $form.addClass('was-validated');
+  });
+  jquery_default()('#change-password-form').on('submit', function (e) {
+    e.preventDefault();
+    var $form = jquery_default()(e.target);
+    var $error = $form.find('.dr-err-field');
+    $form.addClass('was-validated');
+    if ($form.data('processing')) return false;
+    if (!$form[0].checkValidity()) return false;
+    $form.data('processing', true);
+    $error.text('');
+    var data = {
+      action: 'drgc_change_password',
+      nonce: drgc_params.ajaxNonce,
+      current_password: jquery_default()('#pw-current').val(),
+      new_password: jquery_default()('#pw-new').val(),
+      confirm_new_password: jquery_default()('#pw-confirm').val()
+    };
+    jquery_default()('body').addClass('dr-loading');
+    jquery_default.a.post(drgc_params.ajaxUrl, data, function (response) {
+      if (!response.success) {
+        if (response.data && response.data.errors && response.data.errors.error[0].hasOwnProperty('description')) {
+          $error.text(response.data.errors.error[0].description);
+        } else if (Object.prototype.toString.call(response.data) === '[object String]') {
+          $error.text(response.data);
+        } else {
+          $error.text(localizedText.undefined_error_msg);
+        }
+
+        $error.css('color', 'red');
+        sessionStorage.setItem('drgc-pw-changed', 'false');
+        jquery_default()('body').removeClass('dr-loading');
+      } else {
+        sessionStorage.setItem('drgc-pw-changed', 'true');
+        location.reload();
+      }
+
+      jquery_default()('#pw-current, #pw-new, #pw-confirm').val('').removeClass('is-invalid').removeClass('is-valid');
+      $form.data('processing', false).removeClass('was-validated');
+    });
+  }); // watch account page active tab to start on the same tab after reload
+
+  jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').on('shown.dr.bs.tab', function (e) {
+    sessionStorage.drAccountTab = jquery_default()(e.target).attr('href');
+
+    if (e.target.id === 'list-password-list' && sessionStorage.getItem('drgc-pw-changed') === 'true') {
+      sessionStorage.setItem('drgc-pw-changed', 'false');
+      jquery_default()('#dr-passwordUpdated').drModal('show');
+    }
+  });
+
+  if (sessionStorage.drAccountTab && jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').length) {
+    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"][href="' + sessionStorage.drAccountTab + '"]').drTab('show');
+  } else if (window.matchMedia && window.matchMedia('(min-width:768px)').matches) {
+    jquery_default()('#dr-account-page-wrapper a[data-toggle="dr-list"]').eq(0).drTab('show');
+  } //floating labels
+
+
+  float_label.init();
 });
 /* harmony default export */ var public_account = (AccountModule);
 // CONCATENATED MODULE: ./assets/js/public/user-activity-watcher.js

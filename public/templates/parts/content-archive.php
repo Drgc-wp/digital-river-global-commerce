@@ -15,6 +15,7 @@
 <?php
 $purchasable = get_post_meta( get_the_ID(), 'purchasable', true );
 $variations = drgc_get_product_variations( get_the_ID() );
+$gc_parent_id = '';
 
 if ( $variations && isset( $variations[0] ) ) {
     //sort variation array by sale price here!
@@ -39,6 +40,8 @@ if ( $variations && isset( $variations[0] ) ) {
     $pricing = drgc_get_product_pricing( $variations[0]->ID );
     $product_image_url = get_post_meta( $variations[0]->ID, 'gc_product_images_url', true );
     $product_thumbnail_url = get_post_meta( $variations[0]->ID, 'gc_thumbnail_url', true );
+    $post_parent = $variations[0]->post_parent;
+    $gc_parent_id = get_post_meta( $post_parent, 'gc_product_id', true );
 } else {
     $gc_id = get_post_meta( get_the_ID(), 'gc_product_id', true );
     $pricing = drgc_get_product_pricing( get_the_ID() );
@@ -70,7 +73,7 @@ $price = isset( $pricing['price'] ) ? $pricing['price'] : '';
             </p>
         <?php endif; ?>
 
-        <button type="button" class="dr-btn dr-buy-btn" data-product-id="<?php echo $gc_id; ?>" <?php echo 'true' !== $purchasable ? 'disabled' : ''; ?>>
+        <button type="button" class="dr-btn dr-buy-btn" data-parent-id="<?php echo $gc_parent_id; ?>" data-product-id="<?php echo $gc_id; ?>" <?php echo 'true' !== $purchasable ? 'disabled' : ''; ?>>
             <?php echo __( 'Add to Cart', 'digital-river-global-commerce'); ?>
         </button>
 
