@@ -10,46 +10,11 @@
  * @package    Digital_River_Global_Commerce
  * @subpackage Digital_River_Global_Commerce/admin/partials
  */
-
-$post = get_post( get_the_ID() );
-$post_parent = $post->post_parent;
-$varying_attribute_array = [];
-
-if ( $post_parent > 0 ) {
-    $base_variation_attributes = get_post_meta( $post_parent, 'variation_attributes', true );
-
-    foreach ($base_variation_attributes as $key => $value) {
-        if ( $value === 'productType' ) {
-            $base_variation_attributes[$key] = 'product_type';
-        }
-
-        $attr = get_post_meta( get_the_ID(), $base_variation_attributes[$key], true );
-
-        if ( ! empty( $attr ) ) {
-            $varying_attribute_array[$value] = $attr;
-        }
-    }
-}
 ?>
 
 <div class="meta-form-group">
     <table class="form-table">
         <tbody>
-            <?php if ( ! empty( $varying_attribute_array ) ) : ?>
-                <fieldset>
-                    <legend><span><?php echo __( 'Variation Attributes', 'digital-river-global-commerce' ); ?></span></legend>
-                    <?php foreach ($varying_attribute_array as $key => $value) : ?>
-                        <dl>
-                            <dt>
-                                <label><?php echo esc_attr( $key ); ?>: </label>
-                            </dt>
-                            <dd>
-                                <div class="regular-text" id="variation-attributes"><?php echo esc_attr( $value ); ?></div>
-                            </dd>
-                        </dl>
-                    <?php endforeach; ?>
-                </fieldset>
-            <?php endif; ?>
             <tr>
                 <th scope="row"> <label for="gc-product-id"><?php echo __( 'GC Product ID', 'digital-river-global-commerce' ); ?></label></th>
                 <td><input type="text" class="regular-text" id="gc-product-id" name="gc_product_id" value="<?php echo esc_attr( get_post_meta( get_the_ID(), 'gc_product_id', true ) ); ?>" readonly /></td>

@@ -230,6 +230,8 @@ class DRGC_Product {
 			}
 		}
 
+		/*
+		* Removed for implment "WORDPRESS-332 Support multi variation attributes" 
 		if ( isset( $args['variationAttributes']['attribute'] ) ) {
 			foreach ( $args['variationAttributes']['attribute'] as $attribute ) {
 				$_product_meta['variation_attributes'][] = $attribute['name'];
@@ -259,6 +261,38 @@ class DRGC_Product {
 				}
 			}
 		}
+		*/
+
+		if ( $args['baseProduct'] === 'true' && isset( $args['variationAttributes']['attribute'] ) ) {
+			$_product_meta['var_attribute_names'] = array();
+			$_product_meta['variations'] = array();
+			$_product_meta['var_select_options'] = array();
+	  
+			foreach ( $args['variationAttributes']['attribute'] as $attribute ) {
+			  $_product_meta['var_attribute_names'][ $attribute['name'] ] = $attribute['displayName'];
+			}
+	  
+			$var_products = $args['variations']['product'];
+			$var_attribute_names = $_product_meta['var_attribute_names'];
+	  
+			foreach ( $var_products as $variation ) {
+			  $var_product_id = $variation['id'];
+			  $var_custom_attributes = $variation['customAttributes']['attribute'];
+	  
+			  foreach ( $var_attribute_names as $key => $value ) {
+				$found_key = array_search( $key, array_column( $var_custom_attributes, 'name' ) );
+	  
+				if ( $found_key !== false ) {
+				  $attr_value = $var_custom_attributes[ $found_key ]['value'];
+				  $_product_meta['variations'][ $var_product_id ][ $key ] = $attr_value;
+	  
+				  if ( ! in_array( $attr_value, $_product_meta['var_select_options'][ $value ], true ) ) {
+					$_product_meta['var_select_options'][ $value ][] = $attr_value;
+				  }
+				}
+			  }
+			}
+		  }
 
 		$this->meta_data = array_merge( $this->meta_data, $_product_meta );
 		$this->post_data = array_merge( $this->post_data, $_product_data );

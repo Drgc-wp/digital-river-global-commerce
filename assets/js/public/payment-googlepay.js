@@ -40,7 +40,7 @@ const DRGooglePay = (($, translations) => {
           shippingAddress: {
             id: 'shippingAddress',
             city: shippingAddress.address.city,
-            countrySubdivision: shippingAddress.address.state || 'NA',
+            countrySubdivision: shippingAddress.address.state,
             postalCode: shippingAddress.address.postalCode,
             country: shippingAddress.address.country
           }

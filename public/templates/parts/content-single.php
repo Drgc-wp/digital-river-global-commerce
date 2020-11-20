@@ -21,24 +21,9 @@ $purchasable = get_post_meta( get_the_ID(), 'purchasable', true );
 
 $variations = drgc_get_product_variations( get_the_ID() );
 if ( $variations && isset( $variations[0] ) ) {
-  //sort variation array  by sale price here!
-  $variations_sort = array();
-  foreach ( $variations as $variation ){
-    $var_pricing = drgc_get_product_pricing( $variation->ID );
-    $variation->sort_pricing = $var_pricing['sale_price_value'];
-    array_push($variations_sort,$variation);
-  }
-  usort( $variations_sort, function( $a, $b ) {
-    if ( $a == $b ) {
-        return 0;
-    }
-    return ( $a->sort_pricing < $b->sort_pricing ) ? -1 : 1;
-  });
-  $variations = $variations_sort;
-	$gc_id = get_post_meta( $variations[0]->ID, 'gc_product_id', true );
-	$pricing = drgc_get_product_pricing( $variations[0]->ID );
-	$product_image_url = get_post_meta( $variations[0]->ID, 'gc_product_images_url', true );
-    $product_thumbnail_url = get_post_meta( $variations[0]->ID, 'gc_thumbnail_url', true );
+    $all_variation_attributes = get_post_meta( get_the_ID(), 'variations', true );
+    $var_attributes_names = get_post_meta( get_the_ID(), 'var_attribute_names', true );
+    $var_select_options = get_post_meta( get_the_ID(), 'var_select_options', true );
 } else {
 	$pricing = drgc_get_product_pricing( get_the_ID() );
 
@@ -48,7 +33,9 @@ $sale_price_value = isset( $pricing['sale_price_value'] ) ? $pricing['sale_price
 $price = isset( $pricing['price'] ) ? $pricing['price'] : '';
 $regular_price = isset( $pricing['regular_price'] ) ? $pricing['regular_price'] : '';
 ?>
-
+<script type="text/javascript">
+    var drgcVarAttrs = <?php echo json_encode( $all_variation_attributes, JSON_FORCE_OBJECT ); ?>;
+</script>
 <div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
     <div class="row">
         <div class="col-12 col-md-6">
@@ -63,91 +50,38 @@ $regular_price = isset( $pricing['regular_price'] ) ? $pricing['regular_price'] 
 			    <?php } ?>
 			    <?php the_content(); ?>
 
-                <?php if ( $variations ) :
-                    $vars_count = count( $variations );
-                    $var_type_label = '';
-                    $var_type = '';
-                    $color_vars = [];
-                    $sizes_vars = [];
-                    $platform_vars = [];
-                    $product_type_vars = [];
-                    $wrap_type_vars = [];
-                    $duration_vars = [];
+                <?php if ( $variations ): ?>
 
-                    foreach ( $variations as $variation ) {
-                        if ( ! empty( get_post_meta( $variation->ID, 'color', true ) ) ) {
-                            array_push( $color_vars, get_post_meta( $variation->ID, 'color', true ) );
-                        }
+                    <?php if ( isset( $var_select_options ) && is_array( $var_select_options ) ): ?>
 
-                        if ( ! empty( get_post_meta( $variation->ID, 'sizes', true ) ) ) {
-                            array_push( $sizes_vars, get_post_meta( $variation->ID, 'sizes', true ) );
-                        }
+                        <h6><?php echo __( 'Select your product', 'digital-river-global-commerce'); ?>:</h6>
 
-                        if ( ! empty( get_post_meta( $variation->ID, 'platform', true ) ) ) {
-                            array_push( $platform_vars, get_post_meta( $variation->ID, 'platform', true ) );
-                        }
+                        <?php
+                            $index = 0;
+                            foreach ( array_keys( $var_select_options ) as $label ) { 
+                                $key = array_search( $label, $var_attributes_names );
+                        ?>
 
-                        if ( ! empty( get_post_meta( $variation->ID, 'variation_types', true ) ) ) {
-                            array_push( $product_type_vars, get_post_meta( $variation->ID, 'variation_types', true ) );
-                        }
+                            <div class="dr-prod-variations">
 
-                        if ( ! empty( get_post_meta( $variation->ID, 'wrap_type', true ) ) ) {
-                            array_push( $wrap_type_vars, get_post_meta( $variation->ID, 'wrap_type', true ) );
-                        }
+                                <select name="dr-variation-<?php echo $key; ?>" data-var-attribute="<?php echo $key; ?>" data-index="<?php echo $index; ?>" disabled>
+                                    <option value=""><?php echo ( $lang === 'en' ) ? ucwords( $label ) : $label; ?></option>
+                                    <?php foreach ( $var_select_options[ $label ] as $value ): ?>
+                                        <option value="<?php echo $value; ?>"><?php echo ( $lang === 'en' ) ? ucwords( $value ) : $value; ?></option>
+                                    <?php endforeach; ?>
 
-                        if ( ! empty( get_post_meta( $variation->ID, 'duration', true ) ) ) {
-                            array_push( $duration_vars, get_post_meta( $variation->ID, 'duration', true ) );
-                        }
-                    }
+                                </select>
 
-                    if ( count( array_unique( $color_vars ) ) === $vars_count ) {
-                        $var_type_label = __( 'color', 'digital-river-global-commerce' );
-                        $var_type = 'color';
-                    } elseif ( count( array_unique( $sizes_vars ) ) === $vars_count ) {
-                        $var_type_label = __( 'sizes', 'digital-river-global-commerce' );
-                        $var_type = 'sizes';
-                    } elseif ( count( array_unique( $platform_vars ) ) === $vars_count ) {
-                        $var_type_label = __( 'platform', 'digital-river-global-commerce' );
-                        $var_type = 'platform';
-                    } elseif ( count( array_unique( $product_type_vars ) ) === $vars_count ) {
-                        $var_type_label = __( 'product type', 'digital-river-global-commerce' );
-                        $var_type = 'variation_types';
-                    } elseif ( count( array_unique( $wrap_type_vars ) ) === $vars_count ) {
-                        $var_type_label = __( 'wrap type', 'digital-river-global-commerce' );
-                        $var_type = 'wrap_type';
-                    } elseif ( count( array_unique( $duration_vars ) ) === $vars_count ) {
-                        $var_type_label = __( 'duration', 'digital-river-global-commerce' );
-                        $var_type = 'duration';
-                    } else {
-                        $var_type_label = __( 'undefined', 'digital-river-global-commerce' );
-                    }
+                            </div>
 
-				?>
-                    <h6><?php echo __( 'Select ', 'digital-river-global-commerce' ) . ucwords( $var_type_label ) . ':'; ?></h6>
+                        <?php 
+                                $index++;
+                            } 
+                        ?>
 
-                    <div class="dr_prod-variations">
+                    <?php endif; ?>
 
-                        <select name="dr-variation">
-                            <?php foreach ( $variations as $variation ) :
-                                $var_gc_id = get_post_meta( $variation->ID, 'gc_product_id', true );
-                                $variation_type = get_post_meta( $variation->ID, $var_type, true );
-                                $var_pricing = drgc_get_product_pricing( $variation->ID );
-                                $list_price = isset( $var_pricing['list_price_value'] ) ? $var_pricing['list_price_value'] : '';
-                                $sale_price = isset( $var_pricing['sale_price_value'] ) ? $var_pricing['sale_price_value'] : '';
-                                $var_image_url = get_post_meta( $variation->ID, 'gc_product_images_url', true );
-                                $var_thumbnail_url = get_post_meta( $variation->ID, 'gc_thumbnail_url', true );
-                            ?>
-                                <option value="<?php echo $var_gc_id; ?>"
-                                    data-price="<?php echo isset( $var_pricing['price'] ) ? $var_pricing['price'] : ''; ?>"
-                                    <?php echo ( (int) $list_price > (int) $sale_price ) ? 'data-old-price="' . $list_price . '"' : ''; ?>
-                                    data-thumbnail-url="<?php echo $var_thumbnail_url ?: $var_image_url ?>">
-                                    <?php echo ( $variation_type !== '' ) ? ucwords( $variation_type ) : $variation->post_name; ?>
-                                </option>
-						    <?php endforeach; ?>
-                        </select>
-
-                    </div>
-			    <?php endif; ?>
+                <?php endif; ?>
 
                 <form id="dr-pd-form">
                     <div class="dr-pd-price-wrapper" id="dr-pd-price-wrapper">
