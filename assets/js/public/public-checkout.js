@@ -850,7 +850,7 @@ jQuery(document).ready(($) => {
             $('#checkout-payment-form').removeClass('dr-panel-edit').css('visibility', 'hidden');
 
             paypal.Button.render({
-                env: (domain.indexOf('test') === -1) ? 'production' : 'sandbox',
+                env: (drgc_params.digitalRiverKey.split('_').length === 2 ? 'production' : 'sandbox'),
                 locale: drLocale,
                 style: {
                     label: 'checkout',
