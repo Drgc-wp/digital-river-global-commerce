@@ -269,7 +269,7 @@ class DRGC_Product {
 			$_product_meta['var_select_options'] = array();
 	  
 			foreach ( $args['variationAttributes']['attribute'] as $attribute ) {
-			  $_product_meta['var_attribute_names'][ $attribute['name'] ] = $attribute['displayName'];
+			  $_product_meta['var_attribute_names'][ $attribute['name'] ] = $attribute['displayName'] ?? $attribute['name'];
 			}
 	  
 			$var_products = $args['variations']['product'];
@@ -281,8 +281,9 @@ class DRGC_Product {
 	  
 			  foreach ( $var_attribute_names as $key => $value ) {
 				$found_key = array_search( $key, array_column( $var_custom_attributes, 'name' ) );
+				$attr_value = ( $found_key !== false ) ? $var_custom_attributes[ $found_key ]['value'] : ( $variation[ $key ] ?? '' );
 	  
-				if ( $found_key !== false ) {
+				if ( ! empty( $attr_value ) ) {
 				  $attr_value = $var_custom_attributes[ $found_key ]['value'];
 				  $_product_meta['variations'][ $var_product_id ][ $key ] = $attr_value;
 	  
